@@ -1,0 +1,20 @@
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        jcenter() // Warning: this repository is going to shut down soon
+        maven {
+            url "https://s3.amazonaws.com/repo.commonsware.com"
+        }
+        maven {
+            url "https://github.com/jitsi/jitsi-maven-repository/raw/master/releases"
+        }
+        maven {
+            url "https://jitpack.io"
+//            credentials { username authToken } // TODO: SET JITPACK CREDENTIALS
+        }
+    }
+}
+rootProject.name = "MeetTalk Android"
+include ':app'

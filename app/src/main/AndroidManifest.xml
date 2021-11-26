@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="io.taptalk.meettalkandroidsample">
+
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="oppo.permission.OPPO_COMPONENT_SAFE" />
+
+    <application
+        android:name=".SampleApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MeetTalkAndroid"
+        tools:replace="android:theme"
+        android:usesCleartextTraffic="true">
+
+        <receiver
+            android:name="io.taptalk.TapTalk.BroadcastReceiver.TAPReplyBroadcastReceiver"
+            android:enabled="true" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBBowJXwSCAM9Q-ZyR4iSlfDKuKjawZb0s" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <service android:name="io.taptalk.TapTalk.Firebase.TapFirebaseMessagingService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".activity.MainActivity"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".activity.TAPLoginActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.TAPRegisterActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.TAPCountryListActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.TapDevLandingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.TAPShareOptionsActivity"
+            android:clearTaskOnLaunch="true"
+            android:noHistory="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="application/*" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>

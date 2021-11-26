@@ -1,0 +1,434 @@
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/tapWhite"
+    tools:context=".fragment.TAPLoginVerificationFragment">
+
+    <ImageView
+        android:id="@+id/iv_back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="11dp"
+        android:paddingStart="11dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="15dp"
+        android:paddingRight="15dp"
+        android:paddingBottom="12dp"
+        android:src="@drawable/tap_ic_chevron_left_white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/tapIconNavigationBarBackButton" />
+
+    <LinearLayout
+        android:id="@+id/ll_otp_verification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_back_button">
+
+        <TextView
+            style="@style/tapLoginVerificationInfoLabelStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/tap_guide_enter_otp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp">
+
+            <ImageView
+                android:id="@+id/iv_otp_method"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/tap_ic_sms_orange"
+                android:layout_marginRight="6dp"
+                android:layout_marginEnd="6dp" />
+
+            <TextView
+                android:id="@+id/tv_method_and_phonenumber"
+                style="@style/tapLoginVerificationPhoneNumberLabelStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                tools:text="SMS to +628197304402" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:id="@+id/ll_otp_pointer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|bottom"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/ll_otp_1"
+                    android:layout_width="24dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_otp_filled_1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:textColor="@color/tapColorTextDark"
+                        android:letterSpacing="-0.03"
+                        android:textSize="20sp"
+                        tools:text="1"
+                        tools:targetApi="lollipop" />
+
+                    <View
+                        android:id="@+id/v_pointer_1"
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@color/tapTransparentBlack1940" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_otp_2"
+                    android:layout_width="24dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginStart="25dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_otp_filled_2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:textColor="@color/tapColorTextDark"
+                        android:letterSpacing="-0.03"
+                        android:textSize="20sp"
+                        tools:text="1"
+                        tools:targetApi="lollipop"/>
+
+                    <View
+                        android:id="@+id/v_pointer_2"
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@color/tapTransparentBlack1940" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_otp_3"
+                    android:layout_width="24dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginStart="25dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_otp_filled_3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:textColor="@color/tapColorTextDark"
+                        android:letterSpacing="-0.03"
+                        android:textSize="20sp"
+                        tools:text="1"
+                        tools:targetApi="lollipop"/>
+
+                    <View
+                        android:id="@+id/v_pointer_3"
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@color/tapTransparentBlack1940" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_otp_4"
+                    android:layout_width="24dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginStart="25dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_otp_filled_4"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:textColor="@color/tapColorTextDark"
+                        android:letterSpacing="-0.03"
+                        android:textSize="20sp"
+                        tools:text="1"
+                        tools:targetApi="lollipop"/>
+
+                    <View
+                        android:id="@+id/v_pointer_4"
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@color/tapTransparentBlack1940" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_otp_5"
+                    android:layout_width="24dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginStart="25dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_otp_filled_5"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:textColor="@color/tapColorTextDark"
+                        android:letterSpacing="-0.03"
+                        android:textSize="20sp"
+                        tools:text="1"
+                        tools:targetApi="lollipop"/>
+
+                    <View
+                        android:id="@+id/v_pointer_5"
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@color/tapTransparentBlack1940" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_otp_6"
+                    android:layout_width="24dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginStart="25dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_otp_filled_6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:textStyle="bold"
+                        android:textColor="@color/tapColorTextDark"
+                        android:letterSpacing="-0.03"
+                        android:textSize="20sp"
+                        tools:text="1"
+                        tools:targetApi="lollipop"/>
+
+                    <View
+                        android:id="@+id/v_pointer_6"
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@color/tapTransparentBlack1940" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/et_otp_code"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_gravity="center"
+                android:alpha="0"
+                android:inputType="numberSigned"
+                android:maxLength="6"
+                android:cursorVisible="false"
+                tools:background="@color/tapBrightBlue" />
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tv_didnt_receive_and_invalid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="34dp"
+            android:gravity="center"
+            android:text="@string/tap_didnt_receive_the_6_digit_otp"
+            android:textColor="@color/tapTransparentBlack1980"
+            android:letterSpacing="-0.01"
+            android:lineSpacingExtra="3sp"
+            android:textSize="14sp"
+            tools:targetApi="lollipop" />
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="18dp"
+            android:animateLayoutChanges="true"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tv_otp_timer"
+                style="@style/tapLoginVerificationStatusCountdownLabelStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                tools:text="Wait 0:23"
+                android:visibility="gone"/>
+
+            <LinearLayout
+                android:id="@+id/ll_request_otp_again"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/tap_ic_rotate_ccw"
+                    android:layout_gravity="center"
+                    android:layout_marginEnd="6dp"
+                    android:layout_marginRight="6dp"/>
+                <TextView
+                    style="@style/tapClickableLabelStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/tap_request_again" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_loading_otp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:animateLayoutChanges="true"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/iv_progress_otp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:src="@drawable/tap_ic_loading_progress_circle_white"
+                    app:tint="@color/tapIconLoadingProgressPrimary" />
+
+                <TextView
+                    android:id="@+id/tv_loading_otp"
+                    style="@style/tapLoginVerificationStatusLoadingLabelStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/tap_verifying_otp" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_otp_sent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:animateLayoutChanges="true"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/iv_otp_sent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:src="@drawable/tap_ic_circle_active"
+                    app:tint="@color/tapLoginVerificationStatusSuccessLabelColor" />
+
+                <TextView
+                    android:id="@+id/tv_otp_sent"
+                    style="@style/tapLoginVerificationStatusSuccessLabelStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="6sp"
+                    android:text="@string/tap_otp_successfully_sent" />
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tv_not_working"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tap_not_working_try_below"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/tapTransparentBlack1980"
+            android:letterSpacing="-0.01"
+            android:lineSpacingExtra="3sp"
+            android:textSize="14sp"
+            android:layout_marginTop="24dp"
+            tools:targetApi="lollipop"
+            android:visibility="gone"
+            />
+
+        <LinearLayout
+            android:id="@+id/ll_btn_send_via_sms"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginRight="16dp"
+            android:gravity="center"
+            android:background="@drawable/tap_bg_button_border"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/tap_ic_sms_orange"
+                android:layout_marginRight="6dp"
+                android:layout_marginEnd="6dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tap_send_via_sms"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/tapColorPrimary"
+                android:letterSpacing="-0.03"
+                tools:targetApi="lollipop" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <include
+        android:id="@+id/popup_loading"
+        layout="@layout/tap_layout_popup_loading_screen"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
