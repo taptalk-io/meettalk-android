@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.MeetTalkCallActivity">
+
+    <TextView
+        android:id="@+id/tv_calling_user"
+        style="@style/tapNavBarTitleLabelStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Calling User" />
+
+    <io.taptalk.TapTalk.Helper.CircleImageView
+        android:id="@+id/civ_avatar"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginTop="48dp"
+        android:src="@drawable/tap_img_default_avatar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_calling_user" />
+
+    <ImageView
+        android:id="@+id/iv_button_toggle_audio_mute"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginBottom="60dp"
+        android:background="@drawable/tap_bg_circle_9b9b9b"
+        android:backgroundTint="@color/tapGrey9b"
+        android:padding="8dp"
+        android:src="@drawable/tap_ic_mute_grey"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/iv_button_cancel_call"
+        app:layout_constraintStart_toStartOf="parent"
+        app:tint="@color/tapWhite"
+        tools:targetApi="lollipop" />
+
+    <ImageView
+        android:id="@+id/iv_button_cancel_call"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginBottom="60dp"
+        android:background="@drawable/tap_bg_circle_9b9b9b"
+        android:backgroundTint="@color/tapButtonDestructiveBackgroundColor"
+        android:padding="16dp"
+        android:src="@drawable/tap_ic_call_orange"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:tint="@color/tapWhite"
+        tools:targetApi="lollipop" />
+
+    <ImageView
+        android:id="@+id/iv_button_toggle_video_mute"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginBottom="60dp"
+        android:background="@drawable/tap_bg_circle_9b9b9b"
+        android:backgroundTint="@color/tapGrey9b"
+        android:padding="16dp"
+        android:src="@drawable/tap_ic_video_white_outline"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iv_button_cancel_call"
+        app:tint="@color/tapWhite"
+        tools:targetApi="lollipop" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">MeetTalk</string>
+
+    <!--Voice Call-->
+    <string name="tap_enable_voice_call">Enable Voice Call</string>
+    <string name="tap_format_enable_phone_account_message">To receive voice calls from other users, please enable \"%s\" Phone Account in the Settings.</string>
+
+    <!--General-->
+    <string name="tap_dismiss">Dismiss</string>
+
+</resources>

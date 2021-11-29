@@ -7,15 +7,26 @@ import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_APP_KEY_S
 import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_BASE_URL;
 
 import android.app.Activity;
+import android.os.Build;
 
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.multidex.MultiDexApplication;
 
-import io.taptalk.TapTalk.BuildConfig;
+import java.util.ArrayList;
+import java.util.List;
+
 import io.taptalk.TapTalk.Helper.TapTalk;
-import io.taptalk.TapTalk.Listener.TapListener;
+import io.taptalk.TapTalk.Listener.TapUICustomKeyboardListener;
 import io.taptalk.TapTalk.Manager.TapUI;
+import io.taptalk.TapTalk.Model.TAPCustomKeyboardItemModel;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
+import io.taptalk.TapTalk.Model.TAPRoomModel;
+import io.taptalk.TapTalk.Model.TAPUserModel;
 import io.taptalk.TapTalk.View.Activity.TapUIRoomListActivity;
+import io.taptalk.meettalk.helper.MeetTalk;
+import io.taptalk.meettalk.listener.MeetTalkListener;
+import io.taptalk.meettalk.manager.TapCallManager;
 import io.taptalk.meettalkandroidsample.activity.TAPLoginActivity;
 
 public class SampleApplication extends MultiDexApplication {
@@ -26,14 +37,14 @@ public class SampleApplication extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         TapTalk.setLoggingEnabled(true);
-        if (BuildConfig.BUILD_TYPE.equals("release")) {
-            TapTalk.initializeAnalyticsForSampleApps("b476744eb06c9b3285d19dca3d7781c7");
-        } else if (BuildConfig.BUILD_TYPE.equals("staging")) {
-            TapTalk.initializeAnalyticsForSampleApps("1b400091d6ab3e08584cadffd57a7a40");
-        } else {
-            TapTalk.initializeAnalyticsForSampleApps("84f4d93bf3c34abe56fac7b2faaaa8b1");
-        }
-        TapTalk.init(
+//        if (BuildConfig.BUILD_TYPE.equals("release")) {
+//            TapTalk.initializeAnalyticsForSampleApps("b476744eb06c9b3285d19dca3d7781c7");
+//        } else if (BuildConfig.BUILD_TYPE.equals("staging")) {
+//            TapTalk.initializeAnalyticsForSampleApps("1b400091d6ab3e08584cadffd57a7a40");
+//        } else {
+//            TapTalk.initializeAnalyticsForSampleApps("84f4d93bf3c34abe56fac7b2faaaa8b1");
+//        }
+        MeetTalk.init(
                 this,
                 TAPTALK_SDK_APP_KEY_ID,
                 TAPTALK_SDK_APP_KEY_SECRET,
@@ -41,7 +52,7 @@ public class SampleApplication extends MultiDexApplication {
                 getString(R.string.app_name),
                 TAPTALK_SDK_BASE_URL,
                 TapTalkImplementationTypeCombine,
-                tapListener);
+                meetTalkListener);
         TapTalk.initializeGooglePlacesApiKey(GOOGLE_MAPS_API_KEY);
 
 //        Stetho.initialize(
@@ -52,14 +63,14 @@ public class SampleApplication extends MultiDexApplication {
 
         TapUI.getInstance(INSTANCE_KEY).setLogoutButtonVisible(true);
         TapUI.getInstance(INSTANCE_KEY).setConnectionStatusIndicatorVisible(false);
-//        TapUI.getInstance(INSTANCE_KEY).addCustomKeyboardListener(customKeyboardListener);
+        TapUI.getInstance(INSTANCE_KEY).addCustomKeyboardListener(customKeyboardListener);
 
         if (BuildConfig.DEBUG) {
             TapUI.getInstance(INSTANCE_KEY).setCloseButtonInRoomListVisible(true);
         }
     }
 
-    TapListener tapListener = new TapListener(INSTANCE_KEY) {
+    MeetTalkListener meetTalkListener = new MeetTalkListener(INSTANCE_KEY) {
         @Override
         public void onTapTalkRefreshTokenExpired() {
             TAPLoginActivity.start(getApplicationContext(), INSTANCE_KEY);
@@ -87,23 +98,21 @@ public class SampleApplication extends MultiDexApplication {
     };
 
     // TODO: TEST CUSTOM KEYBOARD FOR CONFERENCE CALL
-//    TapUICustomKeyboardListener customKeyboardListener = new TapUICustomKeyboardListener() {
-//        @Override
-//        public List<TAPCustomKeyboardItemModel> setCustomKeyboardItems(TAPRoomModel room, TAPUserModel activeUser, @Nullable TAPUserModel recipientUser) {
-//            ArrayList<TAPCustomKeyboardItemModel> customKeyboardItems = new ArrayList<>();
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                TAPCustomKeyboardItemModel voiceCallItem = new TAPCustomKeyboardItemModel("voiceCall", ContextCompat.getDrawable(SampleApplication.this, R.drawable.tap_ic_call_orange), "Voice Call");
-//                customKeyboardItems.add(voiceCallItem);
-//            }
-//            return customKeyboardItems;
-//        }
-//
-//        @Override
-//        public void onCustomKeyboardItemTapped(Activity activity, TAPCustomKeyboardItemModel customKeyboardItem, TAPRoomModel room, TAPUserModel activeUser, @Nullable TAPUserModel recipientUser) {
-//            if (customKeyboardItem.getItemID().equals("voiceCall") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                // TODO: CALL API TO GET JITSI ROOM NAME (ID)
-//                TapCallManager.Companion.initiateNewConferenceCall(activity, INSTANCE_KEY, room);
-//            }
-//        }
-//    };
+    TapUICustomKeyboardListener customKeyboardListener = new TapUICustomKeyboardListener() {
+        @Override
+        public List<TAPCustomKeyboardItemModel> setCustomKeyboardItems(TAPRoomModel room, TAPUserModel activeUser, @Nullable TAPUserModel recipientUser) {
+            ArrayList<TAPCustomKeyboardItemModel> customKeyboardItems = new ArrayList<>();
+            TAPCustomKeyboardItemModel voiceCallItem = new TAPCustomKeyboardItemModel("voiceCall", ContextCompat.getDrawable(SampleApplication.this, R.drawable.tap_ic_call_orange), "Voice Call");
+            customKeyboardItems.add(voiceCallItem);
+            return customKeyboardItems;
+        }
+
+        @Override
+        public void onCustomKeyboardItemTapped(Activity activity, TAPCustomKeyboardItemModel customKeyboardItem, TAPRoomModel room, TAPUserModel activeUser, @Nullable TAPUserModel recipientUser) {
+            if (customKeyboardItem.getItemID().equals("voiceCall")) {
+                // TODO: CALL API TO GET JITSI ROOM NAME (ID)
+                TapCallManager.Companion.initiateNewConferenceCall(activity, INSTANCE_KEY, room);
+            }
+        }
+    };
 }

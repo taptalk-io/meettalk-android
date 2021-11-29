@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
 import io.taptalk.TapTalk.BuildConfig;
+import io.taptalk.meettalk.helper.MeetTalk;
 import io.taptalk.meettalkandroidsample.R;
 import io.taptalk.meettalkandroidsample.fragment.TAPLoginVerificationFragment;
 import io.taptalk.meettalkandroidsample.fragment.TAPPhoneLoginFragment;
@@ -51,6 +52,8 @@ public class TAPLoginActivity extends TAPBaseActivity {
         initViewModel();
         initView();
         initFirstPage();
+
+        MeetTalk.checkAndRequestEnablePhoneAccountSettings(INSTANCE_KEY, this);
     }
 
     @Override

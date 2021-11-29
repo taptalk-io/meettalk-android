@@ -18,3 +18,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "MeetTalk Android"
 include ':app'
+include ':meettalk'

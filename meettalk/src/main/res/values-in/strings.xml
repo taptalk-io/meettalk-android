@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--Voice Call-->
+    <string name="tap_enable_voice_call">Izinkan Voice Call</string>
+    <string name="tap_format_enable_phone_account_message">Untuk menerima panggilan dari user lain, harap nyalakan izin untuk Phone Account \"%s\" di halaman pengaturan.</string>
+
+    <!--General-->
+    <string name="tap_dismiss">Tutup</string>
+
+</resources>

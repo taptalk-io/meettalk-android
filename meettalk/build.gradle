@@ -1,0 +1,85 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+}
+
+android {
+    compileSdk 31
+
+    defaultConfig {
+        minSdk 23
+        targetSdk 31
+        versionCode 1
+        versionName "0.1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            debuggable false
+            consumerProguardFiles 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            buildConfigField 'String', 'VERSION_NAME', "\"${defaultConfig.versionName}\""
+        }
+        staging {
+            minifyEnabled true
+            debuggable true
+            buildConfigField 'String', 'VERSION_NAME', "\"${defaultConfig.versionName}-STAGING\""
+        }
+        stagingUpload {
+            minifyEnabled true
+            debuggable false
+            buildConfigField 'String', 'VERSION_NAME', "\"${defaultConfig.versionName}-STAGING\""
+        }
+        dev {
+            minifyEnabled true
+            debuggable true
+            buildConfigField 'String', 'VERSION_NAME', "\"${defaultConfig.versionName}-DEV\""
+        }
+        devUpload {
+            minifyEnabled true
+            debuggable false
+            buildConfigField 'String', 'VERSION_NAME', "\"${defaultConfig.versionName}-DEV\""
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.0'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.preference:preference-ktx:1.1.1'
+    testImplementation 'junit:junit:4.13.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+    // TapTalk
+    api 'com.github.taptalk-io:taptalk.io-android:1.3.25'
+
+    // Jitsi Meet
+    implementation ('org.jitsi.react:jitsi-meet-sdk:3.7.0') { transitive = true }
+
+    // Jackson
+    implementation "com.fasterxml.jackson.core:jackson-core:2.10.3"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.10.3"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.10.3"
+
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
+}
