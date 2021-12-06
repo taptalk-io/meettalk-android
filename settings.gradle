@@ -12,7 +12,8 @@ dependencyResolutionManagement {
         }
         maven {
             url "https://jitpack.io"
-//            credentials { username authToken } // TODO: SET JITPACK CREDENTIALS
+            credentials { username authToken }
+            credentials { username authTokenKevin }
         }
     }
 }
