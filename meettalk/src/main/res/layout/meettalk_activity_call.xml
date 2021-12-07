@@ -6,6 +6,19 @@
     android:layout_height="match_parent"
     tools:context=".activity.MeetTalkCallActivity">
 
+    <ImageView
+        android:id="@+id/iv_profile_picture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        tools:background="@color/tapColorPrimary" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.2"
+        android:background="@color/tapBlack" />
+
     <TextView
         android:id="@+id/tv_calling_user"
         style="@style/tapNavBarTitleLabelStyle"
@@ -15,20 +28,21 @@
         android:layout_marginTop="60dp"
         android:layout_marginEnd="16dp"
         android:gravity="center"
+        android:textColor="@color/tapWhite"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Calling User" />
 
-    <io.taptalk.TapTalk.Helper.CircleImageView
-        android:id="@+id/civ_avatar"
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:layout_marginTop="48dp"
-        android:src="@drawable/tap_img_default_avatar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_calling_user" />
+<!--    <io.taptalk.TapTalk.Helper.CircleImageView-->
+<!--        android:id="@+id/civ_avatar"-->
+<!--        android:layout_width="160dp"-->
+<!--        android:layout_height="160dp"-->
+<!--        android:layout_marginTop="48dp"-->
+<!--        android:src="@drawable/tap_img_default_avatar"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/tv_calling_user" />-->
 
     <ImageView
         android:id="@+id/iv_button_toggle_audio_mute"
@@ -39,10 +53,10 @@
         android:backgroundTint="@color/tapGrey9b"
         android:padding="8dp"
         android:src="@drawable/tap_ic_mute_grey"
+        android:tint="@color/tapWhite"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/iv_button_cancel_call"
         app:layout_constraintStart_toStartOf="parent"
-        app:tint="@color/tapWhite"
         tools:targetApi="lollipop" />
 
     <ImageView
@@ -54,6 +68,7 @@
         android:backgroundTint="@color/tapButtonDestructiveBackgroundColor"
         android:padding="16dp"
         android:src="@drawable/tap_ic_call_orange"
+        android:tint="@color/tapWhite"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -69,10 +84,10 @@
         android:backgroundTint="@color/tapGrey9b"
         android:padding="16dp"
         android:src="@drawable/tap_ic_video_white_outline"
+        android:tint="@color/tapWhite"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/iv_button_cancel_call"
-        app:tint="@color/tapWhite"
         tools:targetApi="lollipop" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

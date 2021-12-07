@@ -138,7 +138,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     private fun initView() {
         tv_calling_user.text = callInitiatedMessage.room.name
-        Glide.with(this).load(callInitiatedMessage.room.imageURL?.fullsize).into(civ_avatar)
+        Glide.with(this).load(callInitiatedMessage.room.imageURL?.fullsize).into(iv_profile_picture)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (isAudioMuted) {

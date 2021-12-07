@@ -2,10 +2,16 @@
 <resources>
 
     <!--Voice Call-->
-    <string name="tap_enable_voice_call">Izinkan Voice Call</string>
-    <string name="tap_format_enable_phone_account_message">Untuk menerima panggilan dari user lain, harap nyalakan izin untuk Phone Account \"%s\" di halaman pengaturan.</string>
+    <string name="meettalk_enable_voice_call">Izinkan Voice Call</string>
+    <string name="meettalk_format_enable_phone_account_message">Untuk menerima panggilan dari user lain, harap nyalakan izin untuk Phone Account \"%s\" di halaman pengaturan.</string>
+
+    <!--Message Body-->
+    <string name="meettalk_incoming_call">Panggilan Masuk</string>
+    <string name="meettalk_outgoing_call">Panggilan Keluar</string>
+    <string name="meettalk_missed_call">Panggilan Tidak Terjawab</string>
+    <string name="meettalk_cancelled_call">Panggilan Dibatalkan</string>
 
     <!--General-->
-    <string name="tap_dismiss">Tutup</string>
+    <string name="meettalk_dismiss">Tutup</string>
 
 </resources>

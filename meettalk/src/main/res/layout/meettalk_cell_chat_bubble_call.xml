@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cl_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <io.taptalk.TapTalk.Helper.CircleImageView
+        android:id="@+id/civ_avatar"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toStartOf="@id/fl_bubble"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toEndOf="@id/v_margin_left"
+        app:layout_constraintTop_toTopOf="@id/fl_bubble"
+        tools:src="@drawable/tap_bg_circle_9b9b9b" />
+
+    <TextView
+        android:id="@+id/tv_avatar_label"
+        style="@style/tapDefaultRoomAvatarSmallFontStyle"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:textAllCaps="true"
+        app:layout_constraintBottom_toBottomOf="@id/civ_avatar"
+        app:layout_constraintEnd_toEndOf="@id/civ_avatar"
+        app:layout_constraintStart_toStartOf="@id/civ_avatar"
+        app:layout_constraintTop_toTopOf="@id/civ_avatar"
+        tools:text="A" />
+
+    <FrameLayout
+        android:id="@+id/fl_bubble"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="8dp"
+        android:elevation="1dp"
+        app:layout_constrainedWidth="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/v_margin_right"
+        app:layout_constraintStart_toEndOf="@id/civ_avatar"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_goneMarginBottom="8dp"
+        app:layout_goneMarginLeft="16dp"
+        app:layout_goneMarginStart="16dp">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_bubble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
+            android:background="@drawable/tap_bg_chat_bubble_left_default"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/tv_user_name"
+                style="@style/tapLeftBubbleSenderNameStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintBottom_toTopOf="@id/tv_message_body"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="User Name" />
+
+            <TextView
+                android:id="@+id/tv_message_body"
+                style="@style/meetTalkLeftCallBubbleMessageBodyStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintBottom_toTopOf="@id/tv_call_time_duration"
+                app:layout_constraintEnd_toStartOf="@id/iv_button_call"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_user_name"
+                tools:text="Incoming Call" />
+
+            <ImageView
+                android:id="@+id/iv_call_arrow_icon"
+                android:layout_width="21dp"
+                android:layout_height="21dp"
+                android:src="@drawable/meettalk_ic_arrow_bottom_left_green"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/tv_call_time_duration"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_message_body" />
+
+            <TextView
+                android:id="@+id/tv_call_time_duration"
+                style="@style/meetTalkLeftCallBubbleTimestampDurationStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:textColor="@color/tapTransparentBlack1960"
+                app:layout_constrainedWidth="true"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/iv_button_call"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toEndOf="@id/iv_call_arrow_icon"
+                app:layout_constraintTop_toBottomOf="@id/tv_message_body"
+                tools:text="11:39 - 12:23:25" />
+
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/barrier_text_end"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                app:barrierDirection="end"
+                app:constraint_referenced_ids="tv_message_body,tv_call_time_duration" />
+
+            <ImageView
+                android:id="@+id/iv_button_call"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="16dp"
+                android:background="@drawable/tap_bg_circle_primary_icon"
+                android:backgroundTint="@color/meetTalkLeftCallBubblePhoneIconBackgroundColor"
+                android:padding="12dp"
+                android:src="@drawable/tap_ic_call_orange"
+                android:tint="@color/tapWhite"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/barrier_text_end"
+                tools:ignore="UseAppTint" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </FrameLayout>
+
+    <View
+        android:id="@+id/v_margin_left"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/fl_bubble"
+        app:layout_constraintEnd_toStartOf="@id/civ_avatar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/fl_bubble" />
+
+    <View
+        android:id="@+id/v_margin_right"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="@id/fl_bubble"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/fl_bubble"
+        app:layout_constraintTop_toTopOf="@id/fl_bubble" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

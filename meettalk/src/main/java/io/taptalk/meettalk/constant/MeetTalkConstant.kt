@@ -14,7 +14,7 @@ class MeetTalkConstant {
 
     object CallMessageType {
         const val CALL_INITIATED = 8001
-        const val CALL_CANCELED = 8002
+        const val CALL_CANCELLED = 8002
         const val CALL_ENDED = 8003
         const val TARGET_JOINED_CALL = 8004
         const val TARGET_BUSY = 8005

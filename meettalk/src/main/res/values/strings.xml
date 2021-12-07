@@ -3,10 +3,16 @@
     <string name="app_name" translatable="false">MeetTalk</string>
 
     <!--Voice Call-->
-    <string name="tap_enable_voice_call">Enable Voice Call</string>
-    <string name="tap_format_enable_phone_account_message">To receive voice calls from other users, please enable \"%s\" Phone Account in the Settings.</string>
+    <string name="meettalk_enable_voice_call">Enable Voice Call</string>
+    <string name="meettalk_format_enable_phone_account_message">To receive voice calls from other users, please enable \"%s\" Phone Account in the Settings.</string>
+
+    <!--Message Body-->
+    <string name="meettalk_incoming_call">Incoming Call</string>
+    <string name="meettalk_outgoing_call">Outgoing Call</string>
+    <string name="meettalk_missed_call">Missed Call</string>
+    <string name="meettalk_cancelled_call">Cancelled Call</string>
 
     <!--General-->
-    <string name="tap_dismiss">Dismiss</string>
+    <string name="meettalk_dismiss">Dismiss</string>
 
 </resources>

@@ -1,6 +1,5 @@
 package io.taptalk.meettalk.manager
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -24,7 +23,7 @@ import io.taptalk.TapTalk.Model.TAPUserModel
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.activity.MeetTalkCallActivity
 import io.taptalk.meettalk.constant.MeetTalkConstant.BroadcastEvent.ACTIVE_USER_LEAVES_CALL
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_CANCELED
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_CANCELLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_ENDED
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_INITIATED
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.TARGET_BUSY
@@ -105,12 +104,12 @@ class TapCallManager {
                 return
             }
             TapTalkDialog.Builder(activity)
-                .setTitle(activity.getString(R.string.tap_enable_voice_call))
-                .setMessage(String.format(activity.getString(R.string.tap_format_enable_phone_account_message), appName))
+                .setTitle(activity.getString(R.string.meettalk_enable_voice_call))
+                .setMessage(String.format(activity.getString(R.string.meettalk_format_enable_phone_account_message), appName))
                 .setCancelable(false)
                 .setPrimaryButtonTitle(activity.getString(R.string.tap_go_to_settings))
                 .setPrimaryButtonListener { openPhoneAccountSettings() }
-                .setSecondaryButtonTitle(activity.getString(R.string.tap_dismiss))
+                .setSecondaryButtonTitle(activity.getString(R.string.meettalk_dismiss))
                 .show()
             MeetTalkDataManager.getInstance(instanceKey).setEnablePhoneAccountSettingsRequestedAppName(appName)
         }
@@ -224,7 +223,7 @@ class TapCallManager {
                     sendBusyNotification(instanceKey, message.room)
                 }
             }
-            else if ((message.type == CALL_CANCELED && message.user.userID != activeUser.userID) ||
+            else if ((message.type == CALL_CANCELLED && message.user.userID != activeUser.userID) ||
                 (message.type == TARGET_REJECTED_CALL && message.user.userID == activeUser.userID)
             ) {
                 // Caller canceled call or target rejected call elsewhere, dismiss incoming call
@@ -283,7 +282,7 @@ class TapCallManager {
         fun sendCallCanceledNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
             activeCallMessage = null
             activeCallInstanceKey = null
-            return sendCallNotificationMessage(instanceKey, room, "{{user}} canceled call.", CALL_CANCELED)
+            return sendCallNotificationMessage(instanceKey, room, "{{user}} canceled call.", CALL_CANCELLED)
         }
 
         fun sendCallEndedNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--Call Message Bubble-->
+    <color name="meetTalkRightCallBubbleMessageBodyColor">@color/tapWhite</color>
+    <color name="meetTalkLeftCallBubbleMessageBodyColor">@color/tapColorTextDark</color>
+    <color name="meetTalkRightCallBubbleTimestampDurationColor">@color/tapWhite</color>
+    <color name="meetTalkLeftCallBubbleTimestampDurationColor">@color/tapTransparentBlack1960</color>
+    <color name="meetTalkRightCallBubblePhoneIconColor">@color/tapColorPrimaryIcon</color>
+    <color name="meetTalkLeftCallBubblePhoneIconColor">@color/tapColorWhiteIcon</color>
+    <color name="meetTalkRightCallBubblePhoneIconBackgroundColor">@color/tapColorWhiteIcon</color>
+    <color name="meetTalkLeftCallBubblePhoneIconBackgroundColor">@color/tapColorPrimaryIcon</color>
+    <color name="meetTalkIconArrowCallSuccess">@color/tapVibrantGreen</color>
+    <color name="meetTalkIconArrowCallFailure">@color/tapWatermelonRed</color>
+
+</resources>
