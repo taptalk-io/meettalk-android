@@ -1,5 +1,6 @@
 package io.taptalk.meettalk.view
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.facebook.react.bridge.ReadableMap
@@ -10,27 +11,27 @@ import java.lang.Exception
 
 class MeetTalkCallView(context: Context) : JitsiMeetView(context) {
     override fun onDetachedFromWindow() {
-        Log.e(">>>>>", "onDetachedFromWindow: ")
+        Log.e(">>>>> MeetTalkCallView", "onDetachedFromWindow: ")
         super.onDetachedFromWindow()
     }
 
     override fun dispose() {
-        Log.e(">>>>>", "dispose: ")
+        Log.e(">>>>> MeetTalkCallView", "dispose: ")
         super.dispose()
     }
 
     override fun onExternalAPIEvent(name: String?, data: ReadableMap?) {
-        Log.e(">>>>>", "onExternalAPIEvent: $name - ${TAPUtils.toJsonString(data)}")
+        Log.e(">>>>> MeetTalkCallView", "onExternalAPIEvent: $name - ${TAPUtils.toJsonString(data)}")
         super.onExternalAPIEvent(name, data)
     }
 
     override fun onCurrentConferenceChanged(conferenceUrl: String?) {
-        Log.e(">>>>>", "onCurrentConferenceChanged: $conferenceUrl")
+        Log.e(">>>>> MeetTalkCallView", "onCurrentConferenceChanged: $conferenceUrl")
         super.onCurrentConferenceChanged(conferenceUrl)
     }
 
     override fun enterPictureInPicture() {
-        Log.e(">>>>>", "enterPictureInPicture: ")
+        Log.e(">>>>> MeetTalkCallView", "enterPictureInPicture: ")
         try {
             super.enterPictureInPicture()
         } catch (e: Exception) {
@@ -39,22 +40,26 @@ class MeetTalkCallView(context: Context) : JitsiMeetView(context) {
     }
 
     override fun join(options: JitsiMeetConferenceOptions?) {
-        Log.e(">>>>>", "join:")
-//        Log.e(">>>>>", "join serverURL: ${options?.serverURL.toString()}")
-//        Log.e(">>>>>", "join room: ${options?.room}")
-//        Log.e(">>>>>", "join subject: ${options?.subject}")
-//        Log.e(">>>>>", "join token: ${options?.token}")
-//        Log.e(">>>>>", "join audioMuted: ${options?.audioMuted}")
-//        Log.e(">>>>>", "join audioOnly: ${options?.audioOnly}")
-//        Log.e(">>>>>", "join videoMuted: ${options?.videoMuted}")
-//        Log.e(">>>>>", "join colorScheme: ${TAPUtils.toJsonString(options?.colorScheme)}")
-//        Log.e(">>>>>", "join featureFlags: ${TAPUtils.toJsonString(options?.featureFlags)}")
-//        Log.e(">>>>>", "join userInfo: ${TAPUtils.toJsonString(options?.userInfo)}")
+        Log.e(">>>>> MeetTalkCallView", "join:")
+//        Log.e(">>>>> MeetTalkCallView", "join serverURL: ${options?.serverURL.toString()}")
+//        Log.e(">>>>> MeetTalkCallView", "join room: ${options?.room}")
+//        Log.e(">>>>> MeetTalkCallView", "join subject: ${options?.subject}")
+//        Log.e(">>>>> MeetTalkCallView", "join token: ${options?.token}")
+//        Log.e(">>>>> MeetTalkCallView", "join audioMuted: ${options?.audioMuted}")
+//        Log.e(">>>>> MeetTalkCallView", "join audioOnly: ${options?.audioOnly}")
+//        Log.e(">>>>> MeetTalkCallView", "join videoMuted: ${options?.videoMuted}")
+//        Log.e(">>>>> MeetTalkCallView", "join colorScheme: ${TAPUtils.toJsonString(options?.colorScheme)}")
+//        Log.e(">>>>> MeetTalkCallView", "join featureFlags: ${TAPUtils.toJsonString(options?.featureFlags)}")
+//        Log.e(">>>>> MeetTalkCallView", "join userInfo: ${TAPUtils.toJsonString(options?.userInfo)}")
         super.join(options)
     }
 
     override fun leave() {
-        Log.e(">>>>>", "leave: ")
+        Log.e(">>>>> MeetTalkCallView", "leave: ")
         super.leave()
+        if (context is Activity) {
+            Log.e(">>>>> MeetTalkCallView", "(context as Activity).onBackPressed()")
+            (context as Activity).onBackPressed()
+        }
     }
 }

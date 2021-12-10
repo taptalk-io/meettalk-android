@@ -1,9 +1,11 @@
 package io.taptalk.meettalk.activity
 
 import android.app.Activity
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.IntentFilter
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE
+import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.TapTalk.Model.TAPMessageModel
 import io.taptalk.TapTalk.R
@@ -30,6 +33,12 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     private var isAudioMuted = false
     private var isVideoMuted = false
+
+    private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            onBroadcastReceived(intent)
+        }
+    }
 
     companion object {
         fun launch(context: Context, options: JitsiMeetConferenceOptions?, showWaitingScreen: Boolean, callInitiatedMessage: TAPMessageModel) {
@@ -61,6 +70,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         Log.e(">>>>", "TapExtendedJitsiMeetActivity onCreate: ${TapCallManager.activeMeetTalkCallActivity}")
 
         initView()
+        registerForBroadcastMessages()
     }
 
     override fun onResume() {
@@ -87,6 +97,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTIVE_USER_LEAVES_CALL))
 
         TapCallManager.activeMeetTalkCallActivity = null
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
 
         if (isTaskRoot) {
             // Trigger listener callback if no other activity is open
@@ -169,6 +181,61 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         iv_button_cancel_call.setOnClickListener { onBackPressed() }
         iv_button_toggle_audio_mute.setOnClickListener { toggleAudioMute() }
         iv_button_toggle_video_mute.setOnClickListener { toggleVideoMute() }
+    }
+
+    private fun registerForBroadcastMessages() {
+        val intentFilter = IntentFilter()
+        for (type in BroadcastEvent.Type.values()) {
+            intentFilter.addAction(type.action)
+        }
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter)
+    }
+
+    private fun onBroadcastReceived(intent: Intent?) {
+        if (intent != null) {
+            val event = BroadcastEvent(intent)
+            when (event.type) {
+                BroadcastEvent.Type.CONFERENCE_JOINED -> {
+                    Log.e(">>>>", "onBroadcastReceived: CONFERENCE_JOINED ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.CONFERENCE_WILL_JOIN -> {
+                    Log.e(">>>>", "onBroadcastReceived: CONFERENCE_WILL_JOIN ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.CONFERENCE_TERMINATED -> {
+                    Log.e(">>>>", "onBroadcastReceived: CONFERENCE_TERMINATED ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.PARTICIPANT_JOINED -> {
+                    Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_JOINED ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.PARTICIPANT_LEFT -> {
+                    Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_LEFT ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.ENDPOINT_TEXT_MESSAGE_RECEIVED -> {
+                    Log.e(">>>>", "onBroadcastReceived: ENDPOINT_TEXT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.SCREEN_SHARE_TOGGLED -> {
+                    Log.e(">>>>", "onBroadcastReceived: SCREEN_SHARE_TOGGLED ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.PARTICIPANTS_INFO_RETRIEVED -> {
+                    Log.e(">>>>", "onBroadcastReceived: PARTICIPANTS_INFO_RETRIEVED ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.CHAT_MESSAGE_RECEIVED -> {
+                    Log.e(">>>>", "onBroadcastReceived: CHAT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.CHAT_TOGGLED -> {
+                    Log.e(">>>>", "onBroadcastReceived: CHAT_TOGGLED ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.AUDIO_MUTED_CHANGED -> {
+                    Log.e(">>>>", "onBroadcastReceived: AUDIO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
+                }
+                BroadcastEvent.Type.VIDEO_MUTED_CHANGED -> {
+                    Log.e(">>>>", "onBroadcastReceived: VIDEO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
+                }
+                else -> {
+                    Log.e(">>>>", "onBroadcastReceived OTHERS: ${intent.action} ${TAPUtils.toJsonString(intent.data)}")
+                }
+            }
+        }
     }
 
     private fun toggleAudioMute() {

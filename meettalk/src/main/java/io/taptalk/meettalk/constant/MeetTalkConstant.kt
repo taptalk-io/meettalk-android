@@ -27,6 +27,21 @@ class MeetTalkConstant {
         const val ENABLE_PHONE_ACCOUNT_SETTINGS_REQUESTED_APP_NAME = "kMeetTalkEnablePhoneAccountSettingsRequestedAppName"
     }
 
+    object JitsiMeetBroadcastEventType {
+        const val CONFERENCE_JOINED = "org.jitsi.meet.CONFERENCE_JOINED"
+        const val CONFERENCE_TERMINATED = "org.jitsi.meet.CONFERENCE_TERMINATED"
+        const val CONFERENCE_WILL_JOIN = "org.jitsi.meet.CONFERENCE_WILL_JOIN"
+        const val AUDIO_MUTED_CHANGED = "org.jitsi.meet.AUDIO_MUTED_CHANGED"
+        const val PARTICIPANT_JOINED = "org.jitsi.meet.PARTICIPANT_JOINED"
+        const val PARTICIPANT_LEFT = "org.jitsi.meet.PARTICIPANT_LEFT"
+        const val ENDPOINT_TEXT_MESSAGE_RECEIVED = "org.jitsi.meet.ENDPOINT_TEXT_MESSAGE_RECEIVED"
+        const val SCREEN_SHARE_TOGGLED = "org.jitsi.meet.SCREEN_SHARE_TOGGLED"
+        const val PARTICIPANTS_INFO_RETRIEVED = "org.jitsi.meet.PARTICIPANTS_INFO_RETRIEVED"
+        const val CHAT_MESSAGE_RECEIVED = "org.jitsi.meet.CHAT_MESSAGE_RECEIVED"
+        const val CHAT_TOGGLED = "org.jitsi.meet.CHAT_TOGGLED"
+        const val VIDEO_MUTED_CHANGED = "org.jitsi.meet.VIDEO_MUTED_CHANGED"
+    }
+
     /**
      * Use in setFeatureFlag(CONST, VALUE) when building JitsiMeetConferenceOptions
      */

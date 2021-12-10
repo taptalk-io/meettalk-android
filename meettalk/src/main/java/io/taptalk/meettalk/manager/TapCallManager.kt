@@ -20,6 +20,7 @@ import io.taptalk.TapTalk.Manager.TapCoreMessageManager
 import io.taptalk.TapTalk.Model.TAPMessageModel
 import io.taptalk.TapTalk.Model.TAPRoomModel
 import io.taptalk.TapTalk.Model.TAPUserModel
+import io.taptalk.meettalk.BuildConfig
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.activity.MeetTalkCallActivity
 import io.taptalk.meettalk.constant.MeetTalkConstant.BroadcastEvent.ACTIVE_USER_LEAVES_CALL
@@ -58,6 +59,7 @@ import io.taptalk.meettalk.helper.TapCallConnection
 import io.taptalk.meettalk.helper.TapConnectionService
 import org.jitsi.meet.sdk.JitsiMeet
 import org.jitsi.meet.sdk.JitsiMeetConferenceOptions
+import org.jitsi.meet.sdk.JitsiMeetUserInfo
 import java.net.MalformedURLException
 import java.net.URL
 
@@ -91,7 +93,8 @@ class TapCallManager {
                 e.printStackTrace()
                 throw RuntimeException("Invalid server URL!")
             }
-            val defaultOptions: JitsiMeetConferenceOptions = JitsiMeetConferenceOptions.Builder()
+
+            val defaultOptions = JitsiMeetConferenceOptions.Builder()
                 .setServerURL(serverURL)
                 .setWelcomePageEnabled(false)
                 .setFeatureFlag(ADD_PEOPLE_ENABLED, false)
@@ -178,7 +181,9 @@ class TapCallManager {
             TapTalk.appContext.startActivity(intent)
         }
 
-        private fun showIncomingCall(name: String, phoneNumber: String) {
+        private fun showIncomingCall(message: TAPMessageModel) {
+            val name = message.user.fullname
+            val phoneNumber = String.format("0%s", message.user.phone) // TODO: HANDLE COUNTRY CODE IN NUMBER
             Log.e(">>>>", "showIncomingCall: add new incoming call $name $phoneNumber")
             buildAndRegisterPhoneAccount()
 
@@ -199,7 +204,7 @@ class TapCallManager {
                 sendUnableToReceiveCallNotification(activeCallInstanceKey ?: return, activeCallMessage?.room ?: return, "{{user}} has not enabled app's phone account.")
             }
 
-            pendingIncomingCallRoomName = TAPUtils.getFirstWordOfString(name)
+            pendingIncomingCallRoomName = message.room.roomID
             pendingIncomingCallPhoneNumber = phoneNumber
 
             // TODO: START COUNTDOWN TIMER FOR MISSED CALL
@@ -220,7 +225,7 @@ class TapCallManager {
 
         fun initiateNewConferenceCall(activity: Activity, instanceKey: String, room: TAPRoomModel) {
             /*val callInitiatedMessage = */sendCallInitiatedNotification(instanceKey, room)
-            startConferenceCall(activity, TAPUtils.getFirstWordOfString(TapTalk.getTapTalkActiveUser(instanceKey).name), true)
+            startConferenceCall(activity, room.roomID, true)
 //            TapCallWaitingScreenActivity.start(activity, instanceKey, callInitiatedMessage)
         }
 
@@ -232,11 +237,16 @@ class TapCallManager {
         private fun startConferenceCall(context: Context, roomName: String, showWaitingScreen: Boolean) {
             Log.e(">>>>", "startConferenceCall: $roomName")
             callState = CallState.IN_CALL
+            val userInfo = JitsiMeetUserInfo()
+            userInfo.avatar = URL(activeCallMessage?.user?.imageURL?.fullsize ?: "")
+            userInfo.displayName = activeCallMessage?.user?.fullname ?: ""
+            userInfo.email = activeCallMessage?.user?.email ?: ""
             val options: JitsiMeetConferenceOptions = JitsiMeetConferenceOptions.Builder()
                 .setRoom(roomName)
                 .setWelcomePageEnabled(false)
-                .setAudioMuted(false)
+                .setAudioMuted(BuildConfig.DEBUG)
                 .setVideoMuted(true)
+                .setUserInfo(userInfo)
                 .build()
 //            JitsiMeetActivity.launch(context, options)
             MeetTalkCallActivity.launch(context, options, showWaitingScreen, activeCallMessage!!)
@@ -250,11 +260,7 @@ class TapCallManager {
                     Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Show incoming call")
                     activeCallMessage = message
                     activeCallInstanceKey = instanceKey
-                    // TODO: HANDLE COUNTRY CODE IN NUMBER
-                    showIncomingCall(
-                        message.user.name,
-                        String.format("0%s", message.user.phoneNumber)
-                    )
+                    showIncomingCall(message)
                     callState = CallState.RINGING
                 } else {
                     Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Target busy")
