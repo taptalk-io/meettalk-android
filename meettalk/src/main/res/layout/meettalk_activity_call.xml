@@ -34,15 +34,27 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Calling User" />
 
-<!--    <io.taptalk.TapTalk.Helper.CircleImageView-->
-<!--        android:id="@+id/civ_avatar"-->
-<!--        android:layout_width="160dp"-->
-<!--        android:layout_height="160dp"-->
-<!--        android:layout_marginTop="48dp"-->
-<!--        android:src="@drawable/tap_img_default_avatar"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@id/tv_calling_user" />-->
+    <!--    <io.taptalk.TapTalk.Helper.CircleImageView-->
+    <!--        android:id="@+id/civ_avatar"-->
+    <!--        android:layout_width="160dp"-->
+    <!--        android:layout_height="160dp"-->
+    <!--        android:layout_marginTop="48dp"-->
+    <!--        android:src="@drawable/tap_img_default_avatar"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/tv_calling_user" />-->
+
+    <FrameLayout
+        android:id="@+id/fl_meettalk_call_view_container"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@id/iv_button_toggle_audio_mute"
+        app:layout_constraintEnd_toEndOf="@id/tv_calling_user"
+        app:layout_constraintStart_toStartOf="@id/tv_calling_user"
+        app:layout_constraintTop_toBottomOf="@id/tv_calling_user"
+        tools:background="@color/tapGrey9b" />
 
     <ImageView
         android:id="@+id/iv_button_toggle_audio_mute"
@@ -57,6 +69,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/iv_button_cancel_call"
         app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="UseAppTint"
         tools:targetApi="lollipop" />
 
     <ImageView
@@ -73,6 +86,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:tint="@color/tapWhite"
+        tools:ignore="UseAppTint"
         tools:targetApi="lollipop" />
 
     <ImageView
@@ -88,6 +102,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/iv_button_cancel_call"
+        tools:ignore="UseAppTint"
         tools:targetApi="lollipop" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

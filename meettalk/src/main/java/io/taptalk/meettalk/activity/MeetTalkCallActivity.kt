@@ -5,9 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.res.ColorStateList
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
@@ -17,13 +17,15 @@ import io.taptalk.TapTalk.Model.TAPMessageModel
 import io.taptalk.TapTalk.R
 import io.taptalk.meettalk.constant.MeetTalkConstant.BroadcastEvent.ACTIVE_USER_LEAVES_CALL
 import io.taptalk.meettalk.manager.TapCallManager
+import io.taptalk.meettalk.view.MeetTalkCallView
 import kotlinx.android.synthetic.main.meettalk_activity_call.*
 import org.jitsi.meet.sdk.*
-import java.util.HashMap
+import java.util.*
 
 class MeetTalkCallActivity : JitsiMeetActivity() {
 
     lateinit var options: JitsiMeetConferenceOptions
+    lateinit var meetTalkCallView: MeetTalkCallView
     lateinit var callInitiatedMessage: TAPMessageModel
 
     private var isAudioMuted = false
@@ -41,17 +43,14 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             }
             context.startActivity(intent)
         }
-
-//        fun launch(context: Context, url: String?) {
-//            val options = JitsiMeetConferenceOptions.Builder().setRoom(url).build()
-//            launch(context, options)
-//        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContentView(io.taptalk.meettalk.R.layout.meettalk_activity_call)
+//        meetTalkCallView = MeetTalkCallView(this)
+//        setContentView(meetTalkCallView)
 
         callInitiatedMessage = intent.getParcelableExtra(MESSAGE)!!
         options = intent.getParcelableExtra("JitsiMeetConferenceOptions") ?: JitsiMeet.getDefaultConferenceOptions()
@@ -61,10 +60,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         TapCallManager.activeMeetTalkCallActivity = this
         Log.e(">>>>", "TapExtendedJitsiMeetActivity onCreate: ${TapCallManager.activeMeetTalkCallActivity}")
 
-//        if (intent?.getBooleanExtra("showWaitingScreen", false) == true) {
-//            LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(SHOW_WAITING_SCREEN))
-//        }
-
         initView()
     }
 
@@ -72,14 +67,14 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         super.onResume()
         Log.e(">>>>", "TapExtendedJitsiMeetActivity onResume: ")
 
-        JitsiMeetActivityDelegate.onHostResume(this)
+//        JitsiMeetActivityDelegate.onHostResume(this)
     }
 
     override fun onPause() {
         super.onPause()
         Log.e(">>>>", "TapExtendedJitsiMeetActivity onPause: ")
 
-        JitsiMeetActivityDelegate.onHostPause(this)
+//        JitsiMeetActivityDelegate.onHostPause(this)
     }
 
     override fun onDestroy() {
@@ -87,7 +82,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         Log.e(">>>>", "TapExtendedJitsiMeetActivity onDestroy: ${TapCallManager.activeMeetTalkCallActivity}")
 
-        JitsiMeetActivityDelegate.onHostDestroy(this)
+//        JitsiMeetActivityDelegate.onHostDestroy(this)
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTIVE_USER_LEAVES_CALL))
 
@@ -106,13 +101,21 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        overridePendingTransition(R.anim.tap_stay, R.anim.tap_slide_down)
         Log.e(">>>>>", "TapExtendedJitsiMeetActivity onBackPressed: ")
     }
 
     override fun finish() {
         super.finish()
         Log.e(">>>>>", "TapExtendedJitsiMeetActivity finish: ")
+    }
+
+    override fun getJitsiView(): JitsiMeetView {
+//        val fragment = supportFragmentManager.findFragmentById(io.taptalk.meettalk.R.id.fragment_meettalk_call) as MeetTalkCallFragment
+//        return fragment.meetTalkCallView
+        if (!this::meetTalkCallView.isInitialized) {
+            meetTalkCallView = MeetTalkCallView(this)
+        }
+        return meetTalkCallView
     }
 
     override fun onConferenceJoined(extraData: HashMap<String, Any>?) {
@@ -137,24 +140,30 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun initView() {
+        meetTalkCallView.layoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        )
+        fl_meettalk_call_view_container.addView(meetTalkCallView)
+
         tv_calling_user.text = callInitiatedMessage.room.name
         Glide.with(this).load(callInitiatedMessage.room.imageURL?.fullsize).into(iv_profile_picture)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (isAudioMuted) {
-                iv_button_toggle_audio_mute.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
-            } else {
-                iv_button_toggle_audio_mute.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
-            }
-            if (isVideoMuted) {
-                iv_button_toggle_video_mute.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
-            } else {
-                iv_button_toggle_video_mute.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
-            }
+        if (isAudioMuted) {
+            iv_button_toggle_audio_mute.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
+        }
+        else {
+            iv_button_toggle_audio_mute.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
+        }
+        if (isVideoMuted) {
+            iv_button_toggle_video_mute.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
+        }
+        else {
+            iv_button_toggle_video_mute.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
         }
 
         iv_button_cancel_call.setOnClickListener { onBackPressed() }
@@ -164,14 +173,13 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     private fun toggleAudioMute() {
         isAudioMuted = !isAudioMuted
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (isAudioMuted) {
-                iv_button_toggle_audio_mute.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
-            } else {
-                iv_button_toggle_audio_mute.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
-            }
+        if (isAudioMuted) {
+            iv_button_toggle_audio_mute.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
+        }
+        else {
+            iv_button_toggle_audio_mute.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
         }
         val muteBroadcastIntent = BroadcastIntentHelper.buildSetAudioMutedIntent(isAudioMuted)
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(muteBroadcastIntent)
@@ -179,14 +187,13 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     private fun toggleVideoMute() {
         isVideoMuted = !isVideoMuted
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (isVideoMuted) {
-                iv_button_toggle_video_mute.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
-            } else {
-                iv_button_toggle_video_mute.backgroundTintList =
-                    ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
-            }
+        if (isVideoMuted) {
+            iv_button_toggle_video_mute.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
+        }
+        else {
+            iv_button_toggle_video_mute.backgroundTintList =
+                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
         }
         val muteBroadcastIntent = BroadcastIntentHelper.buildSetVideoMutedIntent(isVideoMuted)
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(muteBroadcastIntent)

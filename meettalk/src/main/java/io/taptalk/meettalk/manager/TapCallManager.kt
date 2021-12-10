@@ -33,6 +33,27 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.TARGET_REJE
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.TARGET_UNABLE_TO_RECEIVE_CALL
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CALLER_NAME
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CALLER_NUMBER
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.ADD_PEOPLE_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.AUDIO_MUTE_BUTTON_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.CALL_INTEGRATION_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.CHAT_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.FILMSTRIP_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.HELP_BUTTON_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.INVITE_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.KICK_OUT_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.LOBBY_MODE_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.MEETING_NAME_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.MEETING_PASSWORD_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.NOTIFICATIONS_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.OVERFLOW_MENU_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.RAISE_HAND_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.REACTIONS_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.RECORDING_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.SECURITY_OPTIONS_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.TILE_VIEW_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.TOOLBOX_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_MUTE_BUTTON_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_SHARE_BUTTON_ENABLED
 import io.taptalk.meettalk.helper.TapCallConnection
 import io.taptalk.meettalk.helper.TapConnectionService
 import org.jitsi.meet.sdk.JitsiMeet
@@ -73,6 +94,27 @@ class TapCallManager {
             val defaultOptions: JitsiMeetConferenceOptions = JitsiMeetConferenceOptions.Builder()
                 .setServerURL(serverURL)
                 .setWelcomePageEnabled(false)
+                .setFeatureFlag(ADD_PEOPLE_ENABLED, false)
+                .setFeatureFlag(AUDIO_MUTE_BUTTON_ENABLED, false)
+                .setFeatureFlag(CALL_INTEGRATION_ENABLED, false)
+                .setFeatureFlag(CHAT_ENABLED, false)
+                .setFeatureFlag(FILMSTRIP_ENABLED, false)
+                .setFeatureFlag(HELP_BUTTON_ENABLED, false)
+                .setFeatureFlag(INVITE_ENABLED, false)
+                .setFeatureFlag(KICK_OUT_ENABLED, false)
+                .setFeatureFlag(LOBBY_MODE_ENABLED, false)
+                .setFeatureFlag(MEETING_NAME_ENABLED, false)
+                .setFeatureFlag(MEETING_PASSWORD_ENABLED, false)
+                .setFeatureFlag(NOTIFICATIONS_ENABLED, false)
+                .setFeatureFlag(OVERFLOW_MENU_ENABLED, false)
+                .setFeatureFlag(RAISE_HAND_ENABLED, false)
+                .setFeatureFlag(REACTIONS_ENABLED, false)
+                .setFeatureFlag(RECORDING_ENABLED, false)
+                .setFeatureFlag(SECURITY_OPTIONS_ENABLED, false)
+                .setFeatureFlag(TILE_VIEW_ENABLED, false)
+                .setFeatureFlag(TOOLBOX_ENABLED, false)
+                .setFeatureFlag(VIDEO_MUTE_BUTTON_ENABLED, false)
+                .setFeatureFlag(VIDEO_SHARE_BUTTON_ENABLED, false)
                 .build()
             JitsiMeet.setDefaultConferenceOptions(defaultOptions)
 
@@ -89,12 +131,8 @@ class TapCallManager {
                         sendCallEndedNotification(activeCallInstanceKey ?: return, activeCallMessage?.room ?: return)
                         callState = CallState.IDLE
                     }
-//                    if (intent?.action == SHOW_WAITING_SCREEN) {
-//                        Log.e(">>>>", "onReceive SHOW_WAITING_SCREEN")
-//                        TapCallWaitingScreenActivity.start(activeMeetTalkCallActivity ?: return, activeCallInstanceKey ?: return, activeCallMessage ?: return)
-//                    }
                 }
-            }, ACTIVE_USER_LEAVES_CALL/*, ACTIVE_USER_CANCELS_CALL, SHOW_WAITING_SCREEN*/)
+            }, ACTIVE_USER_LEAVES_CALL/*, ACTIVE_USER_CANCELS_CALL*/)
         }
 
         fun checkAndRequestEnablePhoneAccountSettings(instanceKey: String, activity: Activity) {
