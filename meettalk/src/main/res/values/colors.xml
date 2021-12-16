@@ -13,4 +13,12 @@
     <color name="meetTalkIconArrowCallSuccess">@color/tapVibrantGreen</color>
     <color name="meetTalkIconArrowCallFailure">@color/tapWatermelonRed</color>
 
+    <!--Call Screen-->
+    <color name="meetTalkCallScreenTitleLabelColor">@color/tapWhite</color>
+    <color name="meetTalkCallScreenDurationStatusLabelColor">@color/tapWhite</color>
+    <color name="meetTalkCallScreenActiveButtonBackgroundColor">#8cffffff</color>
+    <color name="meetTalkCallScreenInactiveButtonBackgroundColor">#4dffffff</color>
+    <color name="meetTalkCallScreenDestructiveButtonBackgroundColor">#e02e2e</color>
+    <color name="meetTalkCallScreenButtonContainerBackgroundColor">#8c191919</color>
+
 </resources>

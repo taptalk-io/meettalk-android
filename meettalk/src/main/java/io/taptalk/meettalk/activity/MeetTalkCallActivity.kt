@@ -17,7 +17,7 @@ import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.TapTalk.Model.TAPMessageModel
-import io.taptalk.TapTalk.R
+import io.taptalk.meettalk.R
 import io.taptalk.meettalk.constant.MeetTalkConstant.BroadcastEvent.ACTIVE_USER_LEAVES_CALL
 import io.taptalk.meettalk.manager.TapCallManager
 import io.taptalk.meettalk.view.MeetTalkCallView
@@ -33,6 +33,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     private var isAudioMuted = false
     private var isVideoMuted = false
+    private var callStartTimestamp = 0L
 
     private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -161,26 +162,13 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         tv_calling_user.text = callInitiatedMessage.room.name
         Glide.with(this).load(callInitiatedMessage.room.imageURL?.fullsize).into(iv_profile_picture)
 
-        if (isAudioMuted) {
-            iv_button_toggle_audio_mute.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
-        }
-        else {
-            iv_button_toggle_audio_mute.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
-        }
-        if (isVideoMuted) {
-            iv_button_toggle_video_mute.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
-        }
-        else {
-            iv_button_toggle_video_mute.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
-        }
+        showAudioButtonMuted(isAudioMuted)
+        showVideoButtonMuted(isVideoMuted)
 
         iv_button_cancel_call.setOnClickListener { onBackPressed() }
         iv_button_toggle_audio_mute.setOnClickListener { toggleAudioMute() }
         iv_button_toggle_video_mute.setOnClickListener { toggleVideoMute() }
+        iv_button_flip_camera.setOnClickListener { flipCamera() }
     }
 
     private fun registerForBroadcastMessages() {
@@ -240,29 +228,41 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     private fun toggleAudioMute() {
         isAudioMuted = !isAudioMuted
-        if (isAudioMuted) {
-            iv_button_toggle_audio_mute.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
-        }
-        else {
-            iv_button_toggle_audio_mute.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
-        }
+        showAudioButtonMuted(isAudioMuted)
         val muteBroadcastIntent = BroadcastIntentHelper.buildSetAudioMutedIntent(isAudioMuted)
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(muteBroadcastIntent)
     }
 
-    private fun toggleVideoMute() {
-        isVideoMuted = !isVideoMuted
-        if (isVideoMuted) {
-            iv_button_toggle_video_mute.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapGrey9b))
+    private fun showAudioButtonMuted(isMuted: Boolean) {
+        if (isMuted) {
+            iv_button_toggle_audio_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_mic_off_white))
+            iv_button_toggle_audio_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenInactiveButtonBackgroundColor))
         }
         else {
-            iv_button_toggle_video_mute.backgroundTintList =
-                ColorStateList.valueOf(ContextCompat.getColor(this, R.color.tapColorPrimary))
+            iv_button_toggle_audio_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_mic_white))
+            iv_button_toggle_audio_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenActiveButtonBackgroundColor))
         }
+    }
+
+    private fun toggleVideoMute() {
+        isVideoMuted = !isVideoMuted
+        showVideoButtonMuted(isVideoMuted)
         val muteBroadcastIntent = BroadcastIntentHelper.buildSetVideoMutedIntent(isVideoMuted)
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(muteBroadcastIntent)
+    }
+
+    private fun showVideoButtonMuted(isMuted: Boolean) {
+        if (isMuted) {
+            iv_button_toggle_video_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_video_camera_off_white))
+            iv_button_toggle_video_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenInactiveButtonBackgroundColor))
+        }
+        else {
+            iv_button_toggle_video_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_video_camera_white))
+            iv_button_toggle_video_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenActiveButtonBackgroundColor))
+        }
+    }
+
+    private fun flipCamera() {
+        // TODO:
     }
 }
