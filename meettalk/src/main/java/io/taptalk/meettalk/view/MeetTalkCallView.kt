@@ -21,7 +21,7 @@ class MeetTalkCallView(context: Context) : JitsiMeetView(context) {
     }
 
     override fun onExternalAPIEvent(name: String?, data: ReadableMap?) {
-        Log.e(">>>>> MeetTalkCallView", "onExternalAPIEvent: $name - ${TAPUtils.toJsonString(data)}")
+//        Log.e(">>>>> MeetTalkCallView", "onExternalAPIEvent: $name - ${TAPUtils.toJsonString(data)}")
         super.onExternalAPIEvent(name, data)
     }
 

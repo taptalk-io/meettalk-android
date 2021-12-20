@@ -19,6 +19,7 @@ import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.TapTalk.Model.TAPMessageModel
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.constant.MeetTalkConstant.BroadcastEvent.ACTIVE_USER_LEAVES_CALL
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetBroadcastEventType.RETRIEVE_PARTICIPANTS_INFO
 import io.taptalk.meettalk.manager.TapCallManager
 import io.taptalk.meettalk.view.MeetTalkCallView
 import kotlinx.android.synthetic.main.meettalk_activity_call.*
@@ -54,6 +55,12 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             context.startActivity(intent)
         }
     }
+
+    /**
+     * ==========================================================================================
+     * LIFECYCLE
+     * ==========================================================================================
+     */
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,6 +129,12 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         Log.e(">>>>>", "TapExtendedJitsiMeetActivity finish: ")
     }
 
+    /**
+     * ==========================================================================================
+     * JITSI MEET ACTIVITY OVERRIDE
+     * ==========================================================================================
+     */
+
     override fun getJitsiView(): JitsiMeetView {
 //        val fragment = supportFragmentManager.findFragmentById(io.taptalk.meettalk.R.id.fragment_meettalk_call) as MeetTalkCallFragment
 //        return fragment.meetTalkCallView
@@ -131,26 +144,40 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         return meetTalkCallView
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        Log.e(">>>>", "MeetTalkCallActivity onNewIntent: ${TAPUtils.toJsonString(intent?.data)}")
+    }
+
+    override fun onConferenceWillJoin(extraData: HashMap<String, Any>?) {
+        super.onConferenceWillJoin(extraData)
+        Log.e(">>>>", "MeetTalkCallActivity onConferenceWillJoin: ${TAPUtils.toJsonString(extraData)}")
+    }
+
     override fun onConferenceJoined(extraData: HashMap<String, Any>?) {
-        super.onConferenceJoined(extraData)
-
-//        TapCallManager.activeJitsiMeetActivity = this
-        Log.e(">>>>", "TapExtendedJitsiMeetActivity onConferenceJoined: ")
-
-//        if (intent?.getBooleanExtra("showWaitingScreen", false) == true) {
-//            LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(SHOW_WAITING_SCREEN))
-//        }
+        Log.e(">>>>", "MeetTalkCallActivity onConferenceJoined: ${TAPUtils.toJsonString(extraData)}")
     }
 
     override fun onConferenceTerminated(extraData: HashMap<String, Any>?) {
         super.onConferenceTerminated(extraData)
-
-        Log.e(">>>>", "TapExtendedJitsiMeetActivity onConferenceTerminated: ")
-
-//        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTIVE_USER_LEAVES_CALL))
-//
-//        TapCallManager.activeJitsiMeetActivity = null
+        Log.e(">>>>", "MeetTalkCallActivity onConferenceTerminated: ${TAPUtils.toJsonString(extraData)}")
     }
+
+    override fun onParticipantJoined(extraData: HashMap<String, Any>?) {
+        super.onParticipantJoined(extraData)
+        Log.e(">>>>", "MeetTalkCallActivity onParticipantJoined: ${TAPUtils.toJsonString(extraData)}")
+    }
+
+    override fun onParticipantLeft(extraData: HashMap<String, Any>?) {
+        super.onParticipantLeft(extraData)
+        Log.e(">>>>", "MeetTalkCallActivity onParticipantLeft: ${TAPUtils.toJsonString(extraData)}")
+    }
+
+    /**
+     * ==========================================================================================
+     * CUSTOM METHODS
+     * ==========================================================================================
+     */
 
     private fun initView() {
         meetTalkCallView.layoutParams = FrameLayout.LayoutParams(
@@ -180,50 +207,58 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun onBroadcastReceived(intent: Intent?) {
-        if (intent != null) {
-            val event = BroadcastEvent(intent)
-            when (event.type) {
-                BroadcastEvent.Type.CONFERENCE_JOINED -> {
-                    Log.e(">>>>", "onBroadcastReceived: CONFERENCE_JOINED ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.CONFERENCE_WILL_JOIN -> {
-                    Log.e(">>>>", "onBroadcastReceived: CONFERENCE_WILL_JOIN ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.CONFERENCE_TERMINATED -> {
-                    Log.e(">>>>", "onBroadcastReceived: CONFERENCE_TERMINATED ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.PARTICIPANT_JOINED -> {
-                    Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_JOINED ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.PARTICIPANT_LEFT -> {
-                    Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_LEFT ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.ENDPOINT_TEXT_MESSAGE_RECEIVED -> {
-                    Log.e(">>>>", "onBroadcastReceived: ENDPOINT_TEXT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.SCREEN_SHARE_TOGGLED -> {
-                    Log.e(">>>>", "onBroadcastReceived: SCREEN_SHARE_TOGGLED ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.PARTICIPANTS_INFO_RETRIEVED -> {
-                    Log.e(">>>>", "onBroadcastReceived: PARTICIPANTS_INFO_RETRIEVED ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.CHAT_MESSAGE_RECEIVED -> {
-                    Log.e(">>>>", "onBroadcastReceived: CHAT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.CHAT_TOGGLED -> {
-                    Log.e(">>>>", "onBroadcastReceived: CHAT_TOGGLED ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.AUDIO_MUTED_CHANGED -> {
-                    Log.e(">>>>", "onBroadcastReceived: AUDIO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
-                }
-                BroadcastEvent.Type.VIDEO_MUTED_CHANGED -> {
-                    Log.e(">>>>", "onBroadcastReceived: VIDEO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
-                }
-                else -> {
-                    Log.e(">>>>", "onBroadcastReceived OTHERS: ${intent.action} ${TAPUtils.toJsonString(intent.data)}")
-                }
+        if (intent == null) {
+            return
+        }
+        val event = BroadcastEvent(intent)
+        when (event.type) {
+            BroadcastEvent.Type.CONFERENCE_JOINED -> {
+                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_JOINED ${TAPUtils.toJsonString(event.data)}")
+                retrieveParticipantsInfo()
+            }
+            BroadcastEvent.Type.CONFERENCE_WILL_JOIN -> {
+                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_WILL_JOIN ${TAPUtils.toJsonString(event.data)}")
+            }
+            BroadcastEvent.Type.CONFERENCE_TERMINATED -> {
+                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_TERMINATED ${TAPUtils.toJsonString(event.data)}")
+            }
+            BroadcastEvent.Type.PARTICIPANT_JOINED -> {
+                Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_JOINED ${TAPUtils.toJsonString(event.data)}")
+            }
+            BroadcastEvent.Type.PARTICIPANT_LEFT -> {
+                Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_LEFT ${TAPUtils.toJsonString(event.data)}")
+            }
+            BroadcastEvent.Type.ENDPOINT_TEXT_MESSAGE_RECEIVED -> {
+                Log.e(">>>>", "onBroadcastReceived: ENDPOINT_TEXT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
+            }
+            BroadcastEvent.Type.SCREEN_SHARE_TOGGLED -> {
+                Log.e(">>>>", "onBroadcastReceived: SCREEN_SHARE_TOGGLED ${TAPUtils.toJsonString(event.data)}")
+            }
+            BroadcastEvent.Type.PARTICIPANTS_INFO_RETRIEVED -> {
+                Log.e(">>>>", "onBroadcastReceived: PARTICIPANTS_INFO_RETRIEVED ${TAPUtils.toJsonString(event.data)}")
+            }
+            BroadcastEvent.Type.CHAT_MESSAGE_RECEIVED -> {
+                Log.e(">>>>", "onBroadcastReceived: CHAT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
+            }
+            BroadcastEvent.Type.CHAT_TOGGLED -> {
+                Log.e(">>>>", "onBroadcastReceived: CHAT_TOGGLED ${TAPUtils.toJsonString(event.data)}")
+            }
+            BroadcastEvent.Type.AUDIO_MUTED_CHANGED -> {
+                Log.e(">>>>", "onBroadcastReceived: AUDIO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
+            }
+            BroadcastEvent.Type.VIDEO_MUTED_CHANGED -> {
+                Log.e(">>>>", "onBroadcastReceived: VIDEO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
+            }
+            else -> {
+                Log.e(">>>>", "onBroadcastReceived OTHERS: ${intent.action} ${TAPUtils.toJsonString(intent.data)}")
             }
         }
+    }
+
+    private fun retrieveParticipantsInfo() {
+        val retrieveParticipantIntent = Intent(RETRIEVE_PARTICIPANTS_INFO)
+        retrieveParticipantIntent.putExtra("requestId ", System.currentTimeMillis().toString())
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(retrieveParticipantIntent)
     }
 
     private fun toggleAudioMute() {

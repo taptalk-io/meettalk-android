@@ -36,6 +36,7 @@ class MeetTalkConstant {
         const val PARTICIPANT_LEFT = "org.jitsi.meet.PARTICIPANT_LEFT"
         const val ENDPOINT_TEXT_MESSAGE_RECEIVED = "org.jitsi.meet.ENDPOINT_TEXT_MESSAGE_RECEIVED"
         const val SCREEN_SHARE_TOGGLED = "org.jitsi.meet.SCREEN_SHARE_TOGGLED"
+        const val RETRIEVE_PARTICIPANTS_INFO = "org.jitsi.meet.RETRIEVE_PARTICIPANTS_INFO"
         const val PARTICIPANTS_INFO_RETRIEVED = "org.jitsi.meet.PARTICIPANTS_INFO_RETRIEVED"
         const val CHAT_MESSAGE_RECEIVED = "org.jitsi.meet.CHAT_MESSAGE_RECEIVED"
         const val CHAT_TOGGLED = "org.jitsi.meet.CHAT_TOGGLED"

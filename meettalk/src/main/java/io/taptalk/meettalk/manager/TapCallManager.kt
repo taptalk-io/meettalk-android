@@ -75,13 +75,13 @@ class TapCallManager {
 
         var callState = CallState.IDLE
         var activeMeetTalkCallActivity: MeetTalkCallActivity? = null
-//        var activeWaitingScreenActivity: TapCallWaitingScreenActivity? = null
 
         private val appName = TapTalk.appContext.getString(R.string.app_name)
         private val telecomManager = TapTalk.appContext.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
         private val phoneAccountHandle = PhoneAccountHandle(ComponentName(TapTalk.appContext, TapConnectionService::class.java), appName)
         private var activeCallMessage: TAPMessageModel? = null
         private var activeCallInstanceKey: String? = null
+        private var activeRingMessageID: String? = null
         private var pendingIncomingCallRoomName: String? = null
         private var pendingIncomingCallPhoneNumber: String? = null
 
@@ -198,6 +198,7 @@ class TapCallManager {
             extras.putString(CALLER_NUMBER, phoneNumber)
             try {
                 telecomManager.addNewIncomingCall(phoneAccountHandle, extras)
+                activeRingMessageID = message.messageID
             } catch (e: SecurityException) {
                 e.printStackTrace()
                 // This PhoneAccountHandle is not enabled for this user
@@ -214,6 +215,12 @@ class TapCallManager {
             callState = CallState.IDLE
             pendingIncomingCallRoomName = null
             pendingIncomingCallPhoneNumber = null
+            activeRingMessageID = null
+        }
+
+        fun rejectPendingIncomingConferenceCall() {
+            sendRejectedCallNotification(activeCallInstanceKey ?: return, activeCallMessage?.room ?: return)
+            clearPendingIncomingCall()
         }
 
         fun joinPendingIncomingConferenceCall() {
@@ -221,17 +228,13 @@ class TapCallManager {
             startConferenceCall(TapTalk.appContext, pendingIncomingCallRoomName ?: return, false)
             pendingIncomingCallRoomName = null
             pendingIncomingCallPhoneNumber = null
+            activeRingMessageID = null
         }
 
         fun initiateNewConferenceCall(activity: Activity, instanceKey: String, room: TAPRoomModel) {
             /*val callInitiatedMessage = */sendCallInitiatedNotification(instanceKey, room)
             startConferenceCall(activity, room.roomID, true)
 //            TapCallWaitingScreenActivity.start(activity, instanceKey, callInitiatedMessage)
-        }
-
-        fun rejectPendingIncomingConferenceCall() {
-            sendRejectedCallNotification(activeCallInstanceKey ?: return, activeCallMessage?.room ?: return)
-            clearPendingIncomingCall()
         }
 
         private fun startConferenceCall(context: Context, roomName: String, showWaitingScreen: Boolean) {
@@ -262,7 +265,8 @@ class TapCallManager {
                     activeCallInstanceKey = instanceKey
                     showIncomingCall(message)
                     callState = CallState.RINGING
-                } else {
+                } else if (activeRingMessageID != message.messageID) {
+                    // Send busy notification when a different call is received
                     Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Target busy")
                     sendBusyNotification(instanceKey, message.room)
                 }
