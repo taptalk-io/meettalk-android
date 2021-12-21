@@ -11,6 +11,10 @@
     <string name="meettalk_missed_call">Panggilan Tidak Terjawab</string>
     <string name="meettalk_cancelled_call">Panggilan Dibatalkan</string>
 
+    <!--Connection-->
+    <string name="meettalk_connecting">Menghubungkan…</string>
+    <string name="meettalk_format_waiting_for_user">Menunggu %s…</string>
+
     <!--General-->
     <string name="meettalk_dismiss">Tutup</string>
 

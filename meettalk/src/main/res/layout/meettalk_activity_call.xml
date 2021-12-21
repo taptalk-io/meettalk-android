@@ -21,126 +21,154 @@
         android:id="@+id/fl_meettalk_call_view_container"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:alpha="0"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
+        android:id="@+id/v_background_gradient"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0.25"
         android:background="@drawable/tap_bg_charcoal_gradient_270" />
 
-    <TextView
-        android:id="@+id/tv_calling_user"
-        style="@style/meetTalkCallScreenTitleLabelStyle"
+    <View
+        android:id="@+id/v_background_solid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.2"
+        android:background="@color/tapBlack19" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_label_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="80dp"
         android:layout_marginEnd="16dp"
-        android:gravity="center"
-        android:textColor="@color/tapWhite"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Calling User" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/tv_call_duration_status"
-        style="@style/meetTalkCallScreenDurationStatusLabelStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:gravity="center"
-        android:textColor="@color/tapWhite"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_calling_user"
-        android:text="@string/tap_connecting" />
+        <TextView
+            android:id="@+id/tv_calling_user"
+            style="@style/meetTalkCallScreenTitleLabelStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/tapWhite"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Calling User" />
+
+        <TextView
+            android:id="@+id/tv_call_duration_status"
+            style="@style/meetTalkCallScreenDurationStatusLabelStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/meettalk_connecting"
+            android:textColor="@color/tapWhite"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_calling_user" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/cl_call_screen_button_container"
+        android:id="@+id/cl_button_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/meettalk_bg_call_screen_button_container"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <View
+            android:id="@+id/v_button_container_background"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:alpha="0"
+            android:background="@drawable/meettalk_bg_call_screen_button_container"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/iv_button_flip_camera"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginBottom="24dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:layout_marginTop="24dp"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="80dp"
             android:background="@drawable/tap_bg_circle_9b9b9b"
             android:backgroundTint="@color/meetTalkCallScreenActiveButtonBackgroundColor"
-            android:padding="10dp"
+            android:padding="16dp"
             android:src="@drawable/meettalk_ic_flip_camera_white"
             android:tint="@color/tapWhite"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/iv_button_toggle_video_mute"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseAppTint"
             tools:targetApi="lollipop" />
 
         <ImageView
             android:id="@+id/iv_button_toggle_video_mute"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginBottom="24dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:layout_marginTop="24dp"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="80dp"
             android:background="@drawable/tap_bg_circle_9b9b9b"
             android:backgroundTint="@color/meetTalkCallScreenActiveButtonBackgroundColor"
-            android:padding="10dp"
+            android:padding="16dp"
             android:src="@drawable/tap_ic_video_white_outline"
             android:tint="@color/tapWhite"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/iv_button_toggle_audio_mute"
             app:layout_constraintStart_toEndOf="@id/iv_button_flip_camera"
+            app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseAppTint"
             tools:targetApi="lollipop" />
 
         <ImageView
             android:id="@+id/iv_button_toggle_audio_mute"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginBottom="24dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:layout_marginTop="24dp"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="80dp"
             android:background="@drawable/tap_bg_circle_9b9b9b"
             android:backgroundTint="@color/meetTalkCallScreenActiveButtonBackgroundColor"
-            android:padding="10dp"
+            android:padding="16dp"
             android:src="@drawable/meettalk_ic_mic_white"
             android:tint="@color/tapWhite"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/iv_button_cancel_call"
             app:layout_constraintStart_toEndOf="@id/iv_button_toggle_video_mute"
+            app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseAppTint"
             tools:targetApi="lollipop" />
 
         <ImageView
             android:id="@+id/iv_button_cancel_call"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginBottom="24dp"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:layout_marginTop="24dp"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginBottom="80dp"
             android:background="@drawable/tap_bg_circle_9b9b9b"
             android:backgroundTint="@color/tapButtonDestructiveBackgroundColor"
-            android:padding="10dp"
-            android:src="@drawable/tap_ic_call_orange"
+            android:padding="16dp"
+            android:src="@drawable/meettalk_ic_hang_up_white"
             android:tint="@color/tapWhite"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/iv_button_toggle_audio_mute"
+            app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/tapWhite"
             tools:ignore="UseAppTint"
             tools:targetApi="lollipop" />

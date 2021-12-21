@@ -20,11 +20,11 @@ import io.taptalk.TapTalk.Model.TAPMessageModel
 import io.taptalk.TapTalk.View.Adapter.TAPBaseChatViewHolder
 import io.taptalk.meettalk.BuildConfig
 import io.taptalk.meettalk.R
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_CANCELLED
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_ENDED
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.TARGET_BUSY
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.TARGET_MISSED_CALL
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.TARGET_REJECTED_CALL
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_CANCELLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_ENDED
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_BUSY
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_MISSED_CALL
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_REJECTED_CALL
 
 class MeetTalkCallChatBubbleViewHolder internal constructor(
         parent: ViewGroup,
@@ -33,6 +33,7 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
         private val listener: MeetTalkCallChatBubbleListener) :
     TAPBaseChatViewHolder(parent, itemLayoutId) {
 
+    private val clContainer: ConstraintLayout = itemView.findViewById(R.id.cl_container)
     private val clBubble: ConstraintLayout = itemView.findViewById(R.id.cl_bubble)
     private val flBubble: FrameLayout = itemView.findViewById(R.id.fl_bubble)
     private val civAvatar: CircleImageView = itemView.findViewById(R.id.civ_avatar)
@@ -55,6 +56,19 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
         if (null == item) {
             return
         }
+
+        if (item.action != CALL_ENDED &&
+            item.action != CALL_CANCELLED &&
+            item.action != TARGET_BUSY &&
+            item.action != TARGET_REJECTED_CALL &&
+            item.action != TARGET_MISSED_CALL
+        ) {
+            clContainer.visibility = View.GONE
+            return
+        }
+
+        clContainer.visibility = View.VISIBLE
+
         if (isMessageFromMySelf(item)) {
             // Message from active user
             clBubble.background = ContextCompat.getDrawable(itemView.context, R.drawable.tap_bg_chat_bubble_right_default)
@@ -124,7 +138,7 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
             }
         }
 
-        when (item.type) {
+        when (item.action) {
             CALL_ENDED -> {
                 // Call successfully ended
                 if (isMessageFromMySelf(item)) {

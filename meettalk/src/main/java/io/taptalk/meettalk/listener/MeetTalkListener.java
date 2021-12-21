@@ -1,5 +1,7 @@
 package io.taptalk.meettalk.listener;
 
+import static io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_MESSAGE_TYPE;
+
 import android.app.Activity;
 
 import androidx.annotation.Keep;
@@ -34,7 +36,9 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
 
     @Override
     public void onNotificationReceived(TAPMessageModel message) {
-        TapTalk.showTapTalkNotification(instanceKey, message);
+        if (message.getType() != CALL_MESSAGE_TYPE) {
+            TapTalk.showTapTalkNotification(instanceKey, message);
+        }
     }
 
     @Override

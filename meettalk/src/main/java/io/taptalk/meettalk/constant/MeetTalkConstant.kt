@@ -10,17 +10,29 @@ class MeetTalkConstant {
     object Extra {
         const val CALLER_NAME = "kMeetTalkExtraCallerName"
         const val CALLER_NUMBER = "kMeetTalkExtraCallerNumber"
+        const val CONFERENCE_INFO = "kMeetTalkExtraConferenceInfo"
     }
 
     object CallMessageType {
-        const val CALL_INITIATED = 8001
-        const val CALL_CANCELLED = 8002
-        const val CALL_ENDED = 8003
-        const val TARGET_JOINED_CALL = 8004
-        const val TARGET_BUSY = 8005
-        const val TARGET_REJECTED_CALL = 8006
-        const val TARGET_MISSED_CALL = 8007
-        const val TARGET_UNABLE_TO_RECEIVE_CALL = 8008
+        const val CALL_MESSAGE_TYPE = 8001
+    }
+
+    object CallMessageAction {
+        const val CALL_INITIATED = "call/initiate"
+        const val CALL_CANCELLED = "call/cancel"
+        const val CALL_ENDED = "call/end"
+        const val TARGET_JOINED_CALL = "call/join"
+        const val TARGET_BUSY = "call/busy"
+        const val TARGET_REJECTED_CALL = "call/reject"
+        const val TARGET_MISSED_CALL = "call/timeout"
+        const val TARGET_UNABLE_TO_RECEIVE_CALL = "call/unable"
+        const val CONFERENCE_INFO = "call/info"
+    }
+
+    object ParticipantRole {
+        const val HOST = "host"
+        const val MODERATOR = "moderator"
+        const val PARTICIPANT = "participant"
     }
 
     object Preference {

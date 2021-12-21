@@ -12,6 +12,10 @@
     <string name="meettalk_missed_call">Missed Call</string>
     <string name="meettalk_cancelled_call">Cancelled Call</string>
 
+    <!--Connection-->
+    <string name="meettalk_connecting">Connecting…</string>
+    <string name="meettalk_format_waiting_for_user">Waiting for %s…</string>
+
     <!--General-->
     <string name="meettalk_dismiss">Dismiss</string>
 
