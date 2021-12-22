@@ -28,6 +28,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_CANC
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_ENDED
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_INITIATED
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CONFERENCE_INFO
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_ANSWERED_CALL
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_BUSY
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_JOINED_CALL
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_MISSED_CALL
@@ -59,6 +60,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_MUTE_BU
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_SHARE_BUTTON_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.HOST
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
+import io.taptalk.meettalk.constant.MeetTalkConstant.Url.MEET_URL
 import io.taptalk.meettalk.helper.MeetTalkCallConnection
 import io.taptalk.meettalk.helper.MeetTalkConnectionService
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
@@ -81,6 +83,7 @@ class MeetTalkCallManager {
 
         var callState = CallState.IDLE
         var activeMeetTalkCallActivity: MeetTalkCallActivity? = null
+        var activeConferenceInfo: MeetTalkConferenceInfo? = null
 
         private val appName = TapTalk.appContext.getString(R.string.app_name)
         private val telecomManager = TapTalk.appContext.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
@@ -88,7 +91,6 @@ class MeetTalkCallManager {
         private val defaultAudioMuted = BuildConfig.DEBUG
         private const val defaultVideoMuted = true
         private var activeCallMessage: TAPMessageModel? = null
-        private var activeConferenceInfo: MeetTalkConferenceInfo? = null
         private var activeCallInstanceKey: String? = null
         private var pendingIncomingCallRoomName: String? = null
         private var pendingIncomingCallPhoneNumber: String? = null
@@ -97,7 +99,7 @@ class MeetTalkCallManager {
         init {
             // Initialize Jitsi Meet
             val serverURL: URL = try {
-                URL("https://meet.taptalk.io") // TODO: MOVE URL TO MeetTalk.init() ?
+                URL(MEET_URL)
             } catch (e: MalformedURLException) {
                 e.printStackTrace()
                 throw RuntimeException("Invalid server URL!")
@@ -231,7 +233,7 @@ class MeetTalkCallManager {
         }
 
         fun joinPendingIncomingConferenceCall() {
-            sendJoinedCallNotification(activeCallInstanceKey ?: return, activeCallMessage?.room ?: return)
+            sendAnsweredCallNotification(activeCallInstanceKey ?: return, activeCallMessage?.room ?: return)
             launchMeetTalkCallActivity(activeCallInstanceKey!!, TapTalk.appContext, pendingIncomingCallRoomName ?: return)
             pendingIncomingCallRoomName = null
             pendingIncomingCallPhoneNumber = null
@@ -312,14 +314,21 @@ class MeetTalkCallManager {
                 activeCallInstanceKey = null
                 callState = CallState.IDLE
             }
-            else if (message.action == TARGET_JOINED_CALL) {
-                if (message.user.userID != activeUser.userID) {
-                    // Dismiss caller's waiting screen
-                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: TARGET_JOINED_CALL")
-                } else {
+            else if (message.action == TARGET_ANSWERED_CALL) {
+                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: TARGET_ANSWERED_CALL is self: ${message.user.userID == activeUser.userID}")
+                if (message.user.userID == activeUser.userID) {
                     // Target answered call elsewhere, dismiss incoming call
                     MeetTalkCallConnection.getInstance().onDisconnect()
                     callState = CallState.IDLE
+                }
+            }
+            else if (message.action == TARGET_JOINED_CALL) {
+                // A participant successfully joined the call, notify call activity
+                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: TARGET_JOINED_CALL ${message.user.fullname}")
+                val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
+                if (activeConferenceInfo != null && updatedConferenceInfo != null) {
+                    activeConferenceInfo?.updateValue(updatedConferenceInfo)
+                    activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
                 }
             }
             else if (message.user.userID != activeUser.userID &&
@@ -337,12 +346,14 @@ class MeetTalkCallManager {
                 callState = CallState.IDLE
             }
             else if (message.action == CONFERENCE_INFO) {
-                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CONFERENCE_INFO - update activity")
-                // Received updated conference info
-                val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
-                if (updatedConferenceInfo != null) {
-                    activeConferenceInfo?.updateValue(updatedConferenceInfo)
-                    activeMeetTalkCallActivity?.updateConferenceInfo(updatedConferenceInfo)
+                if (message.user.userID != activeUser.userID) {
+                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CONFERENCE_INFO - update activity")
+                    // Received updated conference info
+                    val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
+                    if (activeConferenceInfo != null && updatedConferenceInfo != null) {
+                        activeConferenceInfo?.updateValue(updatedConferenceInfo)
+                        activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
+                    }
                 }
             }
             else if (message.action == TARGET_UNABLE_TO_RECEIVE_CALL) {
@@ -456,11 +467,20 @@ class MeetTalkCallManager {
             return message
         }
 
+        fun sendAnsweredCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
+            val message = generateCallNotificationMessage(instanceKey, room, "{{user}} answered call.", TARGET_ANSWERED_CALL)
+            message.data = activeConferenceInfo?.toHashMap()
+
+            TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, null)
+
+            return message
+        }
+
         fun sendJoinedCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            val conferenceInfo = activeConferenceInfo?.copy()
             val message = generateCallNotificationMessage(instanceKey, room, "{{user}} joined call.", TARGET_JOINED_CALL)
             val participant = generateParticipantInfo(instanceKey, PARTICIPANT)
-            conferenceInfo?.updateParticipant(participant)
+            activeConferenceInfo?.updateParticipant(participant)
+            message.data = activeConferenceInfo?.toHashMap()
 
             TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, null)
 
@@ -519,9 +539,12 @@ class MeetTalkCallManager {
             return message
         }
 
-        fun sendConferenceInfoNotification(instanceKey: String, room: TAPRoomModel, conferenceInfo: MeetTalkConferenceInfo) : TAPMessageModel {
+        fun sendConferenceInfoNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel? {
+            if (activeConferenceInfo == null) {
+                return null
+            }
             val message = generateCallNotificationMessage(instanceKey, room, "Call info updated.", CONFERENCE_INFO)
-            message.data = conferenceInfo.toHashMap()
+            message.data = activeConferenceInfo!!.toHashMap()
 
             TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, null)
 

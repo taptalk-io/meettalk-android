@@ -17,6 +17,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.INSTANCE_KEY
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE
+import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
+import io.taptalk.TapTalk.Helper.TAPTimeFormatter
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.TapTalk.Model.TAPMessageModel
@@ -32,19 +34,22 @@ import io.taptalk.meettalk.view.MeetTalkCallView
 import kotlinx.android.synthetic.main.meettalk_activity_call.*
 import org.jitsi.meet.sdk.*
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class MeetTalkCallActivity : JitsiMeetActivity() {
+
+    private val TAG = MeetTalkCallActivity::class.java.simpleName
 
     private lateinit var instanceKey: String
     private lateinit var options: JitsiMeetConferenceOptions
     private lateinit var meetTalkCallView: MeetTalkCallView
     private lateinit var callInitiatedMessage: TAPMessageModel
-    private lateinit var conferenceInfo: MeetTalkConferenceInfo
     private lateinit var activeParticipantInfo: MeetTalkParticipantInfo
     private lateinit var activeUserID: String
 
     private var isAudioMuted = false
     private var isVideoMuted = false
+    private var isCallStarted = false
     private var callStartTimestamp = 0L
 
     private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -168,6 +173,22 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     override fun onConferenceJoined(extraData: HashMap<String, Any>?) {
         Log.e(">>>>", "MeetTalkCallActivity onConferenceJoined: ${TAPUtils.toJsonString(extraData)}")
+//        retrieveParticipantsInfo()
+        if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
+            // Joined an existing call, send participant joined notification
+            MeetTalkCallManager.sendJoinedCallNotification(
+                instanceKey,
+                callInitiatedMessage.room
+            )
+
+            // Set status text to Waiting for User
+            if (!isCallStarted) {
+                tv_call_duration_status.text = String.format(
+                    getString(R.string.meettalk_format_waiting_for_user),
+                    callInitiatedMessage.room.name
+                )
+            }
+        }
     }
 
     override fun onConferenceTerminated(extraData: HashMap<String, Any>?) {
@@ -178,6 +199,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onParticipantJoined(extraData: HashMap<String, Any>?) {
         super.onParticipantJoined(extraData)
         Log.e(">>>>", "MeetTalkCallActivity onParticipantJoined: ${TAPUtils.toJsonString(extraData)}")
+//        if (extraData != null && extraData["isLocal"] == false) {
+//
+//        }
     }
 
     override fun onParticipantLeft(extraData: HashMap<String, Any>?) {
@@ -197,12 +221,14 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         activeUserID = TapTalk.getTapTalkActiveUser(instanceKey).userID
 
         callInitiatedMessage = intent.getParcelableExtra(MESSAGE)!!
-        conferenceInfo = intent.getParcelableExtra(CONFERENCE_INFO)!!
+//        conferenceInfo = intent.getParcelableExtra(CONFERENCE_INFO)!!
 
-        for (participant in conferenceInfo.participants) {
-            if (participant.userID == activeUserID) {
-                activeParticipantInfo = participant
-                break
+        if (MeetTalkCallManager.activeConferenceInfo != null) {
+            for (participant in MeetTalkCallManager.activeConferenceInfo!!.participants) {
+                if (participant.userID == activeUserID) {
+                    activeParticipantInfo = participant
+                    break
+                }
             }
         }
         if (!this::activeParticipantInfo.isInitialized) {
@@ -247,22 +273,22 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
         val event = BroadcastEvent(intent)
         when (event.type) {
-            BroadcastEvent.Type.CONFERENCE_JOINED -> {
-                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_JOINED ${TAPUtils.toJsonString(event.data)}")
-                retrieveParticipantsInfo()
-            }
-            BroadcastEvent.Type.CONFERENCE_WILL_JOIN -> {
-                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_WILL_JOIN ${TAPUtils.toJsonString(event.data)}")
-            }
-            BroadcastEvent.Type.CONFERENCE_TERMINATED -> {
-                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_TERMINATED ${TAPUtils.toJsonString(event.data)}")
-            }
-            BroadcastEvent.Type.PARTICIPANT_JOINED -> {
-                Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_JOINED ${TAPUtils.toJsonString(event.data)}")
-            }
-            BroadcastEvent.Type.PARTICIPANT_LEFT -> {
-                Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_LEFT ${TAPUtils.toJsonString(event.data)}")
-            }
+//            BroadcastEvent.Type.CONFERENCE_JOINED -> {
+//                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_JOINED ${TAPUtils.toJsonString(event.data)}")
+//                //retrieveParticipantsInfo()
+//            }
+//            BroadcastEvent.Type.CONFERENCE_WILL_JOIN -> {
+//                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_WILL_JOIN ${TAPUtils.toJsonString(event.data)}")
+//            }
+//            BroadcastEvent.Type.CONFERENCE_TERMINATED -> {
+//                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_TERMINATED ${TAPUtils.toJsonString(event.data)}")
+//            }
+//            BroadcastEvent.Type.PARTICIPANT_JOINED -> {
+//                Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_JOINED ${TAPUtils.toJsonString(event.data)}")
+//            }
+//            BroadcastEvent.Type.PARTICIPANT_LEFT -> {
+//                Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_LEFT ${TAPUtils.toJsonString(event.data)}")
+//            }
             BroadcastEvent.Type.ENDPOINT_TEXT_MESSAGE_RECEIVED -> {
                 Log.e(">>>>", "onBroadcastReceived: ENDPOINT_TEXT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
             }
@@ -271,6 +297,19 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             }
             BroadcastEvent.Type.PARTICIPANTS_INFO_RETRIEVED -> {
                 Log.e(">>>>", "onBroadcastReceived: PARTICIPANTS_INFO_RETRIEVED ${TAPUtils.toJsonString(event.data)}")
+                if (event.data != null) {
+
+//                    val participantInfoList: List<ParticipantInfo> = Gson().fromJson<Any>(
+//                        event.data["participantsInfo"].toString(),
+//                        object : TypeToken<java.util.ArrayList<ParticipantInfo?>?>() {}.type
+//                    ) as List<ParticipantInfo>
+
+//                    val participantsInfo: ArrayList<Any?> =
+//                        TAPUtils.fromJSON(
+//                            object : TypeReference<ArrayList<Any?>>() {},
+//                            event.data["participantsInfo"] as String
+//                        )
+                }
             }
             BroadcastEvent.Type.CHAT_MESSAGE_RECEIVED -> {
                 Log.e(">>>>", "onBroadcastReceived: CHAT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
@@ -297,8 +336,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun updateLayout(animated: Boolean) {
+        if (MeetTalkCallManager.activeConferenceInfo == null) {
+            return
+        }
         var hasVideoFootage = false
-        for (participant in conferenceInfo.participants) {
+        for (participant in MeetTalkCallManager.activeConferenceInfo!!.participants) {
             if (participant?.userID != activeUserID &&
                 participant?.videoMuted != null &&
                 !participant.videoMuted!!
@@ -314,6 +356,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun showVoiceCallLayout(animated: Boolean) {
+        if (fl_meettalk_call_view_container.visibility == View.INVISIBLE) {
+            return
+        }
         val duration = if (animated) {
             200L
         }
@@ -351,6 +396,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun showVideoCallLayout(animated: Boolean) {
+        if (fl_meettalk_call_view_container.visibility == View.VISIBLE) {
+            return
+        }
         val duration = if (animated) {
             200L
         }
@@ -389,9 +437,12 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun updateActiveParticipantInConferenceInfo() {
-        for (participant in conferenceInfo.participants) {
+        if (MeetTalkCallManager.activeConferenceInfo == null) {
+            return
+        }
+        for (participant in MeetTalkCallManager.activeConferenceInfo!!.participants) {
             if (participant?.userID == activeUserID) {
-                conferenceInfo.participants[conferenceInfo.participants.indexOf(participant)] =
+                MeetTalkCallManager.activeConferenceInfo!!.participants[MeetTalkCallManager.activeConferenceInfo!!.participants.indexOf(participant)] =
                     activeParticipantInfo
                 break
             }
@@ -407,7 +458,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         activeParticipantInfo.audioMuted = isAudioMuted
         activeParticipantInfo.lastUpdated = System.currentTimeMillis()
         updateActiveParticipantInConferenceInfo()
-        MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room, conferenceInfo)
+        MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
     }
 
     private fun showAudioButtonMuted(isMuted: Boolean) {
@@ -430,7 +481,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         activeParticipantInfo.videoMuted = isVideoMuted
         activeParticipantInfo.lastUpdated = System.currentTimeMillis()
         updateActiveParticipantInConferenceInfo()
-        MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room, conferenceInfo)
+        MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
     }
 
     private fun showVideoButtonMuted(isMuted: Boolean) {
@@ -448,14 +499,73 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         // TODO:
     }
 
+    private fun startCallDurationTimer() {
+        if (callStartTimestamp == 0L) {
+            return
+        }
+
+        val timer = Timer()
+        val timerTask: TimerTask
+        timerTask = object : TimerTask() {
+            override fun run() {
+                val duration = System.currentTimeMillis() - callStartTimestamp
+                val durationString = if (duration < TimeUnit.MINUTES.toMillis(1)) {
+                    String.format(
+                        "%02d:%02d",
+                        TimeUnit.MILLISECONDS.toMinutes(duration),
+                        TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
+                    )
+                }
+                else {
+                    String.format(
+                        "%d:%02d:%02d",
+                        TimeUnit.MILLISECONDS.toHours(duration),
+                        TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
+                        TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
+                    )
+                }
+                runOnUiThread {
+                    tv_call_duration_status.text = durationString
+                }
+            }
+        }
+        timer.schedule(timerTask, 0, 1000)
+    }
+
     /**
      * ==========================================================================================
      * PUBLIC METHODS
      * ==========================================================================================
      */
 
-    fun updateConferenceInfo(updatedConferenceInfo: MeetTalkConferenceInfo) {
-        this.conferenceInfo.updateValue(updatedConferenceInfo)
-        updateLayout(true)
+    fun onConferenceInfoUpdated(updatedConferenceInfo: MeetTalkConferenceInfo) {
+        Log.e(">>>> $TAG", "onConferenceInfoUpdated: ${TAPUtils.toJsonString(updatedConferenceInfo)}")
+        Log.e(">>>> $TAG", "onConferenceInfoUpdated: $isCallStarted")
+        Log.e(">>>> $TAG", "onConferenceInfoUpdated: ${updatedConferenceInfo.participants.size}")
+        if (MeetTalkCallManager.activeConferenceInfo != null &&
+            !isCallStarted &&
+            callInitiatedMessage.room.type == TYPE_PERSONAL &&
+            updatedConferenceInfo.participants.size > 1
+        ) {
+            // Target has joined, mark the call as started
+            isCallStarted = true
+            if (MeetTalkCallManager.activeConferenceInfo!!.callStartedTime == 0L) {
+                MeetTalkCallManager.activeConferenceInfo!!.callStartedTime = System.currentTimeMillis()
+            }
+            callStartTimestamp = MeetTalkCallManager.activeConferenceInfo!!.callStartedTime
+            startCallDurationTimer()
+
+//            if (activeParticipantInfo.role == HOST) {
+                // Send updated conference info
+                MeetTalkCallManager.sendConferenceInfoNotification(
+                    instanceKey,
+                    callInitiatedMessage.room
+                )
+//            }
+        }
+
+        if (isCallStarted) {
+            updateLayout(true)
+        }
     }
 }

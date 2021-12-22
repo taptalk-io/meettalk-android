@@ -7,26 +7,27 @@ class MeetTalkConstant {
         const val ACTIVE_USER_CANCELS_CALL = "kMeetTalkActiveUserCancelsCall"
     }
 
-    object Extra {
-        const val CALLER_NAME = "kMeetTalkExtraCallerName"
-        const val CALLER_NUMBER = "kMeetTalkExtraCallerNumber"
-        const val CONFERENCE_INFO = "kMeetTalkExtraConferenceInfo"
-    }
-
-    object CallMessageType {
-        const val CALL_MESSAGE_TYPE = 8001
-    }
-
     object CallMessageAction {
         const val CALL_INITIATED = "call/initiate"
         const val CALL_CANCELLED = "call/cancel"
         const val CALL_ENDED = "call/end"
+        const val TARGET_ANSWERED_CALL = "call/answer"
         const val TARGET_JOINED_CALL = "call/join"
         const val TARGET_BUSY = "call/busy"
         const val TARGET_REJECTED_CALL = "call/reject"
         const val TARGET_MISSED_CALL = "call/timeout"
         const val TARGET_UNABLE_TO_RECEIVE_CALL = "call/unable"
         const val CONFERENCE_INFO = "call/info"
+    }
+
+    object CallMessageType {
+        const val CALL_MESSAGE_TYPE = 8001
+    }
+
+    object Extra {
+        const val CALLER_NAME = "kMeetTalkExtraCallerName"
+        const val CALLER_NUMBER = "kMeetTalkExtraCallerNumber"
+        const val CONFERENCE_INFO = "kMeetTalkExtraConferenceInfo"
     }
 
     object ParticipantRole {
@@ -37,6 +38,10 @@ class MeetTalkConstant {
 
     object Preference {
         const val ENABLE_PHONE_ACCOUNT_SETTINGS_REQUESTED_APP_NAME = "kMeetTalkEnablePhoneAccountSettingsRequestedAppName"
+    }
+
+    object Url {
+        const val MEET_URL = "https://meet.taptalk.io"
     }
 
     object JitsiMeetBroadcastEventType {
