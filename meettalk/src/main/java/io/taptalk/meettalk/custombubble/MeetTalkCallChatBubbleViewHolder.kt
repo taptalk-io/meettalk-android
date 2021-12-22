@@ -64,10 +64,12 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
             item.action != TARGET_MISSED_CALL
         ) {
             clContainer.visibility = View.GONE
+            clContainer.layoutParams.height = 0
             return
         }
 
         clContainer.visibility = View.VISIBLE
+        clContainer.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
 
         if (isMessageFromMySelf(item)) {
             // Message from active user
