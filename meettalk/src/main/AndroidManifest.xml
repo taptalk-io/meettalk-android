@@ -9,7 +9,7 @@
         android:requestLegacyExternalStorage="true">
 
         <service
-            android:name=".helper.TapConnectionService"
+            android:name=".helper.MeetTalkConnectionService"
             android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
             android:exported="false">
             <intent-filter>

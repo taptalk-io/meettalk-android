@@ -8,7 +8,6 @@ import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_APP_KEY_S
 import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_BASE_URL;
 
 import android.app.Activity;
-import android.os.Build;
 
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -27,7 +26,6 @@ import io.taptalk.TapTalk.Model.TAPUserModel;
 import io.taptalk.TapTalk.View.Activity.TapUIRoomListActivity;
 import io.taptalk.meettalk.helper.MeetTalk;
 import io.taptalk.meettalk.listener.MeetTalkListener;
-import io.taptalk.meettalk.manager.TapCallManager;
 import io.taptalk.meettalkandroidsample.activity.TAPLoginActivity;
 
 public class SampleApplication extends MultiDexApplication {

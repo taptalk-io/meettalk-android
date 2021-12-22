@@ -59,8 +59,8 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_MUTE_BU
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_SHARE_BUTTON_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.HOST
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
-import io.taptalk.meettalk.helper.TapCallConnection
-import io.taptalk.meettalk.helper.TapConnectionService
+import io.taptalk.meettalk.helper.MeetTalkCallConnection
+import io.taptalk.meettalk.helper.MeetTalkConnectionService
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 import io.taptalk.meettalk.model.MeetTalkParticipantInfo
 import org.jitsi.meet.sdk.JitsiMeet
@@ -68,10 +68,9 @@ import org.jitsi.meet.sdk.JitsiMeetConferenceOptions
 import org.jitsi.meet.sdk.JitsiMeetUserInfo
 import java.net.MalformedURLException
 import java.net.URL
-import java.util.LinkedHashMap
 
 @RequiresApi(Build.VERSION_CODES.M)
-class TapCallManager {
+class MeetTalkCallManager {
 
     companion object {
         enum class CallState {
@@ -85,7 +84,7 @@ class TapCallManager {
 
         private val appName = TapTalk.appContext.getString(R.string.app_name)
         private val telecomManager = TapTalk.appContext.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
-        private val phoneAccountHandle = PhoneAccountHandle(ComponentName(TapTalk.appContext, TapConnectionService::class.java), appName)
+        private val phoneAccountHandle = PhoneAccountHandle(ComponentName(TapTalk.appContext, MeetTalkConnectionService::class.java), appName)
         private val defaultAudioMuted = BuildConfig.DEBUG
         private const val defaultVideoMuted = true
         private var activeCallMessage: TAPMessageModel? = null
@@ -276,7 +275,7 @@ class TapCallManager {
                 // Return if message type is invalid or has been previously checked
                 return
             }
-            Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.type} ${message.user.fullname} ${message.body}")
+            Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.body} - ${TAPUtils.toJsonString(message.data)}")
             handledCallNotificationMessageLocalIDs.add(message.localID)
             if (message.action == CALL_INITIATED && message.user.userID != activeUser.userID) {
                 if (callState == CallState.IDLE) {
@@ -298,7 +297,7 @@ class TapCallManager {
             ) {
                 // Caller canceled call or target rejected call elsewhere, dismiss incoming call
                 Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_CANCELED")
-                TapCallConnection.getInstance().onDisconnect()
+                MeetTalkCallConnection.getInstance().onDisconnect()
                 activeCallMessage = null
                 activeConferenceInfo = null
                 activeCallInstanceKey = null
@@ -319,7 +318,7 @@ class TapCallManager {
                     Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: TARGET_JOINED_CALL")
                 } else {
                     // Target answered call elsewhere, dismiss incoming call
-                    TapCallConnection.getInstance().onDisconnect()
+                    MeetTalkCallConnection.getInstance().onDisconnect()
                     callState = CallState.IDLE
                 }
             }
@@ -338,6 +337,7 @@ class TapCallManager {
                 callState = CallState.IDLE
             }
             else if (message.action == CONFERENCE_INFO) {
+                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CONFERENCE_INFO - update activity")
                 // Received updated conference info
                 val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
                 if (updatedConferenceInfo != null) {

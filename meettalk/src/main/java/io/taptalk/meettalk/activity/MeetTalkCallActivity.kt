@@ -25,7 +25,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.BroadcastEvent.ACTIVE_USER_
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CONFERENCE_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetBroadcastEventType.RETRIEVE_PARTICIPANTS_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
-import io.taptalk.meettalk.manager.TapCallManager
+import io.taptalk.meettalk.manager.MeetTalkCallManager
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 import io.taptalk.meettalk.model.MeetTalkParticipantInfo
 import io.taptalk.meettalk.view.MeetTalkCallView
@@ -85,8 +85,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         setContentView(R.layout.meettalk_activity_call)
 
-        TapCallManager.activeMeetTalkCallActivity = this
-        Log.e(">>>>", "TapExtendedJitsiMeetActivity onCreate: ${TapCallManager.activeMeetTalkCallActivity}")
+        MeetTalkCallManager.activeMeetTalkCallActivity = this
+        Log.e(">>>>", "TapExtendedJitsiMeetActivity onCreate: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
 
         initData()
         initView()
@@ -110,13 +110,13 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-        Log.e(">>>>", "TapExtendedJitsiMeetActivity onDestroy: ${TapCallManager.activeMeetTalkCallActivity}")
+        Log.e(">>>>", "TapExtendedJitsiMeetActivity onDestroy: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
 
 //        JitsiMeetActivityDelegate.onHostDestroy(this)
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTIVE_USER_LEAVES_CALL))
 
-        TapCallManager.activeMeetTalkCallActivity = null
+        MeetTalkCallManager.activeMeetTalkCallActivity = null
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
 
@@ -206,7 +206,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             }
         }
         if (!this::activeParticipantInfo.isInitialized) {
-            activeParticipantInfo = TapCallManager.generateParticipantInfo(instanceKey, PARTICIPANT)
+            activeParticipantInfo = MeetTalkCallManager.generateParticipantInfo(instanceKey, PARTICIPANT)
         }
 
         options = intent.getParcelableExtra("JitsiMeetConferenceOptions") ?: JitsiMeet.getDefaultConferenceOptions()
@@ -300,7 +300,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         var hasVideoFootage = false
         for (participant in conferenceInfo.participants) {
             if (participant?.userID != activeUserID &&
-                null != participant?.videoMuted &&
+                participant?.videoMuted != null &&
                 !participant.videoMuted!!
             ) {
                 showVideoCallLayout(animated)
@@ -320,32 +320,34 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         else {
             0L
         }
-        fl_meettalk_call_view_container.animate()
-            .alpha(0f)
-            .setDuration(duration)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .withEndAction { fl_meettalk_call_view_container.visibility = View.INVISIBLE }
-            .start()
-        cl_label_container.animate()
-            .translationY(0f)
-            .setDuration(duration)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
-        cl_button_container.animate()
-            .translationY(0f)
-            .setDuration(duration)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
-        v_button_container_background.animate()
-            .alpha(0f)
-            .setDuration(duration)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
-        v_background_solid.animate()
-            .alpha(0.2f)
-            .setDuration(duration)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
+        runOnUiThread {
+            fl_meettalk_call_view_container.animate()
+                .alpha(0f)
+                .setDuration(duration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .withEndAction { fl_meettalk_call_view_container.visibility = View.INVISIBLE }
+                .start()
+            cl_label_container.animate()
+                .translationY(0f)
+                .setDuration(duration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+            cl_button_container.animate()
+                .translationY(0f)
+                .setDuration(duration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+            v_button_container_background.animate()
+                .alpha(0f)
+                .setDuration(duration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+            v_background_solid.animate()
+                .alpha(0.2f)
+                .setDuration(duration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+        }
     }
 
     private fun showVideoCallLayout(animated: Boolean) {
@@ -355,33 +357,45 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         else {
             0L
         }
-        fl_meettalk_call_view_container.visibility = View.VISIBLE
-        fl_meettalk_call_view_container.alpha = 0f
-        fl_meettalk_call_view_container.animate()
-            .alpha(1f)
-            .setDuration(duration)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
-        cl_label_container.animate()
-            .translationY(TAPUtils.dpToPx(-56).toFloat())
-            .setDuration(duration)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
-        cl_button_container.animate()
-            .translationY(TAPUtils.dpToPx(56).toFloat())
-            .setDuration(duration)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
-        v_button_container_background.animate()
-            .alpha(1f)
-            .setDuration(duration)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
-        v_background_solid.animate()
-            .alpha(0f)
-            .setDuration(duration)
-            .setInterpolator(AccelerateDecelerateInterpolator())
-            .start()
+        runOnUiThread {
+            fl_meettalk_call_view_container.visibility = View.VISIBLE
+            fl_meettalk_call_view_container.alpha = 0f
+            fl_meettalk_call_view_container.animate()
+                .alpha(1f)
+                .setDuration(duration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+            cl_label_container.animate()
+                .translationY(TAPUtils.dpToPx(-56).toFloat())
+                .setDuration(duration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+            cl_button_container.animate()
+                .translationY(TAPUtils.dpToPx(56).toFloat())
+                .setDuration(duration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+            v_button_container_background.animate()
+                .alpha(1f)
+                .setDuration(duration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+            v_background_solid.animate()
+                .alpha(0f)
+                .setDuration(duration)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+        }
+    }
+
+    private fun updateActiveParticipantInConferenceInfo() {
+        for (participant in conferenceInfo.participants) {
+            if (participant?.userID == activeUserID) {
+                conferenceInfo.participants[conferenceInfo.participants.indexOf(participant)] =
+                    activeParticipantInfo
+                break
+            }
+        }
     }
 
     private fun toggleAudioMute() {
@@ -392,8 +406,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         activeParticipantInfo.audioMuted = isAudioMuted
         activeParticipantInfo.lastUpdated = System.currentTimeMillis()
-//        conferenceInfo.participants[activeUserID] = activeParticipantInfo
-        TapCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room, conferenceInfo)
+        updateActiveParticipantInConferenceInfo()
+        MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room, conferenceInfo)
     }
 
     private fun showAudioButtonMuted(isMuted: Boolean) {
@@ -415,8 +429,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         activeParticipantInfo.videoMuted = isVideoMuted
         activeParticipantInfo.lastUpdated = System.currentTimeMillis()
-//        conferenceInfo.participants[activeUserID] = activeParticipantInfo
-        TapCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room, conferenceInfo)
+        updateActiveParticipantInConferenceInfo()
+        MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room, conferenceInfo)
     }
 
     private fun showVideoButtonMuted(isMuted: Boolean) {

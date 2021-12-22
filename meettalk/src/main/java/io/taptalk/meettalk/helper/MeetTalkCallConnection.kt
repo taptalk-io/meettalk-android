@@ -6,22 +6,22 @@ import android.telecom.Connection
 import android.telecom.DisconnectCause
 import android.util.Log
 import androidx.annotation.RequiresApi
-import io.taptalk.meettalk.manager.TapCallManager
+import io.taptalk.meettalk.manager.MeetTalkCallManager
 
 @RequiresApi(Build.VERSION_CODES.M)
-class TapCallConnection : Connection() {
+class MeetTalkCallConnection : Connection() {
 
     companion object {
-        private var instance: TapCallConnection? = null
+        private var instance: MeetTalkCallConnection? = null
 
-        fun newInstance() : TapCallConnection {
-            instance = TapCallConnection()
+        fun newInstance() : MeetTalkCallConnection {
+            instance = MeetTalkCallConnection()
             return instance!!
         }
 
-        fun getInstance() : TapCallConnection {
+        fun getInstance() : MeetTalkCallConnection {
             if (null == instance) {
-                instance = TapCallConnection()
+                instance = MeetTalkCallConnection()
             }
             return instance!!
         }
@@ -41,21 +41,21 @@ class TapCallConnection : Connection() {
     override fun onDisconnect() {
         super.onDisconnect()
         setDisconnected(DisconnectCause(DisconnectCause.MISSED))
-        TapCallManager.clearPendingIncomingCall()
+        MeetTalkCallManager.clearPendingIncomingCall()
         Log.e(">>>> TapCallConnection","onDisconnect")
     }
 
     override fun onAnswer() {
         super.onAnswer()
         setDisconnected(DisconnectCause(DisconnectCause.LOCAL))
-        TapCallManager.joinPendingIncomingConferenceCall()
+        MeetTalkCallManager.joinPendingIncomingConferenceCall()
         Log.e(">>>> TapCallConnection","onAnswer:")
     }
 
     override fun onReject() {
         super.onReject()
         setDisconnected(DisconnectCause(DisconnectCause.REJECTED))
-        TapCallManager.rejectPendingIncomingConferenceCall()
+        MeetTalkCallManager.rejectPendingIncomingConferenceCall()
         Log.e(">>>> TapCallConnection", "onReject: " )
     }
 

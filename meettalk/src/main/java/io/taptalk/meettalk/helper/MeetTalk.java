@@ -1,7 +1,6 @@
 package io.taptalk.meettalk.helper;
 
 import static io.taptalk.TapTalk.Helper.TapTalk.TapTalkImplementationType.TapTalkImplementationTypeCore;
-import static io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_MESSAGE_TYPE;
 
 import android.app.Activity;
 import android.content.Context;
@@ -18,7 +17,7 @@ import io.taptalk.meettalk.R;
 import io.taptalk.meettalk.custombubble.MeetTalkCallChatBubbleClass;
 import io.taptalk.meettalk.custombubble.MeetTalkCallChatBubbleListener;
 import io.taptalk.meettalk.listener.MeetTalkListener;
-import io.taptalk.meettalk.manager.TapCallManager;
+import io.taptalk.meettalk.manager.MeetTalkCallManager;
 
 public class MeetTalk {
 
@@ -140,7 +139,7 @@ public class MeetTalk {
 
                 // Handle call events
                 Log.e(">>>>", "onNotificationReceived: " + message.getBody());
-                TapCallManager.Companion.checkAndHandleCallNotificationFromMessage(
+                MeetTalkCallManager.Companion.checkAndHandleCallNotificationFromMessage(
                         message,
                         instanceKey,
                         TapTalk.getTapTalkActiveUser(instanceKey)
@@ -168,7 +167,7 @@ public class MeetTalk {
 
                 // Handle call events
                 Log.e(">>>>", "onReceiveNewMessage: " + message.getBody());
-                TapCallManager.Companion.checkAndHandleCallNotificationFromMessage(
+                MeetTalkCallManager.Companion.checkAndHandleCallNotificationFromMessage(
                         message,
                         instanceKey,
                         TapTalk.getTapTalkActiveUser(instanceKey)
@@ -268,7 +267,7 @@ public class MeetTalk {
             String instanceKey,
             Activity activity
     ) {
-        TapCallManager.Companion.checkAndRequestEnablePhoneAccountSettings(instanceKey, activity);
+        MeetTalkCallManager.Companion.checkAndRequestEnablePhoneAccountSettings(instanceKey, activity);
     }
 
     public static void initiateNewConferenceCall(
@@ -283,6 +282,6 @@ public class MeetTalk {
             String instanceKey,
             TAPRoomModel room
     ) {
-        TapCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, room);
+        MeetTalkCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, room);
     }
 }
