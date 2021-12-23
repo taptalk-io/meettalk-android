@@ -22,6 +22,7 @@ import io.taptalk.meettalk.manager.MeetTalkCallManager;
 public class MeetTalk {
 
     public static Context appContext;
+    public static String appID;
 
     public static void init(
             Context applicationContext,
@@ -109,8 +110,9 @@ public class MeetTalk {
             TapTalk.TapTalkImplementationType tapTalkImplementationType,
             MeetTalkListener meetTalkListener
     ) {
-        // Save application context
+        // Save application context and ID
         appContext = applicationContext;
+        appID = appKeyID;
 
         // Initialize TapListener
         TapListener tapListener = new TapListener() {

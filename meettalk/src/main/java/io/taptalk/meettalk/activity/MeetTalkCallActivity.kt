@@ -241,22 +241,40 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun initView() {
-        meetTalkCallView.layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        )
-        fl_meettalk_call_view_container.addView(meetTalkCallView)
+        runOnUiThread {
+            meetTalkCallView.layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            fl_meettalk_call_view_container.addView(meetTalkCallView)
 
-        tv_calling_user.text = callInitiatedMessage.room.name
-        Glide.with(this).load(callInitiatedMessage.room.imageURL?.fullsize).into(iv_profile_picture)
+            tv_calling_user.text = callInitiatedMessage.room.name
+            Glide.with(this).load(callInitiatedMessage.room.imageURL?.fullsize).into(iv_profile_picture)
+            iv_button_toggle_audio_mute.alpha = 0.5f
+            iv_button_toggle_video_mute.alpha = 0.5f
+            showAudioButtonMuted(isAudioMuted)
+            showVideoButtonMuted(isVideoMuted)
 
-        showAudioButtonMuted(isAudioMuted)
-        showVideoButtonMuted(isVideoMuted)
+            iv_button_cancel_call.setOnClickListener { onBackPressed() }
+        }
+    }
 
-        iv_button_cancel_call.setOnClickListener { onBackPressed() }
-        iv_button_toggle_audio_mute.setOnClickListener { toggleAudioMute() }
-        iv_button_toggle_video_mute.setOnClickListener { toggleVideoMute() }
-        iv_button_flip_camera.setOnClickListener { flipCamera() }
+    private fun enableButtons() {
+        runOnUiThread {
+            iv_button_toggle_audio_mute.setOnClickListener { toggleAudioMute() }
+            iv_button_toggle_video_mute.setOnClickListener { toggleVideoMute() }
+//            iv_button_flip_camera.setOnClickListener { flipCamera() }
+            iv_button_toggle_audio_mute.animate()
+                .alpha(1.0f)
+                .setDuration(200L)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+            iv_button_toggle_video_mute.animate()
+                .alpha(1.0f)
+                .setDuration(200L)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+        }
     }
 
     private fun registerForBroadcastMessages() {
@@ -322,6 +340,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             }
             BroadcastEvent.Type.VIDEO_MUTED_CHANGED -> {
                 Log.e(">>>>", "onBroadcastReceived: VIDEO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
+                if (!isVideoMuted && isCallStarted) {
+                    MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
+                }
             }
             else -> {
                 Log.e(">>>>", "onBroadcastReceived OTHERS: ${intent.action} ${TAPUtils.toJsonString(intent.data)}")
@@ -458,7 +479,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         activeParticipantInfo.audioMuted = isAudioMuted
         activeParticipantInfo.lastUpdated = System.currentTimeMillis()
         updateActiveParticipantInConferenceInfo()
-        MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
+        if (isCallStarted) {
+            MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
+        }
     }
 
     private fun showAudioButtonMuted(isMuted: Boolean) {
@@ -481,7 +504,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         activeParticipantInfo.videoMuted = isVideoMuted
         activeParticipantInfo.lastUpdated = System.currentTimeMillis()
         updateActiveParticipantInConferenceInfo()
-        MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
+        if (isVideoMuted && isCallStarted) {
+            MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
+        }
     }
 
     private fun showVideoButtonMuted(isMuted: Boolean) {
@@ -553,6 +578,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 MeetTalkCallManager.activeConferenceInfo!!.callStartedTime = System.currentTimeMillis()
             }
             callStartTimestamp = MeetTalkCallManager.activeConferenceInfo!!.callStartedTime
+            enableButtons()
             startCallDurationTimer()
 
 //            if (activeParticipantInfo.role == HOST) {

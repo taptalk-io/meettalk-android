@@ -61,6 +61,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_SHARE_B
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.HOST
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
 import io.taptalk.meettalk.constant.MeetTalkConstant.Url.MEET_URL
+import io.taptalk.meettalk.helper.MeetTalk
 import io.taptalk.meettalk.helper.MeetTalkCallConnection
 import io.taptalk.meettalk.helper.MeetTalkConnectionService
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
@@ -92,7 +93,7 @@ class MeetTalkCallManager {
         private const val defaultVideoMuted = true
         private var activeCallMessage: TAPMessageModel? = null
         private var activeCallInstanceKey: String? = null
-        private var pendingIncomingCallRoomName: String? = null
+        private var pendingIncomingCallRoomID: String? = null
         private var pendingIncomingCallPhoneNumber: String? = null
         private var handledCallNotificationMessageLocalIDs: ArrayList<String> = ArrayList()
 
@@ -215,7 +216,7 @@ class MeetTalkCallManager {
                 sendUnableToReceiveCallNotification(activeCallInstanceKey ?: return, activeCallMessage?.room ?: return, "{{user}} has not enabled app's phone account.")
             }
 
-            pendingIncomingCallRoomName = message.room.roomID
+            pendingIncomingCallRoomID = message.room.roomID
             pendingIncomingCallPhoneNumber = phoneNumber
 
             // TODO: START COUNTDOWN TIMER FOR MISSED CALL
@@ -223,7 +224,7 @@ class MeetTalkCallManager {
 
         fun clearPendingIncomingCall() {
             callState = CallState.IDLE
-            pendingIncomingCallRoomName = null
+            pendingIncomingCallRoomID = null
             pendingIncomingCallPhoneNumber = null
         }
 
@@ -234,8 +235,8 @@ class MeetTalkCallManager {
 
         fun joinPendingIncomingConferenceCall() {
             sendAnsweredCallNotification(activeCallInstanceKey ?: return, activeCallMessage?.room ?: return)
-            launchMeetTalkCallActivity(activeCallInstanceKey!!, TapTalk.appContext, pendingIncomingCallRoomName ?: return)
-            pendingIncomingCallRoomName = null
+            launchMeetTalkCallActivity(activeCallInstanceKey!!, TapTalk.appContext, pendingIncomingCallRoomID ?: return)
+            pendingIncomingCallRoomID = null
             pendingIncomingCallPhoneNumber = null
         }
 
@@ -244,20 +245,21 @@ class MeetTalkCallManager {
             launchMeetTalkCallActivity(instanceKey, activity, room.roomID)
         }
 
-        private fun launchMeetTalkCallActivity(instanceKey: String, context: Context, roomName: String) {
+        private fun launchMeetTalkCallActivity(instanceKey: String, context: Context, roomID: String) {
             if (activeCallMessage == null ||
                 activeConferenceInfo == null
             ) {
                 return
             }
-            Log.e(">>>>", "startConferenceCall: $roomName")
+            Log.e(">>>>", "launchMeetTalkCallActivity: $roomID")
             callState = CallState.IN_CALL
+            val room = String.format("%s%s", MeetTalk.appID, roomID)
             val userInfo = JitsiMeetUserInfo()
             userInfo.avatar = URL(activeCallMessage?.user?.imageURL?.fullsize ?: "")
             userInfo.displayName = activeCallMessage?.user?.fullname ?: ""
             userInfo.email = activeCallMessage?.user?.email ?: ""
             val options: JitsiMeetConferenceOptions = JitsiMeetConferenceOptions.Builder()
-                .setRoom(roomName)
+                .setRoom(room)
                 .setWelcomePageEnabled(false)
                 .setAudioMuted(defaultAudioMuted)
                 .setVideoMuted(defaultVideoMuted)
