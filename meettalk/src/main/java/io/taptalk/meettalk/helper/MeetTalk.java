@@ -193,23 +193,6 @@ public class MeetTalk {
         TapCoreMessageManager.getInstance(instanceKey).addMessageListener(tapCoreMessageListener);
 
         if (tapTalkImplementationType != TapTalkImplementationTypeCore) {
-//            // Initialize empty message bubble
-//            MeetTalkEmptyListener emptyListener = new MeetTalkEmptyListener() {};
-//            MeetTalkEmptyChatBubbleClass callInitiatedChatBubbleClass = new MeetTalkEmptyChatBubbleClass(
-//                    instanceKey,
-//                    io.taptalk.TapTalk.R.layout.tap_cell_empty,
-//                    CALL_INITIATED,
-//                    emptyListener
-//            );
-//            MeetTalkEmptyChatBubbleClass callTargetJoinedChatBubbleClass = new MeetTalkEmptyChatBubbleClass(
-//                    instanceKey,
-//                    io.taptalk.TapTalk.R.layout.tap_cell_empty,
-//                    TARGET_JOINED_CALL,
-//                    emptyListener
-//            );
-//            TapUI.getInstance(instanceKey).addCustomBubble(callInitiatedChatBubbleClass);
-//            TapUI.getInstance(instanceKey).addCustomBubble(callTargetJoinedChatBubbleClass);
-
             // Initialize call message bubble
             MeetTalkCallChatBubbleListener callChatBubbleListener = (activity, message) -> {
                 initiateNewConferenceCall(activity, instanceKey, message.getRoom());
@@ -221,41 +204,6 @@ public class MeetTalk {
                     callChatBubbleListener
             );
             TapUI.getInstance(instanceKey).addCustomBubble(callChatBubbleClass);
-//            MeetTalkCallChatBubbleClass callEndedChatBubbleClass = new MeetTalkCallChatBubbleClass(
-//                    instanceKey,
-//                    R.layout.meettalk_cell_chat_bubble_call,
-//                    CALL_ENDED,
-//                    callChatBubbleListener
-//            );
-//            MeetTalkCallChatBubbleClass callCancelledChatBubbleClass = new MeetTalkCallChatBubbleClass(
-//                    instanceKey,
-//                    R.layout.meettalk_cell_chat_bubble_call,
-//                    CALL_CANCELLED,
-//                    callChatBubbleListener
-//            );
-//            MeetTalkCallChatBubbleClass callTargetBusyChatBubbleClass = new MeetTalkCallChatBubbleClass(
-//                    instanceKey,
-//                    R.layout.meettalk_cell_chat_bubble_call,
-//                    TARGET_BUSY,
-//                    callChatBubbleListener
-//            );
-//            MeetTalkCallChatBubbleClass callTargetRejectedChatBubbleClass = new MeetTalkCallChatBubbleClass(
-//                    instanceKey,
-//                    R.layout.meettalk_cell_chat_bubble_call,
-//                    TARGET_REJECTED_CALL,
-//                    callChatBubbleListener
-//            );
-//            MeetTalkCallChatBubbleClass callTargetMissedChatBubbleClass = new MeetTalkCallChatBubbleClass(
-//                    instanceKey,
-//                    R.layout.meettalk_cell_chat_bubble_call,
-//                    TARGET_MISSED_CALL,
-//                    callChatBubbleListener
-//            );
-//            TapUI.getInstance(instanceKey).addCustomBubble(callEndedChatBubbleClass);
-//            TapUI.getInstance(instanceKey).addCustomBubble(callCancelledChatBubbleClass);
-//            TapUI.getInstance(instanceKey).addCustomBubble(callTargetBusyChatBubbleClass);
-//            TapUI.getInstance(instanceKey).addCustomBubble(callTargetRejectedChatBubbleClass);
-//            TapUI.getInstance(instanceKey).addCustomBubble(callTargetMissedChatBubbleClass);
         }
 
         meetTalkListener.onInitializationCompleted(instanceKey);

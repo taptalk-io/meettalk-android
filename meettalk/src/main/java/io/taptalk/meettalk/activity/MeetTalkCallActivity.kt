@@ -18,23 +18,22 @@ import com.bumptech.glide.Glide
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.INSTANCE_KEY
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
-import io.taptalk.TapTalk.Helper.TAPTimeFormatter
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.TapTalk.Model.TAPMessageModel
 import io.taptalk.meettalk.R
-import io.taptalk.meettalk.constant.MeetTalkConstant.BroadcastEvent.ACTIVE_USER_LEAVES_CALL
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CONFERENCE_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetBroadcastEventType.RETRIEVE_PARTICIPANTS_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
+import io.taptalk.meettalk.helper.MeetTalkUtils
 import io.taptalk.meettalk.manager.MeetTalkCallManager
+import io.taptalk.meettalk.manager.MeetTalkCallManager.Companion.CallState.IDLE
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 import io.taptalk.meettalk.model.MeetTalkParticipantInfo
 import io.taptalk.meettalk.view.MeetTalkCallView
 import kotlinx.android.synthetic.main.meettalk_activity_call.*
 import org.jitsi.meet.sdk.*
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 class MeetTalkCallActivity : JitsiMeetActivity() {
 
@@ -102,14 +101,14 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         super.onResume()
         Log.e(">>>>", "TapExtendedJitsiMeetActivity onResume: ")
 
-//        JitsiMeetActivityDelegate.onHostResume(this)
+        JitsiMeetActivityDelegate.onHostResume(this)
     }
 
     override fun onPause() {
         super.onPause()
         Log.e(">>>>", "TapExtendedJitsiMeetActivity onPause: ")
 
-//        JitsiMeetActivityDelegate.onHostPause(this)
+        JitsiMeetActivityDelegate.onHostPause(this)
     }
 
     override fun onDestroy() {
@@ -117,11 +116,10 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         Log.e(">>>>", "TapExtendedJitsiMeetActivity onDestroy: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
 
-//        JitsiMeetActivityDelegate.onHostDestroy(this)
-
-        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTIVE_USER_LEAVES_CALL))
+        JitsiMeetActivityDelegate.onHostDestroy(this)
 
         MeetTalkCallManager.activeMeetTalkCallActivity = null
+        MeetTalkCallManager.callState = IDLE
 
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
 
@@ -137,12 +135,28 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     override fun onBackPressed() {
+        if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
+            MeetTalkCallManager.activeConferenceInfo != null &&
+            MeetTalkCallManager.activeConferenceInfo!!.callEndedTime == 0L
+        ) {
+            if (MeetTalkCallManager.activeConferenceInfo!!.participants.size > 1) {
+                Log.e(">>>>>", "TapExtendedJitsiMeetActivity onBackPressed: sendCallEndedNotification")
+                // Send call ended notification to notify the other party
+                MeetTalkCallManager.sendCallEndedNotification(instanceKey, callInitiatedMessage.room)
+            }
+            else {
+                Log.e(">>>>>", "TapExtendedJitsiMeetActivity onBackPressed: sendCallCanceledNotification")
+                // Send call canceled notification to notify target
+                MeetTalkCallManager.sendCallCanceledNotification(instanceKey, callInitiatedMessage.room)
+            }
+        }
         super.onBackPressed()
-        Log.e(">>>>>", "TapExtendedJitsiMeetActivity onBackPressed: ")
     }
 
     override fun finish() {
-        super.finish()
+        runOnUiThread {
+            super.finish()
+        }
         Log.e(">>>>>", "TapExtendedJitsiMeetActivity finish: ")
     }
 
@@ -534,21 +548,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         timerTask = object : TimerTask() {
             override fun run() {
                 val duration = System.currentTimeMillis() - callStartTimestamp
-                val durationString = if (duration < TimeUnit.MINUTES.toMillis(1)) {
-                    String.format(
-                        "%02d:%02d",
-                        TimeUnit.MILLISECONDS.toMinutes(duration),
-                        TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-                    )
-                }
-                else {
-                    String.format(
-                        "%d:%02d:%02d",
-                        TimeUnit.MILLISECONDS.toHours(duration),
-                        TimeUnit.MILLISECONDS.toMinutes(duration) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(duration)),
-                        TimeUnit.MILLISECONDS.toSeconds(duration) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(duration))
-                    )
-                }
+                val durationString = MeetTalkUtils.getCallDurationString(duration)
                 runOnUiThread {
                     tv_call_duration_status.text = durationString
                 }

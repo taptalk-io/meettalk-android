@@ -25,6 +25,8 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_ENDE
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_BUSY
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_MISSED_CALL
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_REJECTED_CALL
+import io.taptalk.meettalk.helper.MeetTalkUtils
+import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 
 class MeetTalkCallChatBubbleViewHolder internal constructor(
         parent: ViewGroup,
@@ -48,8 +50,9 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
 
     private val user = TapTalk.getTapTalkActiveUser(instanceKey)
 
-    private fun isMessageFromMySelf(messageModel: TAPMessageModel): Boolean {
-        return user.userID == messageModel.user.userID
+    private fun isCallHostedByActiveUser(messageModel: TAPMessageModel): Boolean {
+        val conferenceInfo = MeetTalkConferenceInfo.fromMessageModel(messageModel) ?: return false
+        return user.userID == conferenceInfo.hostUserID
     }
 
     override fun onBind(item: TAPMessageModel?, position: Int) {
@@ -71,8 +74,8 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
         clContainer.visibility = View.VISIBLE
         clContainer.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
 
-        if (isMessageFromMySelf(item)) {
-            // Message from active user
+        if (isCallHostedByActiveUser(item)) {
+            // Active user is the call host
             clBubble.background = ContextCompat.getDrawable(itemView.context, R.drawable.tap_bg_chat_bubble_right_default)
             ivButtonCall.imageTintList = ColorStateList.valueOf(itemView.context.getColor(R.color.meetTalkRightCallBubblePhoneIconColor))
             ivButtonCall.backgroundTintList = ColorStateList.valueOf(itemView.context.getColor(R.color.meetTalkRightCallBubblePhoneIconBackgroundColor))
@@ -84,21 +87,9 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
             tvUserName.visibility = View.GONE
             vMarginRight.visibility = View.GONE
             vMarginLeft.visibility = View.VISIBLE
-
-//            if (null != item.isRead && item.isRead!!) {
-//                showMessageAsRead(item)
-//            } else if (null != item.delivered && item.delivered!!) {
-//                showMessageAsDelivered(item)
-//            } else if (null != item.failedSend && item.failedSend!!) {
-//                showMessageFailedToSend()
-//            } else if (null != item.sending && !item.sending!!) {
-//                showMessageAsSent(item)
-//            } else {
-//                showMessageAsSending()
-//            }
         }
         else {
-            // Message from others
+            // Active user is not host
             clBubble.background = ContextCompat.getDrawable(itemView.context, R.drawable.tap_bg_chat_bubble_left_default)
             ivButtonCall.imageTintList = ColorStateList.valueOf(itemView.context.getColor(R.color.meetTalkLeftCallBubblePhoneIconColor))
             ivButtonCall.backgroundTintList = ColorStateList.valueOf(itemView.context.getColor(R.color.meetTalkLeftCallBubblePhoneIconBackgroundColor))
@@ -143,18 +134,20 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
         when (item.action) {
             CALL_ENDED -> {
                 // Call successfully ended
-                if (isMessageFromMySelf(item)) {
+                if (isCallHostedByActiveUser(item)) {
                     tvMessageBody.text = itemView.context.getString(R.string.meettalk_outgoing_call)
                 }
                 else {
                     tvMessageBody.text = itemView.context.getString(R.string.meettalk_incoming_call)
                 }
-                tvCallTimeDuration.text = String.format("%s - %s", TAPTimeFormatter.formatClock(item.created), "") // TODO: SET DURATION
+                val conferenceInfo = MeetTalkConferenceInfo.fromMessageModel(item)
+                val durationString = MeetTalkUtils.getCallDurationString(conferenceInfo?.callDuration)
+                tvCallTimeDuration.text = String.format("%s - %s", TAPTimeFormatter.formatClock(item.created), durationString)
                 ivCallArrowIcon.imageTintList = ColorStateList.valueOf(itemView.context.getColor(R.color.meetTalkIconArrowCallSuccess))
             }
             CALL_CANCELLED, TARGET_BUSY -> {
                 // Caller cancelled the call or target is in another call
-                if (isMessageFromMySelf(item)) {
+                if (isCallHostedByActiveUser(item)) {
                     tvMessageBody.text = itemView.context.getString(R.string.meettalk_cancelled_call)
                 }
                 else {
@@ -165,7 +158,7 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
             }
             TARGET_REJECTED_CALL, TARGET_MISSED_CALL -> {
                 // Target rejected or missed the call
-                if (isMessageFromMySelf(item)) {
+                if (isCallHostedByActiveUser(item)) {
                     tvMessageBody.text = itemView.context.getString(R.string.meettalk_outgoing_call)
                 }
                 else {
@@ -198,94 +191,4 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
             listener.onCallButtonTapped(itemView.context as Activity, item)
         }
     }
-
-//    private fun showMessageAsSending() {
-//        isNeedAnimateSend = true
-//        flBubble.translationX = TAPUtils.dpToPx(-22).toFloat()
-//        ivSending.translationX = 0f
-//        ivSending.translationY = 0f
-//        ivSending.alpha = 1f
-//        ivMessageStatus.visibility = View.INVISIBLE
-//        tvMessageStatus.visibility = View.GONE
-//    }
-//
-//    private fun showMessageFailedToSend() {
-//        ivMessageStatus.setImageDrawable(ContextCompat.getDrawable(itemView.context, R.drawable.tap_ic_warning_red_circle_background))
-//        ImageViewCompat.setImageTintList(ivMessageStatus, ColorStateList.valueOf(itemView.context.getColor(R.color.tapIconChatRoomMessageFailed)))
-//        ivMessageStatus.visibility = View.VISIBLE
-//        tvMessageStatus.text = itemView.context.getString(R.string.tap_message_send_failed)
-//        tvMessageStatus.visibility = View.VISIBLE
-//        ivSending.alpha = 0f
-//        flBubble.translationX = 0f
-//    }
-//
-//    private fun showMessageAsSent(message: TAPMessageModel?) {
-//        if (!isMessageFromMySelf(message!!)) {
-//            return
-//        }
-//        ivMessageStatus.setImageDrawable(ContextCompat.getDrawable(itemView.context, R.drawable.ttl_ic_sent_grey))
-//        ImageViewCompat.setImageTintList(ivMessageStatus, ColorStateList.valueOf(itemView.context.getColor(R.color.ttlIconMessageSent)))
-//        ivMessageStatus.visibility = View.VISIBLE
-//        tvMessageStatus.visibility = View.VISIBLE
-//        animateSend(item, flBubble, ivSending, ivMessageStatus)
-//    }
-//
-//    private fun showMessageAsDelivered(message: TAPMessageModel?) {
-//        if (isMessageFromMySelf(message!!)) {
-//            ivMessageStatus.setImageDrawable(ContextCompat.getDrawable(itemView.context, R.drawable.ttl_ic_delivered_grey))
-//            ImageViewCompat.setImageTintList(ivMessageStatus, ColorStateList.valueOf(itemView.context.getColor(R.color.ttlIconMessageDelivered)))
-//            ivMessageStatus.visibility = View.VISIBLE
-//            ivSending.alpha = 0f
-//        }
-//        flBubble.translationX = 0f
-//        tvMessageStatus.visibility = View.VISIBLE
-//    }
-//
-//    private fun showMessageAsRead(message: TAPMessageModel?) {
-//        if (isMessageFromMySelf(message!!)) {
-//            ivMessageStatus.setImageDrawable(ContextCompat.getDrawable(itemView.context, R.drawable.ttl_ic_read_orange))
-//            ImageViewCompat.setImageTintList(ivMessageStatus, ColorStateList.valueOf(itemView.context.getColor(R.color.ttlIconMessageRead)))
-//            ivMessageStatus.visibility = View.VISIBLE
-//            ivSending.alpha = 0f
-//        }
-//        flBubble.translationX = 0f
-//        tvMessageStatus.visibility = View.VISIBLE
-//    }
-//
-//    private fun animateSend(item: TAPMessageModel, flBubble: FrameLayout, ivSending: ImageView, ivMessageStatus: ImageView) {
-//        if (!isNeedAnimateSend) {
-//            // Set bubble state to post-animation
-//            flBubble.translationX = 0f
-//            ivMessageStatus.translationX = 0f
-//            ivSending.alpha = 0f
-//        } else {
-//            // Animate bubble
-//            isNeedAnimateSend = false
-//            isAnimating = true
-//            flBubble.translationX = TAPUtils.dpToPx(-22).toFloat()
-//            ivSending.translationX = 0f
-//            ivSending.translationY = 0f
-//            Handler().postDelayed({
-//                flBubble.animate()
-//                        .translationX(0f)
-//                        .setDuration(160L)
-//                        .start()
-//                ivSending.animate()
-//                        .translationX(TAPUtils.dpToPx(36).toFloat())
-//                        .translationY(TAPUtils.dpToPx(-23).toFloat())
-//                        .setDuration(360L)
-//                        .setInterpolator(AccelerateInterpolator(0.5f))
-//                        .withEndAction {
-//                            ivSending.alpha = 0f
-//                            isAnimating = false
-//                            if (null != item.isRead && item.isRead!! ||
-//                                    null != item.delivered && item.delivered!!) {
-//                                //notifyItemChanged(getItems().indexOf(item))
-//                                onBind(item, position)
-//                            }
-//                        }
-//                        .start()
-//            }, 200L)
-//        }
-//    }
 }

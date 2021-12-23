@@ -2,11 +2,6 @@ package io.taptalk.meettalk.constant
 
 class MeetTalkConstant {
 
-    object BroadcastEvent {
-        const val ACTIVE_USER_LEAVES_CALL = "kMeetTalkActiveUserLeavesCall"
-        const val ACTIVE_USER_CANCELS_CALL = "kMeetTalkActiveUserCancelsCall"
-    }
-
     object CallMessageAction {
         const val CALL_INITIATED = "call/initiate"
         const val CALL_CANCELLED = "call/cancel"

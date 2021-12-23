@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!--Voice Call-->
+    <!--Incoming Call-->
     <string name="meettalk_enable_voice_call">Izinkan Voice Call</string>
     <string name="meettalk_format_enable_phone_account_message">Untuk menerima panggilan dari user lain, harap nyalakan izin untuk Phone Account \"%s\" di halaman pengaturan.</string>
+    <string name="meettalk_format_received_call_phone_account_not_enabled">Anda tidak dapat menerima panggilan dari \"%s\" karena Phone account untuk \"%s\" tidak dinyalakan.</string>
+    <string name="meettalk_format_unable_to_receive_call">Anda tidak dapat menerima panggilan dari \"%s\" karena: \"%s\"</string>
 
     <!--Message Body-->
     <string name="meettalk_incoming_call">Panggilan Masuk</string>

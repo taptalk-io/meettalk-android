@@ -17,6 +17,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
 
     @JsonProperty("callID") private String callID;
     @JsonProperty("roomID") private String roomID;
+    @JsonProperty("hostUserID") private String hostUserID;
     @JsonProperty("callInitiatedTime") private Long callInitiatedTime;
     @JsonProperty("callStartedTime") private Long callStartedTime;
     @JsonProperty("callEndedTime") private Long callEndedTime;
@@ -30,6 +31,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
     public MeetTalkConferenceInfo(
             String callID,
             String roomID,
+            String hostUserID,
             Long callInitiatedTime,
             Long callStartedTime,
             Long callEndedTime,
@@ -38,6 +40,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
     ) {
         this.callID = callID;
         this.roomID = roomID;
+        this.hostUserID = hostUserID;
         this.callInitiatedTime = callInitiatedTime;
         this.callStartedTime = callStartedTime;
         this.callEndedTime = callEndedTime;
@@ -73,6 +76,9 @@ public class MeetTalkConferenceInfo implements Parcelable {
         if (!updatedConferenceInfo.getRoomID().isEmpty()) {
             setRoomID(updatedConferenceInfo.getRoomID());
         }
+        if (!updatedConferenceInfo.getHostUserID().isEmpty()) {
+            setRoomID(updatedConferenceInfo.getHostUserID());
+        }
         if (updatedConferenceInfo.getCallInitiatedTime() > 0L) {
             setCallInitiatedTime(updatedConferenceInfo.getCallInitiatedTime());
         }
@@ -106,6 +112,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
         return new MeetTalkConferenceInfo(
                 this.callID,
                 this.roomID,
+                this.hostUserID,
                 this.callInitiatedTime,
                 this.callStartedTime,
                 this.callEndedTime,
@@ -134,6 +141,17 @@ public class MeetTalkConferenceInfo implements Parcelable {
 
     public void setRoomID(String roomID) {
         this.roomID = roomID;
+    }
+
+    public String getHostUserID() {
+        if (hostUserID == null) {
+            return "";
+        }
+        return hostUserID;
+    }
+
+    public void setHostUserID(String hostUserID) {
+        this.hostUserID = hostUserID;
     }
 
     public Long getCallInitiatedTime() {
@@ -216,6 +234,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.callID);
         dest.writeString(this.roomID);
+        dest.writeString(this.hostUserID);
         dest.writeValue(this.callInitiatedTime);
         dest.writeValue(this.callStartedTime);
         dest.writeValue(this.callEndedTime);
@@ -226,6 +245,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
     protected MeetTalkConferenceInfo(Parcel in) {
         this.callID = in.readString();
         this.roomID = in.readString();
+        this.hostUserID = in.readString();
         this.callInitiatedTime = (Long) in.readValue(Long.class.getClassLoader());
         this.callStartedTime = (Long) in.readValue(Long.class.getClassLoader());
         this.callEndedTime = (Long) in.readValue(Long.class.getClassLoader());
