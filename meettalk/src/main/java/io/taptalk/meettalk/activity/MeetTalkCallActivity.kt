@@ -135,6 +135,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         Log.e(">>>>", "TapExtendedJitsiMeetActivity onResume: ")
 
         JitsiMeetActivityDelegate.onHostResume(this)
+
+        checkIfCallIsEnded()
     }
 
     override fun onPause() {
@@ -142,6 +144,10 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         Log.e(">>>>", "TapExtendedJitsiMeetActivity onPause: ")
 
         JitsiMeetActivityDelegate.onHostPause(this)
+
+        if (!isVideoMuted) {
+            toggleVideoMute()
+        }
     }
 
     override fun onDestroy() {
@@ -187,6 +193,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     override fun finish() {
+        if (isFinishing) {
+            return
+        }
         runOnUiThread {
             super.finish()
         }
@@ -241,6 +250,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onConferenceTerminated(extraData: HashMap<String, Any>?) {
         super.onConferenceTerminated(extraData)
         Log.e(">>>>", "MeetTalkCallActivity onConferenceTerminated: ${TAPUtils.toJsonString(extraData)}")
+        MeetTalkCallManager.setActiveCallAsEnded()
     }
 
     override fun onParticipantJoined(extraData: HashMap<String, Any>?) {
@@ -254,6 +264,10 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onParticipantLeft(extraData: HashMap<String, Any>?) {
         super.onParticipantLeft(extraData)
         Log.e(">>>>", "MeetTalkCallActivity onParticipantLeft: ${TAPUtils.toJsonString(extraData)}")
+        if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
+            // The other user left, terminate the call
+            finish()
+        }
     }
 
     /**
@@ -338,22 +352,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
         val event = BroadcastEvent(intent)
         when (event.type) {
-//            BroadcastEvent.Type.CONFERENCE_JOINED -> {
-//                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_JOINED ${TAPUtils.toJsonString(event.data)}")
-//                //retrieveParticipantsInfo()
-//            }
-//            BroadcastEvent.Type.CONFERENCE_WILL_JOIN -> {
-//                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_WILL_JOIN ${TAPUtils.toJsonString(event.data)}")
-//            }
-//            BroadcastEvent.Type.CONFERENCE_TERMINATED -> {
-//                Log.e(">>>>", "onBroadcastReceived: CONFERENCE_TERMINATED ${TAPUtils.toJsonString(event.data)}")
-//            }
-//            BroadcastEvent.Type.PARTICIPANT_JOINED -> {
-//                Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_JOINED ${TAPUtils.toJsonString(event.data)}")
-//            }
-//            BroadcastEvent.Type.PARTICIPANT_LEFT -> {
-//                Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_LEFT ${TAPUtils.toJsonString(event.data)}")
-//            }
             BroadcastEvent.Type.ENDPOINT_TEXT_MESSAGE_RECEIVED -> {
                 Log.e(">>>>", "onBroadcastReceived: ENDPOINT_TEXT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
             }
@@ -551,7 +549,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         activeParticipantInfo.videoMuted = isVideoMuted
         activeParticipantInfo.lastUpdated = System.currentTimeMillis()
         updateActiveParticipantInConferenceInfo()
-        if (isVideoMuted && isCallStarted) {
+        if (isCallStarted) {
             MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
         }
     }
@@ -646,6 +644,17 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         )
     }
 
+    private fun checkIfCallIsEnded() : Boolean {
+        if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
+            (MeetTalkCallManager.activeConferenceInfo == null ||
+                    MeetTalkCallManager.activeConferenceInfo!!.callEndedTime > 0L)
+        ) {
+            finish()
+            return true
+        }
+        return false
+    }
+
     /**
      * ==========================================================================================
      * PUBLIC METHODS
@@ -656,6 +665,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         Log.e(">>>> $TAG", "onConferenceInfoUpdated: ${TAPUtils.toJsonString(updatedConferenceInfo)}")
         Log.e(">>>> $TAG", "onConferenceInfoUpdated: $isCallStarted")
         Log.e(">>>> $TAG", "onConferenceInfoUpdated: ${updatedConferenceInfo.participants.size}")
+
+        if (checkIfCallIsEnded()) {
+            return
+        }
+
         if (MeetTalkCallManager.activeConferenceInfo != null &&
             !isCallStarted &&
             callInitiatedMessage.room.type == TYPE_PERSONAL &&
@@ -670,13 +684,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             enableButtons()
             startCallDurationTimer()
 
-//            if (activeParticipantInfo.role == HOST) {
-                // Send updated conference info
-                MeetTalkCallManager.sendConferenceInfoNotification(
-                    instanceKey,
-                    callInitiatedMessage.room
-                )
-//            }
+            // Send updated conference info
+            MeetTalkCallManager.sendConferenceInfoNotification(
+                instanceKey,
+                callInitiatedMessage.room
+            )
         }
 
         if (isCallStarted) {
