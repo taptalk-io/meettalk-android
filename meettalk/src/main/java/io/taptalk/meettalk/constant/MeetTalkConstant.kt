@@ -39,6 +39,10 @@ class MeetTalkConstant {
         const val MEET_URL = "https://meet.taptalk.io"
     }
 
+    object Value {
+        const val INCOMING_CALL_TIMEOUT_DURATION = 120000L
+    }
+
     object JitsiMeetBroadcastEventType {
         const val CONFERENCE_JOINED = "org.jitsi.meet.CONFERENCE_JOINED"
         const val CONFERENCE_TERMINATED = "org.jitsi.meet.CONFERENCE_TERMINATED"

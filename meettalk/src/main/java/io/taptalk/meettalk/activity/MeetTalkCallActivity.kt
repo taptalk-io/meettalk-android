@@ -8,8 +8,6 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.res.ColorStateList
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -582,20 +580,17 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         tv_call_duration_status.text = getString(R.string.meettalk_connected)
 
-        Handler(Looper.getMainLooper()).postDelayed({
-            val timerTask: TimerTask
-            timerTask = object : TimerTask() {
-                override fun run() {
-                    val duration = System.currentTimeMillis() - callStartTimestamp
-                    val durationString = MeetTalkUtils.getCallDurationString(duration)
-                    runOnUiThread {
-                        tv_call_duration_status.text = durationString
-                    }
+        val timerTask: TimerTask
+        timerTask = object : TimerTask() {
+            override fun run() {
+                val duration = System.currentTimeMillis() - callStartTimestamp
+                val durationString = MeetTalkUtils.getCallDurationString(duration)
+                runOnUiThread {
+                    tv_call_duration_status.text = durationString
                 }
             }
-            durationTimer.schedule(timerTask, 0, 1000)
-        }, 1000L)
-
+        }
+        durationTimer.schedule(timerTask, 1000L, 1000L)
     }
 
     private fun stopCallDurationTimer() {

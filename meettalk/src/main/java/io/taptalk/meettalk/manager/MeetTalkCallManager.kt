@@ -62,6 +62,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_SHARE_B
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.HOST
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
 import io.taptalk.meettalk.constant.MeetTalkConstant.Url.MEET_URL
+import io.taptalk.meettalk.constant.MeetTalkConstant.Value.INCOMING_CALL_TIMEOUT_DURATION
 import io.taptalk.meettalk.helper.MeetTalk
 import io.taptalk.meettalk.helper.MeetTalkCallConnection
 import io.taptalk.meettalk.helper.MeetTalkConnectionService
@@ -72,6 +73,8 @@ import org.jitsi.meet.sdk.JitsiMeetConferenceOptions
 import org.jitsi.meet.sdk.JitsiMeetUserInfo
 import java.net.MalformedURLException
 import java.net.URL
+import java.util.*
+import kotlin.collections.ArrayList
 
 @RequiresApi(Build.VERSION_CODES.M)
 class MeetTalkCallManager {
@@ -97,6 +100,8 @@ class MeetTalkCallManager {
         private var pendingIncomingCallRoomID: String? = null
         private var pendingIncomingCallPhoneNumber: String? = null
         private var handledCallNotificationMessageLocalIDs: ArrayList<String> = ArrayList()
+
+        private lateinit var missedCallTimer: Timer
 
         init {
             // Initialize Jitsi Meet
@@ -202,7 +207,7 @@ class MeetTalkCallManager {
                 pendingIncomingCallRoomID = message.room.roomID
                 pendingIncomingCallPhoneNumber = phoneNumber
 
-                // TODO: START COUNTDOWN TIMER FOR MISSED CALL
+                startMissedCallTimer()
             }
             catch (e: SecurityException) {
                 e.printStackTrace()
@@ -361,7 +366,6 @@ class MeetTalkCallManager {
             ) {
                 // Target did not join call, leave call room & dismiss waiting screen
                 Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: TARGET_BUSY | TARGET_REJECTED_CALL | TARGET_MISSED_CALL")
-                // TODO: NOTIFY USER
                 activeMeetTalkCallActivity?.finish()
                 activeCallMessage = null
                 activeConferenceInfo = null
@@ -582,6 +586,36 @@ class MeetTalkCallManager {
             TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, null)
 
             return message
+        }
+
+        private fun startMissedCallTimer() {
+            if (activeCallMessage == null) {
+                return
+            }
+            missedCallTimer = Timer()
+
+            val timerTask: TimerTask
+            timerTask = object : TimerTask() {
+                override fun run() {
+                    if (callState == CallState.RINGING) {
+                        if (System.currentTimeMillis() - activeCallMessage!!.created >
+                            INCOMING_CALL_TIMEOUT_DURATION
+                        ) {
+                            // Send missed call notification
+                            sendMissedCallNotification(
+                                activeCallInstanceKey ?: return,
+                                activeCallMessage!!.room
+                            )
+                            MeetTalkCallConnection.getInstance().onDisconnect()
+                            callState = CallState.IDLE
+                        }
+                    }
+                    else {
+                        missedCallTimer.cancel()
+                    }
+                }
+            }
+            missedCallTimer.schedule(timerTask, 0, 1000)
         }
     }
 }
