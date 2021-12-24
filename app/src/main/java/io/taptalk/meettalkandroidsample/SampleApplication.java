@@ -2,10 +2,10 @@ package io.taptalk.meettalkandroidsample;
 
 import static io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL;
 import static io.taptalk.TapTalk.Helper.TapTalk.TapTalkImplementationType.TapTalkImplementationTypeCombine;
-//import static io.taptalk.meettalkandroidsample.BuildConfig.GOOGLE_MAPS_API_KEY;
-//import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_APP_KEY_ID;
-//import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_APP_KEY_SECRET;
-//import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_BASE_URL;
+import static io.taptalk.meettalkandroidsample.BuildConfig.GOOGLE_MAPS_API_KEY;
+import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_APP_KEY_ID;
+import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_APP_KEY_SECRET;
+import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_BASE_URL;
 
 import android.app.Activity;
 
@@ -36,16 +36,16 @@ public class SampleApplication extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         TapTalk.setLoggingEnabled(true);
-//        MeetTalk.init(
-//                this,
-//                TAPTALK_SDK_APP_KEY_ID,
-//                TAPTALK_SDK_APP_KEY_SECRET,
-//                R.drawable.ic_taptalk_logo,
-//                getString(R.string.app_name),
-//                TAPTALK_SDK_BASE_URL,
-//                TapTalkImplementationTypeCombine,
-//                meetTalkListener);
-//        TapTalk.initializeGooglePlacesApiKey(GOOGLE_MAPS_API_KEY);
+        MeetTalk.init(
+                this,
+                TAPTALK_SDK_APP_KEY_ID,
+                TAPTALK_SDK_APP_KEY_SECRET,
+                R.drawable.ic_taptalk_logo,
+                getString(R.string.app_name),
+                TAPTALK_SDK_BASE_URL,
+                TapTalkImplementationTypeCombine,
+                meetTalkListener);
+        TapTalk.initializeGooglePlacesApiKey(GOOGLE_MAPS_API_KEY);
 
         TapUI.getInstance(INSTANCE_KEY).setLogoutButtonVisible(true);
         TapUI.getInstance(INSTANCE_KEY).setConnectionStatusIndicatorVisible(false);
