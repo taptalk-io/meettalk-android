@@ -431,6 +431,7 @@ class MeetTalkCallManager {
             val conferenceInfo = activeConferenceInfo?.copy()
             if (conferenceInfo != null) {
                 conferenceInfo.callEndedTime = message.created
+                conferenceInfo.lastUpdated = message.created
                 if (conferenceInfo.callStartedTime > 0L) {
                     conferenceInfo.callDuration = conferenceInfo.callEndedTime - conferenceInfo.callStartedTime
                 }
@@ -453,6 +454,7 @@ class MeetTalkCallManager {
                 0L,
                 0L,
                 0L,
+                message.created,
                 participants
             )
             message.data = newConferenceInfo.toHashMap()
@@ -496,7 +498,7 @@ class MeetTalkCallManager {
         fun sendAnsweredCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
             val message = generateCallNotificationMessage(instanceKey, room, "{{user}} answered call.", TARGET_ANSWERED_CALL)
             message.data = activeConferenceInfo?.toHashMap()
-            message.hidden = true
+            //message.hidden = true
 
             TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, null)
 
@@ -507,6 +509,7 @@ class MeetTalkCallManager {
             val message = generateCallNotificationMessage(instanceKey, room, "{{user}} joined call.", TARGET_JOINED_CALL)
             val participant = generateParticipantInfo(instanceKey, PARTICIPANT)
             activeConferenceInfo?.updateParticipant(participant)
+            activeConferenceInfo?.lastUpdated = message.created
             message.data = activeConferenceInfo?.toHashMap()
             message.hidden = true
 
@@ -555,8 +558,7 @@ class MeetTalkCallManager {
         }
 
         fun sendUnableToReceiveCallNotification(instanceKey: String, room: TAPRoomModel, body: String) : TAPMessageModel {
-            var message = generateCallNotificationMessage(instanceKey, room, body, TARGET_UNABLE_TO_RECEIVE_CALL)
-            message = setMessageConferenceInfoAsEnded(message)
+            val message = generateCallNotificationMessage(instanceKey, room, body, TARGET_UNABLE_TO_RECEIVE_CALL)
             message.hidden = true
 
             activeCallMessage = null
@@ -573,6 +575,7 @@ class MeetTalkCallManager {
                 return null
             }
             val message = generateCallNotificationMessage(instanceKey, room, "Call info updated.", CONFERENCE_INFO)
+            activeConferenceInfo?.lastUpdated = message.created
             message.data = activeConferenceInfo!!.toHashMap()
             message.hidden = true
 

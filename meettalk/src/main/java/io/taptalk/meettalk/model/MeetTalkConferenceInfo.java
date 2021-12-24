@@ -22,6 +22,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
     @JsonProperty("callStartedTime") private Long callStartedTime;
     @JsonProperty("callEndedTime") private Long callEndedTime;
     @JsonProperty("callDuration") private Long callDuration;
+    @JsonProperty("lastUpdated") private Long lastUpdated;
     @JsonProperty("participants") private List<MeetTalkParticipantInfo> participants;
 
     public MeetTalkConferenceInfo() {
@@ -36,6 +37,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
             Long callStartedTime,
             Long callEndedTime,
             Long callDuration,
+            Long lastUpdated,
             List<MeetTalkParticipantInfo> participants
     ) {
         this.callID = callID;
@@ -45,6 +47,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
         this.callStartedTime = callStartedTime;
         this.callEndedTime = callEndedTime;
         this.callDuration = callDuration;
+        this.lastUpdated = lastUpdated;
         this.participants = participants;
     }
 
@@ -91,6 +94,9 @@ public class MeetTalkConferenceInfo implements Parcelable {
         if (updatedConferenceInfo.getCallDuration() > 0L) {
             setCallDuration(updatedConferenceInfo.getCallDuration());
         }
+        if (updatedConferenceInfo.getLastUpdated() > 0L) {
+            setCallDuration(updatedConferenceInfo.getLastUpdated());
+        }
 //        if (!updatedConferenceInfo.getParticipants().isEmpty()) {
 //            for (String key : updatedConferenceInfo.getParticipants().keySet()) {
 //                MeetTalkParticipantInfo participant = updatedConferenceInfo.getParticipants().get(key);
@@ -117,6 +123,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
                 this.callStartedTime,
                 this.callEndedTime,
                 this.callDuration,
+                this.lastUpdated,
                 this.participants
         );
     }
@@ -205,6 +212,14 @@ public class MeetTalkConferenceInfo implements Parcelable {
         return participants;
     }
 
+    public Long getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(Long lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
     public void setParticipants(List<MeetTalkParticipantInfo> participants) {
         this.participants = participants;
     }
@@ -239,6 +254,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
         dest.writeValue(this.callStartedTime);
         dest.writeValue(this.callEndedTime);
         dest.writeValue(this.callDuration);
+        dest.writeValue(this.lastUpdated);
         dest.writeTypedList(this.participants);
     }
 
@@ -250,6 +266,7 @@ public class MeetTalkConferenceInfo implements Parcelable {
         this.callStartedTime = (Long) in.readValue(Long.class.getClassLoader());
         this.callEndedTime = (Long) in.readValue(Long.class.getClassLoader());
         this.callDuration = (Long) in.readValue(Long.class.getClassLoader());
+        this.lastUpdated = (Long) in.readValue(Long.class.getClassLoader());
         this.participants = in.createTypedArrayList(MeetTalkParticipantInfo.CREATOR);
     }
 

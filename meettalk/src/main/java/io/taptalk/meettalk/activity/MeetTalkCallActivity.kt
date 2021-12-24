@@ -8,6 +8,8 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -20,8 +22,13 @@ import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
+import io.taptalk.TapTalk.Listener.TAPSocketListener
+import io.taptalk.TapTalk.Listener.TapCoreGetMessageListener
+import io.taptalk.TapTalk.Manager.TAPConnectionManager
+import io.taptalk.TapTalk.Manager.TapCoreMessageManager
 import io.taptalk.TapTalk.Model.TAPMessageModel
 import io.taptalk.meettalk.R
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_MESSAGE_TYPE
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CONFERENCE_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetBroadcastEventType.RETRIEVE_PARTICIPANTS_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
@@ -45,6 +52,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     private lateinit var callInitiatedMessage: TAPMessageModel
     private lateinit var activeParticipantInfo: MeetTalkParticipantInfo
     private lateinit var activeUserID: String
+    private lateinit var durationTimer: Timer
 
     private var isAudioMuted = false
     private var isVideoMuted = false
@@ -54,6 +62,32 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             onBroadcastReceived(intent)
+        }
+    }
+
+    private val socketListener = object : TAPSocketListener() {
+        override fun onSocketConnected() {
+            Log.e(">>>> $TAG", "onSocketConnected: ")
+            fetchNewerMessages()
+        }
+
+        override fun onSocketDisconnected() {
+            Log.e(">>>> $TAG", "onSocketDisconnected: ")
+            showVoiceCallLayout(true)
+            stopCallDurationTimer()
+            tv_call_duration_status.text = getString(R.string.meettalk_disconnected)
+        }
+
+        override fun onSocketConnecting() {
+            Log.e(">>>> $TAG", "onSocketConnecting: ")
+            showVoiceCallLayout(true)
+            stopCallDurationTimer()
+            tv_call_duration_status.text = getString(R.string.meettalk_connecting)
+        }
+
+        override fun onSocketError() {
+            Log.e(">>>> $TAG", "onSocketError: ")
+            onSocketDisconnected()
         }
     }
 
@@ -95,6 +129,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         initData()
         initView()
         registerForBroadcastMessages()
+        TAPConnectionManager.getInstance(instanceKey).addSocketListener(socketListener)
     }
 
     override fun onResume() {
@@ -120,8 +155,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         MeetTalkCallManager.activeMeetTalkCallActivity = null
         MeetTalkCallManager.callState = IDLE
-
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
+        TAPConnectionManager.getInstance(instanceKey).removeSocketListener(socketListener)
 
         if (isTaskRoot) {
             // Trigger listener callback if no other activity is open
@@ -543,18 +578,77 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             return
         }
 
-        val timer = Timer()
-        val timerTask: TimerTask
-        timerTask = object : TimerTask() {
-            override fun run() {
-                val duration = System.currentTimeMillis() - callStartTimestamp
-                val durationString = MeetTalkUtils.getCallDurationString(duration)
-                runOnUiThread {
-                    tv_call_duration_status.text = durationString
+        durationTimer = Timer()
+
+        tv_call_duration_status.text = getString(R.string.meettalk_connected)
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            val timerTask: TimerTask
+            timerTask = object : TimerTask() {
+                override fun run() {
+                    val duration = System.currentTimeMillis() - callStartTimestamp
+                    val durationString = MeetTalkUtils.getCallDurationString(duration)
+                    runOnUiThread {
+                        tv_call_duration_status.text = durationString
+                    }
                 }
             }
+            durationTimer.schedule(timerTask, 0, 1000)
+        }, 1000L)
+
+    }
+
+    private fun stopCallDurationTimer() {
+        if (!this::durationTimer.isInitialized) {
+            return
         }
-        timer.schedule(timerTask, 0, 1000)
+        durationTimer.cancel()
+    }
+
+    private fun fetchNewerMessages() {
+        if (MeetTalkCallManager.activeConferenceInfo == null) {
+            return
+        }
+        // Fetch missed notifications when socket was offline
+        TapCoreMessageManager.getInstance(instanceKey).getNewerMessagesAfterTimestamp(
+            callInitiatedMessage.room.roomID,
+            MeetTalkCallManager.activeConferenceInfo!!.lastUpdated,
+            MeetTalkCallManager.activeConferenceInfo!!.lastUpdated,
+            object : TapCoreGetMessageListener() {
+                override fun onSuccess(messages: MutableList<TAPMessageModel>?) {
+                    Log.e(">>>> $TAG", "getNewerMessagesAfterTimestamp onSuccess: ${messages?.size}")
+                    if (!messages.isNullOrEmpty()) {
+                        messages.reverse()
+                        for (message in messages) {
+                            if (message.room.roomID == callInitiatedMessage.room.roomID &&
+                                message.type == CALL_MESSAGE_TYPE
+                            ) {
+                                MeetTalkCallManager.checkAndHandleCallNotificationFromMessage(
+                                    message,
+                                    instanceKey,
+                                    TapTalk.getTapTalkActiveUser(instanceKey)
+                                )
+                            }
+                        }
+                    }
+                    if (!isFinishing) {
+                        if (MeetTalkCallManager.activeConferenceInfo != null) {
+                            Log.e(">>>> $TAG", "getNewerMessagesAfterTimestamp: onConferenceInfoUpdated")
+                            startCallDurationTimer()
+                            onConferenceInfoUpdated(MeetTalkCallManager.activeConferenceInfo!!)
+                        }
+                        else {
+                            Log.e(">>>> $TAG", "getNewerMessagesAfterTimestamp: finish")
+                            finish()
+                        }
+                    }
+                }
+
+                override fun onError(errorCode: String?, errorMessage: String?) {
+                    // TODO: Request latest conference info
+                }
+            }
+        )
     }
 
     /**

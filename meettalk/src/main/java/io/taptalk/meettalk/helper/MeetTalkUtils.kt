@@ -8,7 +8,7 @@ class MeetTalkUtils {
             return  if (duration == null || duration == 0L) {
                 ""
             }
-            else if (duration < TimeUnit.MINUTES.toMillis(1)) {
+            else if (duration < TimeUnit.HOURS.toMillis(1)) {
                 String.format(
                     "%02d:%02d",
                     TimeUnit.MILLISECONDS.toMinutes(duration),

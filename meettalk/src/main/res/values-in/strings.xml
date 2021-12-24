@@ -14,7 +14,9 @@
     <string name="meettalk_cancelled_call">Panggilan Dibatalkan</string>
 
     <!--Connection-->
+    <string name="meettalk_connected">Terhubung</string>
     <string name="meettalk_connecting">Menghubungkan…</string>
+    <string name="meettalk_disconnected">Koneksi terputus</string>
     <string name="meettalk_format_waiting_for_user">Menunggu %s…</string>
 
     <!--General-->
