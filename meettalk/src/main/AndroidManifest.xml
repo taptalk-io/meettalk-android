@@ -11,7 +11,7 @@
         <service
             android:name=".helper.MeetTalkConnectionService"
             android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.telecom.ConnectionService" />
             </intent-filter>
@@ -19,6 +19,7 @@
 
         <activity
             android:name=".activity.MeetTalkCallActivity"
+            android:exported="true"
             android:screenOrientation="portrait" />
 
     </application>

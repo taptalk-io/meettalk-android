@@ -11,8 +11,8 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 31
-        versionCode 7
-        versionName "0.1.5"
+        versionCode 8
+        versionName "0.1.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -25,7 +25,6 @@ android {
             debuggable false
             consumerProguardFiles 'proguard-rules.pro'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-//            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField 'String', 'VERSION_NAME', "\"${defaultConfig.versionName}\""
         }
         staging {
@@ -74,7 +73,7 @@ dependencies {
     api 'com.github.taptalk-io:taptalk.io-android:1.3.25'
 
     // Jitsi Meet
-    implementation ('org.jitsi.react:jitsi-meet-sdk:3.7.0') { transitive = true }
+    implementation ('org.jitsi.react:jitsi-meet-sdk:3.7.0')
 
     // Jackson
     implementation "com.fasterxml.jackson.core:jackson-core:2.10.3"

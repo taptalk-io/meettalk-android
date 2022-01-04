@@ -19,8 +19,8 @@ dependencyResolutionManagement {
 }
 rootProject.name = "MeetTalk Android"
 
-//if (!System.env.JITPACK) {
-//    include ':app'
-//}
+if (!System.env.JITPACK) {
+    include ':app'
+}
 
 include ':meettalk'
