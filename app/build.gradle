@@ -17,48 +17,51 @@ android {
         applicationId "io.taptalk.meettalkandroidsample"
         minSdk 23
         targetSdk 30
-        versionCode 6
-        versionName "0.1.4"
+        versionCode 7
+        versionName "0.1.5"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
         release {
-            // TODO: add signing.properties
-//            try {
-//                Properties props = new Properties()
-//                def propFile = file(globalConfig.signingProps)
-//                if (propFile.canRead()) {
-//                    props.load(new FileInputStream(propFile))
-//
-//                    if (props != null
-//                            && props.containsKey(globalConfig.keystoreFileName)
-//                            && props.containsKey(globalConfig.keystorePasswordName)
-//                            && props.containsKey(globalConfig.keyAliasName)
-//                            && props.containsKey(globalConfig.keyPasswordName)) {
-//
-//                        def keystoreFile = file(props[globalConfig.keystoreFileName])
-//                        if (keystoreFile.canRead()) {
-//                            storeFile keystoreFile
-//                            storePassword props[globalConfig.keystorePasswordName]
-//                            keyAlias props[globalConfig.keyAliasName]
-//                            keyPassword props[globalConfig.keyPasswordName]
-//                        } else {
-//                            println("[GRADLE BUILD ERR]: Keystore file not found: " + props[globalConfig.keystoreFileName])
-//                            android.buildTypes.release.signingConfig = null
-//                        }
-//                    } else {
-//                        println("[GRADLE BUILD ERR]: File signing.properties found but some entries missing")
-//                        android.buildTypes.release.signingConfig = null
-//                    }
-//                } else {
-//                    println("[GRADLE BUILD ERR]: File signing.properties not found")
-//                    android.buildTypes.release.signingConfig = null
-//                }
-//            } catch (ex) {
-//                throw new InvalidUserDataException("[GRADLE BUILD ERR]: Signing FAILED. Check signing config." + ex.message)
-//            }
+            try {
+                Properties props = new Properties()
+                def propFile = file(globalConfig.signingProps)
+                if (propFile.canRead()) {
+                    props.load(new FileInputStream(propFile))
+
+                    if (props != null &&
+                            props.containsKey(globalConfig.keystoreFileName) &&
+                            props.containsKey(globalConfig.keystorePasswordName) &&
+                            props.containsKey(globalConfig.keyAliasName) &&
+                            props.containsKey(globalConfig.keyPasswordName)
+                    ) {
+                        def keystoreFile = file(props[globalConfig.keystoreFileName])
+                        if (keystoreFile.canRead()) {
+                            storeFile keystoreFile
+                            storePassword props[globalConfig.keystorePasswordName]
+                            keyAlias props[globalConfig.keyAliasName]
+                            keyPassword props[globalConfig.keyPasswordName]
+                        }
+                        else {
+                            println("[GRADLE BUILD ERR]: Keystore file not found: " + props[globalConfig.keystoreFileName])
+                            android.buildTypes.release.signingConfig = null
+                        }
+                    }
+                    else {
+                        println("[GRADLE BUILD ERR]: File signing.properties found but some entries missing")
+                        android.buildTypes.release.signingConfig = null
+                    }
+                }
+                else {
+                    println("[GRADLE BUILD ERR]: File signing.properties not found")
+                    android.buildTypes.release.signingConfig = null
+                }
+            }
+            catch (ex) {
+                throw new InvalidUserDataException("[GRADLE BUILD ERR]: Signing FAILED. Check signing config." + ex.message)
+            }
         }
     }
 
@@ -117,9 +120,63 @@ android {
                 buildConfigField("String", "TAPTALK_SDK_BASE_URL", "\"\"")
             }
         }
+        stagingUpload {
+            signingConfig signingConfigs.release
+            debuggable false
+            minifyEnabled false
+            applicationIdSuffix '.staging'
+            versionNameSuffix '-STAGING'
+            if (project.hasProperty('STAGING_GOOGLE_MAPS_API_KEY')) {
+                buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${STAGING_GOOGLE_MAPS_API_KEY}\"")
+            } else {
+                buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"\"")
+            }
+            if (project.hasProperty('STAGING_TAPTALK_SDK_APP_KEY_ID')) {
+                buildConfigField("String", "TAPTALK_SDK_APP_KEY_ID", "\"${STAGING_TAPTALK_SDK_APP_KEY_ID}\"")
+            } else {
+                buildConfigField("String", "TAPTALK_SDK_APP_KEY_ID", "\"\"")
+            }
+            if (project.hasProperty('STAGING_TAPTALK_SDK_APP_KEY_SECRET')) {
+                buildConfigField("String", "TAPTALK_SDK_APP_KEY_SECRET", "\"${STAGING_TAPTALK_SDK_APP_KEY_SECRET}\"")
+            } else {
+                buildConfigField("String", "TAPTALK_SDK_APP_KEY_SECRET", "\"\"")
+            }
+            if (project.hasProperty('STAGING_TAPTALK_SDK_BASE_URL')) {
+                buildConfigField("String", "TAPTALK_SDK_BASE_URL", "\"${STAGING_TAPTALK_SDK_BASE_URL}\"")
+            } else {
+                buildConfigField("String", "TAPTALK_SDK_BASE_URL", "\"\"")
+            }
+        }
         dev {
             signingConfig signingConfigs.debug
             debuggable true
+            minifyEnabled false
+            applicationIdSuffix '.dev'
+            versionNameSuffix '-DEV'
+            if (project.hasProperty('DEV_GOOGLE_MAPS_API_KEY')) {
+                buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"${DEV_GOOGLE_MAPS_API_KEY}\"")
+            } else {
+                buildConfigField("String", "GOOGLE_MAPS_API_KEY", "\"\"")
+            }
+            if (project.hasProperty('DEV_TAPTALK_SDK_APP_KEY_ID')) {
+                buildConfigField("String", "TAPTALK_SDK_APP_KEY_ID", "\"${DEV_TAPTALK_SDK_APP_KEY_ID}\"")
+            } else {
+                buildConfigField("String", "TAPTALK_SDK_APP_KEY_ID", "\"\"")
+            }
+            if (project.hasProperty('DEV_TAPTALK_SDK_APP_KEY_SECRET')) {
+                buildConfigField("String", "TAPTALK_SDK_APP_KEY_SECRET", "\"${DEV_TAPTALK_SDK_APP_KEY_SECRET}\"")
+            } else {
+                buildConfigField("String", "TAPTALK_SDK_APP_KEY_SECRET", "\"\"")
+            }
+            if (project.hasProperty('DEV_TAPTALK_SDK_BASE_URL')) {
+                buildConfigField("String", "TAPTALK_SDK_BASE_URL", "\"${DEV_TAPTALK_SDK_BASE_URL}\"")
+            } else {
+                buildConfigField("String", "TAPTALK_SDK_BASE_URL", "\"\"")
+            }
+        }
+        devUpload {
+            signingConfig signingConfigs.release
+            debuggable false
             minifyEnabled false
             applicationIdSuffix '.dev'
             versionNameSuffix '-DEV'
