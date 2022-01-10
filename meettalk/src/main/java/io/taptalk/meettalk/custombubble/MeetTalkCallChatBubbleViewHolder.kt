@@ -22,9 +22,9 @@ import io.taptalk.meettalk.BuildConfig
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_CANCELLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_ENDED
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_BUSY
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_MISSED_CALL
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.TARGET_REJECTED_CALL
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_BUSY
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_MISSED_CALL
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_REJECTED_CALL
 import io.taptalk.meettalk.helper.MeetTalkUtils
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 
@@ -62,9 +62,9 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
 
         if (item.action != CALL_ENDED &&
             item.action != CALL_CANCELLED &&
-            item.action != TARGET_BUSY &&
-            item.action != TARGET_REJECTED_CALL &&
-            item.action != TARGET_MISSED_CALL
+            item.action != RECIPIENT_BUSY &&
+            item.action != RECIPIENT_REJECTED_CALL &&
+            item.action != RECIPIENT_MISSED_CALL
         ) {
             clContainer.visibility = View.GONE
             clContainer.layoutParams.height = 0
@@ -145,8 +145,8 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
                 tvCallTimeDuration.text = String.format("%s - %s", TAPTimeFormatter.formatClock(item.created), durationString)
                 ivCallArrowIcon.imageTintList = ColorStateList.valueOf(itemView.context.getColor(R.color.meetTalkIconArrowCallSuccess))
             }
-            CALL_CANCELLED, TARGET_BUSY -> {
-                // Caller cancelled the call or target is in another call
+            CALL_CANCELLED, RECIPIENT_BUSY -> {
+                // Caller cancelled the call or recipient is in another call
                 if (isCallHostedByActiveUser(item)) {
                     tvMessageBody.text = itemView.context.getString(R.string.meettalk_cancelled_call)
                 }
@@ -156,8 +156,8 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
                 tvCallTimeDuration.text = TAPTimeFormatter.formatClock(item.created)
                 ivCallArrowIcon.imageTintList = ColorStateList.valueOf(itemView.context.getColor(R.color.meetTalkIconArrowCallFailure))
             }
-            TARGET_REJECTED_CALL, TARGET_MISSED_CALL -> {
-                // Target rejected or missed the call
+            RECIPIENT_REJECTED_CALL, RECIPIENT_MISSED_CALL -> {
+                // Recipient rejected or missed the call
                 if (isCallHostedByActiveUser(item)) {
                     tvMessageBody.text = itemView.context.getString(R.string.meettalk_outgoing_call)
                 }

@@ -6,6 +6,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Listener.TapCoreMessageListener;
 import io.taptalk.TapTalk.Listener.TapListener;
@@ -23,6 +26,8 @@ public class MeetTalk {
 
     public static Context appContext;
     public static String appID;
+
+    private static HashMap<String, ArrayList<MeetTalkListener>> meetTalkListenerMap = new HashMap<>();
 
     public static void init(
             Context applicationContext,
@@ -121,6 +126,7 @@ public class MeetTalk {
             @Override
             public void onInitializationCompleted(String instanceKey) {
                 super.onInitializationCompleted(instanceKey);
+                meetTalkListener.onInitializationCompleted(instanceKey);
             }
 
             @Override
@@ -177,7 +183,7 @@ public class MeetTalk {
             }
         };
 
-        // Initialize TapTalk instance
+        // Initialize TapTalk instance and listeners
         TapTalk.initNewInstance(
                 instanceKey,
                 applicationContext,
@@ -191,6 +197,7 @@ public class MeetTalk {
                 tapListener
         );
         TapCoreMessageManager.getInstance(instanceKey).addMessageListener(tapCoreMessageListener);
+        addMeetTalkListener(instanceKey, meetTalkListener);
 
         if (tapTalkImplementationType != TapTalkImplementationTypeCore) {
             // Initialize call message bubble
@@ -207,6 +214,36 @@ public class MeetTalk {
         }
 
         meetTalkListener.onInitializationCompleted(instanceKey);
+    }
+
+    public static ArrayList<MeetTalkListener> getMeetTalkListeners() {
+        return getMeetTalkListeners("");
+    }
+
+    public static ArrayList<MeetTalkListener> getMeetTalkListeners(String instanceKey) {
+        if (!meetTalkListenerMap.containsKey(instanceKey)) {
+            ArrayList<MeetTalkListener> meetTalkListeners = new ArrayList<>();
+            meetTalkListenerMap.put(instanceKey, meetTalkListeners);
+        }
+        return meetTalkListenerMap.get(instanceKey);
+    }
+
+    public static void addMeetTalkListener(MeetTalkListener meetTalkListener) {
+        addMeetTalkListener("", meetTalkListener);
+    }
+
+    public static void addMeetTalkListener(String instanceKey, MeetTalkListener meetTalkListener) {
+        if (!getMeetTalkListeners(instanceKey).contains(meetTalkListener)) {
+            getMeetTalkListeners(instanceKey).add(meetTalkListener);
+        }
+    }
+
+    public static void removeMeetTalkListener(MeetTalkListener meetTalkListener) {
+        removeMeetTalkListener("", meetTalkListener);
+    }
+
+    public static void removeMeetTalkListener(String instanceKey, MeetTalkListener meetTalkListener) {
+        getMeetTalkListeners(instanceKey).remove(meetTalkListener);
     }
 
     public static void checkAndRequestEnablePhoneAccountSettings(Activity activity) {

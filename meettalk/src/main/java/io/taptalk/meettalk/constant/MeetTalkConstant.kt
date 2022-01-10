@@ -6,13 +6,14 @@ class MeetTalkConstant {
         const val CALL_INITIATED = "call/initiate"
         const val CALL_CANCELLED = "call/cancel"
         const val CALL_ENDED = "call/end"
-        const val TARGET_ANSWERED_CALL = "call/answer"
-        const val TARGET_JOINED_CALL = "call/join"
-        const val TARGET_BUSY = "call/busy"
-        const val TARGET_REJECTED_CALL = "call/reject"
-        const val TARGET_MISSED_CALL = "call/timeout"
-        const val TARGET_UNABLE_TO_RECEIVE_CALL = "call/unable"
-        const val CONFERENCE_INFO = "call/info"
+        const val RECIPIENT_ANSWERED_CALL = "call/answer"
+        const val RECIPIENT_BUSY = "call/busy"
+        const val RECIPIENT_REJECTED_CALL = "call/reject"
+        const val RECIPIENT_MISSED_CALL = "call/timeout"
+        const val RECIPIENT_UNABLE_TO_RECEIVE_CALL = "call/unable"
+        const val PARTICIPANT_JOINED_CONFERENCE = "conference/join"
+        const val PARTICIPANT_LEFT_CONFERENCE = "conference/left" // TODO: SEND & HANDLE NOTIFICATION
+        const val CONFERENCE_INFO = "conference/info"
     }
 
     object CallMessageType {

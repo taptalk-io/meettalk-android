@@ -30,6 +30,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_MESSAG
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CONFERENCE_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetBroadcastEventType.RETRIEVE_PARTICIPANTS_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
+import io.taptalk.meettalk.helper.MeetTalk
 import io.taptalk.meettalk.helper.MeetTalkUtils
 import io.taptalk.meettalk.manager.MeetTalkCallManager
 import io.taptalk.meettalk.manager.MeetTalkCallManager.Companion.CallState.IDLE
@@ -67,6 +68,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         override fun onSocketConnected() {
             Log.e(">>>> $TAG", "onSocketConnected: ")
             fetchNewerMessages()
+
+            // Trigger listener callback
+            for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
+                meetTalkListener.onReconnectedToConference(MeetTalkCallManager.activeConferenceInfo)
+            }
         }
 
         override fun onSocketDisconnected() {
@@ -74,6 +80,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             showVoiceCallLayout(true)
             stopCallDurationTimer()
             tv_call_duration_status.text = getString(R.string.meettalk_disconnected)
+
+            // Trigger listener callback
+            for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
+                meetTalkListener.onDisconnectedFromConference(MeetTalkCallManager.activeConferenceInfo)
+            }
         }
 
         override fun onSocketConnecting() {
@@ -122,7 +133,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         setContentView(R.layout.meettalk_activity_call)
 
         MeetTalkCallManager.activeMeetTalkCallActivity = this
-        Log.e(">>>>", "TapExtendedJitsiMeetActivity onCreate: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
+        Log.e(">>>>", "MeetTalkCallActivity onCreate: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
 
         initData()
         initView()
@@ -132,7 +143,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     override fun onResume() {
         super.onResume()
-        Log.e(">>>>", "TapExtendedJitsiMeetActivity onResume: ")
+        Log.e(">>>>", "MeetTalkCallActivity onResume: ")
 
         JitsiMeetActivityDelegate.onHostResume(this)
 
@@ -141,7 +152,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     override fun onPause() {
         super.onPause()
-        Log.e(">>>>", "TapExtendedJitsiMeetActivity onPause: ")
+        Log.e(">>>>", "MeetTalkCallActivity onPause: ")
 
         JitsiMeetActivityDelegate.onHostPause(this)
 
@@ -153,7 +164,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-        Log.e(">>>>", "TapExtendedJitsiMeetActivity onDestroy: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
+        Log.e(">>>>", "MeetTalkCallActivity onDestroy: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
 
         JitsiMeetActivityDelegate.onHostDestroy(this)
 
@@ -179,14 +190,14 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             MeetTalkCallManager.activeConferenceInfo!!.callEndedTime == 0L
         ) {
             if (MeetTalkCallManager.activeConferenceInfo!!.participants.size > 1) {
-                Log.e(">>>>>", "TapExtendedJitsiMeetActivity onBackPressed: sendCallEndedNotification")
+                Log.e(">>>>>", "MeetTalkCallActivity onBackPressed: sendCallEndedNotification")
                 // Send call ended notification to notify the other party
                 MeetTalkCallManager.sendCallEndedNotification(instanceKey, callInitiatedMessage.room)
             }
             else {
-                Log.e(">>>>>", "TapExtendedJitsiMeetActivity onBackPressed: sendCallCanceledNotification")
-                // Send call canceled notification to notify target
-                MeetTalkCallManager.sendCallCanceledNotification(instanceKey, callInitiatedMessage.room)
+                Log.e(">>>>>", "MeetTalkCallActivity onBackPressed: sendCallCancelledNotification")
+                // Send call cancelled notification to notify recipient
+                MeetTalkCallManager.sendCallCancelledNotification(instanceKey, callInitiatedMessage.room)
             }
         }
         super.onBackPressed()
@@ -199,7 +210,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         runOnUiThread {
             super.finish()
         }
-        Log.e(">>>>>", "TapExtendedJitsiMeetActivity finish: ")
+        Log.e(">>>>>", "MeetTalkCallActivity finish: ")
     }
 
     /**
@@ -245,11 +256,22 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 )
             }
         }
+
+        // Trigger listener callback
+        for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
+            meetTalkListener.onConferenceJoined(MeetTalkCallManager.activeConferenceInfo)
+        }
     }
 
     override fun onConferenceTerminated(extraData: HashMap<String, Any>?) {
         super.onConferenceTerminated(extraData)
         Log.e(">>>>", "MeetTalkCallActivity onConferenceTerminated: ${TAPUtils.toJsonString(extraData)}")
+
+        // Trigger listener callback
+        for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
+            meetTalkListener.onConferenceTerminated(MeetTalkCallManager.activeConferenceInfo)
+        }
+
         MeetTalkCallManager.setActiveCallAsEnded()
     }
 
@@ -360,8 +382,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             }
             BroadcastEvent.Type.PARTICIPANTS_INFO_RETRIEVED -> {
                 Log.e(">>>>", "onBroadcastReceived: PARTICIPANTS_INFO_RETRIEVED ${TAPUtils.toJsonString(event.data)}")
-                if (event.data != null) {
-
+//                if (event.data != null) {
 //                    val participantInfoList: List<ParticipantInfo> = Gson().fromJson<Any>(
 //                        event.data["participantsInfo"].toString(),
 //                        object : TypeToken<java.util.ArrayList<ParticipantInfo?>?>() {}.type
@@ -372,7 +393,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 //                            object : TypeReference<ArrayList<Any?>>() {},
 //                            event.data["participantsInfo"] as String
 //                        )
-                }
+//                }
             }
             BroadcastEvent.Type.CHAT_MESSAGE_RECEIVED -> {
                 Log.e(">>>>", "onBroadcastReceived: CHAT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
@@ -675,7 +696,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             callInitiatedMessage.room.type == TYPE_PERSONAL &&
             updatedConferenceInfo.participants.size > 1
         ) {
-            // Target has joined, mark the call as started
+            // Recipient has joined, mark the call as started
             isCallStarted = true
             if (MeetTalkCallManager.activeConferenceInfo!!.callStartedTime == 0L) {
                 MeetTalkCallManager.activeConferenceInfo!!.callStartedTime = System.currentTimeMillis()
