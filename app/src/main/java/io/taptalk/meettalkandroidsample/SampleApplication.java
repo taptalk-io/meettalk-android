@@ -100,7 +100,6 @@ public class SampleApplication extends MultiDexApplication {
         @Override
         public void onCustomKeyboardItemTapped(Activity activity, TAPCustomKeyboardItemModel customKeyboardItem, TAPRoomModel room, TAPUserModel activeUser, @Nullable TAPUserModel recipientUser) {
             if (customKeyboardItem.getItemID().equals("voiceCall")) {
-                // TODO: CALL API TO GET JITSI ROOM NAME (ID)
                 MeetTalk.initiateNewConferenceCall(activity, INSTANCE_KEY, room);
             }
         }

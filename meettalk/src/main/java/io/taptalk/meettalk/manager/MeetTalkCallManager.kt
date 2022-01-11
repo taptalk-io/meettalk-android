@@ -142,12 +142,15 @@ class MeetTalkCallManager {
             buildAndRegisterPhoneAccount()
         }
 
-        fun checkAndRequestEnablePhoneAccountSettings(instanceKey: String, activity: Activity) {
-            if (MeetTalkDataManager.getInstance(instanceKey).getEnablePhoneAccountSettingsRequestedAppName() == appName ||
-                getPhoneAccount()?.isEnabled == true
-            ) {
-                return
-            }
+        fun isPhoneAccountEnabled() : Boolean {
+            return getPhoneAccount()?.isEnabled == true
+        }
+
+        fun isEnablePhoneAccountSettingsRequested(instanceKey: String) : Boolean {
+            return MeetTalkDataManager.getInstance(instanceKey).getEnablePhoneAccountSettingsRequestedAppName() == appName
+        }
+
+        fun requestEnablePhoneAccountSettings(instanceKey: String, activity: Activity) {
             TapTalkDialog.Builder(activity)
                 .setTitle(activity.getString(R.string.meettalk_enable_voice_call))
                 .setMessage(String.format(activity.getString(R.string.meettalk_format_enable_phone_account_message), appName))
@@ -157,6 +160,27 @@ class MeetTalkCallManager {
                 .setSecondaryButtonTitle(activity.getString(R.string.meettalk_dismiss))
                 .show()
             MeetTalkDataManager.getInstance(instanceKey).setEnablePhoneAccountSettingsRequestedAppName(appName)
+        }
+
+        fun checkAndRequestEnablePhoneAccountSettings(instanceKey: String, activity: Activity) {
+            if (isEnablePhoneAccountSettingsRequested(instanceKey) || isPhoneAccountEnabled()) {
+                return
+            }
+            requestEnablePhoneAccountSettings(instanceKey, activity)
+        }
+
+        fun openPhoneAccountSettings() {
+            val intent = Intent()
+            if (Build.MANUFACTURER.equals("Samsung", ignoreCase = true)) {
+                intent.component = ComponentName(
+                    "com.android.server.telecom",
+                    "com.android.server.telecom.settings.EnableAccountPreferenceActivity"
+                )
+            } else {
+                intent.action = TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS
+            }
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            TapTalk.appContext.startActivity(intent)
         }
 
         private fun buildAndRegisterPhoneAccount() {
@@ -169,20 +193,6 @@ class MeetTalkCallManager {
 
         private fun getPhoneAccount() : PhoneAccount? {
             return telecomManager.getPhoneAccount(phoneAccountHandle)
-        }
-
-        private fun openPhoneAccountSettings() {
-            val intent = Intent()
-            if (Build.MANUFACTURER.equals("Samsung", ignoreCase = true)) {
-                intent.component = ComponentName(
-                    "com.android.server.telecom",
-                    "com.android.server.telecom.settings.EnableAccountPreferenceActivity"
-                )
-            } else {
-                intent.action = TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS
-            }
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            TapTalk.appContext.startActivity(intent)
         }
 
         private fun showIncomingCall(message: TAPMessageModel) {

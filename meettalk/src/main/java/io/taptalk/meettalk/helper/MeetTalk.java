@@ -246,6 +246,26 @@ public class MeetTalk {
         getMeetTalkListeners(instanceKey).remove(meetTalkListener);
     }
 
+    public static boolean isPhoneAccountEnabled() {
+        return MeetTalkCallManager.Companion.isPhoneAccountEnabled();
+    }
+
+    public static boolean isEnablePhoneAccountSettingsRequested() {
+        return isEnablePhoneAccountSettingsRequested("");
+    }
+
+    public static boolean isEnablePhoneAccountSettingsRequested(String instanceKey) {
+        return MeetTalkCallManager.Companion.isEnablePhoneAccountSettingsRequested(instanceKey);
+    }
+
+    public static void requestEnablePhoneAccountSettings(Activity activity) {
+        requestEnablePhoneAccountSettings("", activity);
+    }
+
+    public static void requestEnablePhoneAccountSettings(String instanceKey, Activity activity) {
+        MeetTalkCallManager.Companion.requestEnablePhoneAccountSettings(instanceKey, activity);
+    }
+
     public static void checkAndRequestEnablePhoneAccountSettings(Activity activity) {
         checkAndRequestEnablePhoneAccountSettings("", activity);
     }
@@ -255,6 +275,10 @@ public class MeetTalk {
             Activity activity
     ) {
         MeetTalkCallManager.Companion.checkAndRequestEnablePhoneAccountSettings(instanceKey, activity);
+    }
+
+    public static void openPhoneAccountSettings() {
+        MeetTalkCallManager.Companion.openPhoneAccountSettings();
     }
 
     public static void initiateNewConferenceCall(
