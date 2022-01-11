@@ -16,6 +16,7 @@ import io.taptalk.TapTalk.Manager.TapCoreMessageManager;
 import io.taptalk.TapTalk.Manager.TapUI;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
 import io.taptalk.TapTalk.Model.TAPRoomModel;
+import io.taptalk.meettalk.BuildConfig;
 import io.taptalk.meettalk.R;
 import io.taptalk.meettalk.custombubble.MeetTalkCallChatBubbleClass;
 import io.taptalk.meettalk.custombubble.MeetTalkCallChatBubbleListener;
@@ -27,7 +28,13 @@ public class MeetTalk {
     public static Context appContext;
     public static String appID;
 
-    private static HashMap<String, ArrayList<MeetTalkListener>> meetTalkListenerMap = new HashMap<>();
+    private static HashMap<String, ArrayList<MeetTalkListener>> meetTalkListenerMap;
+
+    /**
+     * =============================================================================================
+     * Initialization
+     * =============================================================================================
+     */
 
     public static void init(
             Context applicationContext,
@@ -146,7 +153,9 @@ public class MeetTalk {
                 meetTalkListener.onNotificationReceived(message);
 
                 // Handle call events
-                Log.e(">>>>", "onNotificationReceived: " + message.getBody());
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "onNotificationReceived: " + message.getBody());
+                }
                 MeetTalkCallManager.Companion.checkAndHandleCallNotificationFromMessage(
                         message,
                         instanceKey,
@@ -174,7 +183,9 @@ public class MeetTalk {
                 super.onReceiveNewMessage(message);
 
                 // Handle call events
-                Log.e(">>>>", "onReceiveNewMessage: " + message.getBody());
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "onReceiveNewMessage: " + message.getBody());
+                }
                 MeetTalkCallManager.Companion.checkAndHandleCallNotificationFromMessage(
                         message,
                         instanceKey,
@@ -216,16 +227,29 @@ public class MeetTalk {
         meetTalkListener.onInitializationCompleted(instanceKey);
     }
 
+    /**
+     * =============================================================================================
+     * MeetTalk Listener
+     * =============================================================================================
+     */
+
+    private static HashMap<String, ArrayList<MeetTalkListener>> getMeetTalkListenerMap() {
+        if (meetTalkListenerMap == null) {
+            meetTalkListenerMap = new HashMap<>();
+        }
+        return meetTalkListenerMap;
+    }
+
     public static ArrayList<MeetTalkListener> getMeetTalkListeners() {
         return getMeetTalkListeners("");
     }
 
     public static ArrayList<MeetTalkListener> getMeetTalkListeners(String instanceKey) {
-        if (!meetTalkListenerMap.containsKey(instanceKey)) {
+        if (!getMeetTalkListenerMap().containsKey(instanceKey)) {
             ArrayList<MeetTalkListener> meetTalkListeners = new ArrayList<>();
-            meetTalkListenerMap.put(instanceKey, meetTalkListeners);
+            getMeetTalkListenerMap().put(instanceKey, meetTalkListeners);
         }
-        return meetTalkListenerMap.get(instanceKey);
+        return getMeetTalkListenerMap().get(instanceKey);
     }
 
     public static void addMeetTalkListener(MeetTalkListener meetTalkListener) {
@@ -245,6 +269,12 @@ public class MeetTalk {
     public static void removeMeetTalkListener(String instanceKey, MeetTalkListener meetTalkListener) {
         getMeetTalkListeners(instanceKey).remove(meetTalkListener);
     }
+
+    /**
+     * =============================================================================================
+     * Phone Account & Incoming Call
+     * =============================================================================================
+     */
 
     public static boolean isPhoneAccountEnabled() {
         return MeetTalkCallManager.Companion.isPhoneAccountEnabled();
@@ -281,6 +311,24 @@ public class MeetTalk {
         MeetTalkCallManager.Companion.openPhoneAccountSettings();
     }
 
+    public static void showIncomingCall(TAPMessageModel message) {
+        showIncomingCall(message, "", "");
+    }
+
+//    public static void showIncomingCall(String name, String phoneNumber) {
+//        showIncomingCall(null, name, phoneNumber);
+//    }
+
+    public static void showIncomingCall(TAPMessageModel message, String name, String phoneNumber) {
+        MeetTalkCallManager.Companion.showIncomingCall(message, name, phoneNumber);
+    }
+
+    /**
+     * =============================================================================================
+     * Conference Call
+     * =============================================================================================
+     */
+
     public static void initiateNewConferenceCall(
             Activity activity,
             TAPRoomModel room
@@ -294,5 +342,44 @@ public class MeetTalk {
             TAPRoomModel room
     ) {
         MeetTalkCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, room);
+    }
+
+    public static void initiateNewConferenceCall(
+            Activity activity,
+            String instanceKey,
+            TAPRoomModel room,
+            String recipientDisplayName
+    ) {
+        MeetTalkCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, room, recipientDisplayName);
+    }
+
+    public static boolean joinPendingIncomingConferenceCall() {
+        return MeetTalkCallManager.Companion.joinPendingIncomingConferenceCall();
+    }
+
+    public static boolean launchMeetTalkCallActivity(
+            String instanceKey,
+            Context context
+    ) {
+        return MeetTalkCallManager.Companion.launchMeetTalkCallActivity(
+                instanceKey,
+                context
+        );
+    }
+
+    public static boolean launchMeetTalkCallActivity(
+            String instanceKey,
+            Context context,
+            TAPRoomModel room,
+            String activeUserName,
+            String activeUserAvatarUrl
+    ) {
+        return MeetTalkCallManager.Companion.launchMeetTalkCallActivity(
+                instanceKey,
+                context,
+                room,
+                activeUserName,
+                activeUserAvatarUrl
+        );
     }
 }

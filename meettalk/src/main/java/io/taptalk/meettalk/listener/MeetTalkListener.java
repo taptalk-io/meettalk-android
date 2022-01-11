@@ -135,6 +135,21 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
 
     }
 
+    @Override
+    public void onIncomingCallAnswered() {
+        MeetTalkCallManager.Companion.joinPendingIncomingConferenceCall();
+    }
+
+    @Override
+    public void onIncomingCallRejected() {
+        MeetTalkCallManager.Companion.rejectPendingIncomingConferenceCall();
+    }
+
+    @Override
+    public void onIncomingCallDisconnected() {
+
+    }
+
     /**
      * =============================================================================================
      * MeetTalk conference callbacks

@@ -17,6 +17,15 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".helper.MeetTalkCallScreeningService"
+            android:permission="android.permission.BIND_SCREENING_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.telecom.CallScreeningService"/>
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".activity.MeetTalkCallActivity"
             android:exported="true"

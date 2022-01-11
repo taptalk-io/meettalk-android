@@ -6,6 +6,7 @@ import android.telecom.*
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import io.taptalk.meettalk.BuildConfig
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CALLER_NAME
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CALLER_NUMBER
 import io.taptalk.meettalk.manager.MeetTalkCallManager
@@ -30,13 +31,17 @@ class MeetTalkConnectionService : ConnectionService() {
         connection?.setAddress(Uri.parse(callerNumber), TelecomManager.PRESENTATION_ALLOWED)
         connection?.setInitializing()
         connection?.setActive()
-        Log.e(">>>> $TAG", "onCreateIncomingConnection: callerName: $callerName, address: ${request.address}, request: ${request.toString()}")
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>> $TAG", "onCreateIncomingConnection: callerName: $callerName, address: ${request.address}, request: ${request.toString()}")
+        }
         return connection!!
     }
 
     override fun onCreateIncomingConnectionFailed(connectionManagerPhoneAccount: PhoneAccountHandle?, request: ConnectionRequest?) {
         super.onCreateIncomingConnectionFailed(connectionManagerPhoneAccount, request)
-        Log.e(">>>> $TAG", "onCreateIncomingFailed: ${request.toString()}")
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>> $TAG", "onCreateIncomingFailed: ${request.toString()}")
+        }
         Toast.makeText(applicationContext,"onCreateIncomingConnectionFailed",Toast.LENGTH_LONG).show()
         MeetTalkCallManager.clearPendingIncomingCall()
     }
@@ -50,13 +55,17 @@ class MeetTalkConnectionService : ConnectionService() {
         connection?.setAddress(request.address, TelecomManager.PRESENTATION_ALLOWED)
         connection?.setInitializing()
         connection?.setActive()
-        Log.e(">>>> $TAG", "onCreateOutgoingConnection: callerName: $callerName, address: ${request.address}, request: ${request.toString()}")
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>> $TAG", "onCreateOutgoingConnection: callerName: $callerName, address: ${request.address}, request: ${request.toString()}")
+        }
         return connection!!
     }
 
     override fun onCreateOutgoingConnectionFailed(connectionManagerPhoneAccount: PhoneAccountHandle?, request: ConnectionRequest?) {
         super.onCreateOutgoingConnectionFailed(connectionManagerPhoneAccount, request)
-        Log.e(">>>> $TAG", "onCreateOutgoingConnectionFailed: ${request.toString()}")
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>> $TAG", "onCreateOutgoingConnectionFailed: ${request.toString()}")
+        }
         Toast.makeText(applicationContext,"onCreateOutgoingConnectionFailed",Toast.LENGTH_LONG).show();
     }
 }

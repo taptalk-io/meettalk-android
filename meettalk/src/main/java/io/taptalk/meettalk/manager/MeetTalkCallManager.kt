@@ -75,6 +75,7 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 @RequiresApi(Build.VERSION_CODES.M)
 class MeetTalkCallManager {
@@ -87,6 +88,8 @@ class MeetTalkCallManager {
         }
 
         var callState = CallState.IDLE
+        var activeCallMessage: TAPMessageModel? = null
+        var activeCallInstanceKey: String? = null
         var activeMeetTalkCallActivity: MeetTalkCallActivity? = null
         var activeConferenceInfo: MeetTalkConferenceInfo? = null
 
@@ -95,11 +98,10 @@ class MeetTalkCallManager {
         private val phoneAccountHandle = PhoneAccountHandle(ComponentName(TapTalk.appContext, MeetTalkConnectionService::class.java), appName)
         private val defaultAudioMuted = BuildConfig.DEBUG
         private const val defaultVideoMuted = true
-        private var activeCallMessage: TAPMessageModel? = null
-        private var activeCallInstanceKey: String? = null
         private var pendingIncomingCallRoomID: String? = null
         private var pendingIncomingCallPhoneNumber: String? = null
         private var handledCallNotificationMessageLocalIDs: ArrayList<String> = ArrayList()
+        private var roomAliasMap: HashMap<String, String> = HashMap()
 
         private lateinit var missedCallTimer: Timer
 
@@ -195,9 +197,28 @@ class MeetTalkCallManager {
             return telecomManager.getPhoneAccount(phoneAccountHandle)
         }
 
-        private fun showIncomingCall(message: TAPMessageModel) {
-            val name = message.user.fullname
-            val phoneNumber = String.format("0%s", message.user.phone) // TODO: HANDLE COUNTRY CODE IN NUMBER
+        fun showIncomingCall(message: TAPMessageModel?, displayName: String?, displayPhoneNumber: String?) {
+            val name: String
+            if (displayName.isNullOrEmpty() && message != null) {
+                roomAliasMap[message.room.roomID] = displayName!!
+                name = message.user?.fullname ?: ""
+            }
+            else {
+                name = displayName!!
+            }
+            val phoneNumber = if (displayPhoneNumber.isNullOrEmpty()) {
+                if (message?.user != null) {
+                    // TODO: HANDLE COUNTRY CODE IN NUMBER
+                    String.format("0%s", message.user.phone)
+                }
+                else {
+                    "Unknown Number"
+                }
+            }
+            else {
+                displayPhoneNumber
+            }
+
             buildAndRegisterPhoneAccount()
 
             if (BuildConfig.DEBUG) {
@@ -215,15 +236,17 @@ class MeetTalkCallManager {
                 // Show incoming call
                 telecomManager.addNewIncomingCall(phoneAccountHandle, extras)
 
-                pendingIncomingCallRoomID = message.room.roomID
-                pendingIncomingCallPhoneNumber = phoneNumber
+                if (message != null) {
+                    pendingIncomingCallRoomID = message.room.roomID
+                    pendingIncomingCallPhoneNumber = phoneNumber
+
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onIncomingCallReceived(activeCallInstanceKey, message)
+                    }
+                }
 
                 startMissedCallTimer()
-
-                // Trigger listener callback
-                for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                    meetTalkListener.onIncomingCallReceived(activeCallInstanceKey, message)
-                }
             }
             catch (e: SecurityException) {
                 e.printStackTrace()
@@ -232,51 +255,55 @@ class MeetTalkCallManager {
                 val errorMessage =
                     String.format(
                         MeetTalk.appContext.getString(R.string.meettalk_format_received_call_phone_account_not_enabled),
-                        TAPUtils.getFirstWordOfString(message.user.fullname),
+                        TAPUtils.getFirstWordOfString(name),
                         appName
                     )
 
-                // Trigger listener callback
-                for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                    meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, errorMessage)
+                if (message != null) {
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, errorMessage)
+                    }
                 }
-
-                sendUnableToReceiveCallNotification(
-                    activeCallInstanceKey ?: return,
-                    activeCallMessage?.room ?: return,
-                    "{{user}} has not enabled app's phone account."
-                )
 
                 Toast.makeText(
                     MeetTalk.appContext,
                     errorMessage,
                     Toast.LENGTH_LONG
                 ).show()
+
+                sendUnableToReceiveCallNotification(
+                    activeCallInstanceKey ?: return,
+                    activeCallMessage?.room ?: return,
+                    "{{sender}} has not enabled app's phone account."
+                )
             }
             catch (e: Exception) {
                 e.printStackTrace()
                 // Other exceptions
 
-                // Trigger listener callback
-                for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                    meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, e.message)
+                if (message != null) {
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, e.message)
+                    }
                 }
-
-                sendUnableToReceiveCallNotification(
-                    activeCallInstanceKey ?: return,
-                    activeCallMessage?.room ?: return,
-                    "{{user}} is unable to receive call."
-                )
 
                 Toast.makeText(
                     MeetTalk.appContext,
                     String.format(
                         MeetTalk.appContext.getString(R.string.meettalk_format_unable_to_receive_call),
-                        TAPUtils.getFirstWordOfString(message.user.fullname),
+                        TAPUtils.getFirstWordOfString(name),
                         e.localizedMessage
                     ),
                     Toast.LENGTH_LONG
                 ).show()
+
+                sendUnableToReceiveCallNotification(
+                    activeCallInstanceKey ?: return,
+                    activeCallMessage?.room ?: return,
+                    "{{sender}} is unable to receive call."
+                )
             }
         }
 
@@ -291,33 +318,68 @@ class MeetTalkCallManager {
             clearPendingIncomingCall()
         }
 
-        fun joinPendingIncomingConferenceCall() {
-            sendAnsweredCallNotification(activeCallInstanceKey ?: return, activeCallMessage?.room ?: return)
-            launchMeetTalkCallActivity(activeCallInstanceKey ?: return, TapTalk.appContext, pendingIncomingCallRoomID ?: return)
+        fun joinPendingIncomingConferenceCall() : Boolean {
+            if (pendingIncomingCallRoomID == null) {
+                return false
+            }
+            sendAnsweredCallNotification(activeCallInstanceKey ?: return false, activeCallMessage?.room ?: return false)
+            launchMeetTalkCallActivity(activeCallInstanceKey ?: return false, TapTalk.appContext)
             pendingIncomingCallRoomID = null
             pendingIncomingCallPhoneNumber = null
+            return true
         }
 
         fun initiateNewConferenceCall(activity: Activity, instanceKey: String, room: TAPRoomModel) {
             sendCallInitiatedNotification(instanceKey, room)
-            launchMeetTalkCallActivity(instanceKey, activity, room.roomID)
+            launchMeetTalkCallActivity(instanceKey, activity)
         }
 
-        private fun launchMeetTalkCallActivity(instanceKey: String, context: Context, roomID: String) {
+        fun initiateNewConferenceCall(activity: Activity, instanceKey: String, room: TAPRoomModel, recipientDisplayName: String) {
+            roomAliasMap[room.roomID] = recipientDisplayName
+            initiateNewConferenceCall(activity, instanceKey, room)
+        }
+
+        fun launchMeetTalkCallActivity(instanceKey: String, context: Context) : Boolean {
             if (activeCallMessage == null ||
+                activeCallInstanceKey == null ||
                 activeConferenceInfo == null
             ) {
-                return
+                return false
             }
-            Log.e(">>>>", "launchMeetTalkCallActivity: $roomID")
+            val activeUser = TapTalk.getTapTalkActiveUser(activeCallInstanceKey)
+            return launchMeetTalkCallActivity(
+                instanceKey,
+                context,
+                activeCallMessage!!.room,
+                activeUser.fullname ?: "",
+                activeUser.imageURL?.fullsize ?: ""
+            )
+        }
+
+        fun launchMeetTalkCallActivity(
+            instanceKey: String,
+            context: Context,
+            room: TAPRoomModel,
+            activeUserName: String?,
+            activeUserAvatarUrl: String?
+        ) : Boolean {
+            if (activeCallMessage == null ||
+                activeCallInstanceKey == null ||
+                activeConferenceInfo == null
+            ) {
+                return false
+            }
+            if (BuildConfig.DEBUG) {
+                Log.e(">>>>", "launchMeetTalkCallActivity: $room.roomID")
+            }
             callState = CallState.IN_CALL
-            val room = String.format("%s%s", MeetTalk.appID, roomID)
+            val conferenceRoomID = String.format("%s%s", MeetTalk.appID, room.roomID)
             val userInfo = JitsiMeetUserInfo()
-            userInfo.avatar = URL(activeCallMessage?.user?.imageURL?.fullsize ?: "")
-            userInfo.displayName = activeCallMessage?.user?.fullname ?: ""
+            userInfo.avatar = URL(activeUserAvatarUrl ?: "")
+            userInfo.displayName = activeUserName ?: ""
             userInfo.email = activeCallMessage?.user?.email ?: ""
             val options: JitsiMeetConferenceOptions = JitsiMeetConferenceOptions.Builder()
-                .setRoom(room)
+                .setRoom(conferenceRoomID)
                 .setWelcomePageEnabled(false)
                 .setAudioMuted(defaultAudioMuted)
                 .setVideoMuted(defaultVideoMuted)
@@ -330,12 +392,13 @@ class MeetTalkCallManager {
                 activeCallMessage!!,
                 activeConferenceInfo!!
             )
+            return true
         }
 
         fun handleIncomingCall(message: TAPMessageModel) {
             if (callState == CallState.IDLE) {
                 // Received call initiated notification, show incoming call
-                showIncomingCall(message)
+                showIncomingCall(message, "", "")
                 callState = CallState.RINGING
             }
         }
@@ -355,7 +418,9 @@ class MeetTalkCallManager {
             ) {
                 if (callState == CallState.IDLE) {
                     // Received call initiated notification, show incoming call
-                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Show incoming call")
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Show incoming call")
+                    }
                     activeCallMessage = message
                     activeConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
                     activeCallInstanceKey = instanceKey
@@ -363,7 +428,9 @@ class MeetTalkCallManager {
                      * MeetTalkListener.onReceiveCallInitiatedNotificationMessage() **/
                 } else {
                     // Send busy notification when a different call is received
-                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Target busy")
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Target busy")
+                    }
                     sendBusyNotification(instanceKey, message.room)
                 }
 
@@ -376,7 +443,9 @@ class MeetTalkCallManager {
                 (message.action == RECIPIENT_REJECTED_CALL && message.user.userID == activeUser.userID)
             ) {
                 // Caller cancelled call or recipient rejected call elsewhere, dismiss incoming call
-                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
+                }
                 MeetTalkCallConnection.getInstance().onDisconnect()
                 activeMeetTalkCallActivity?.finish()
                 setActiveCallAsEnded()
@@ -395,7 +464,9 @@ class MeetTalkCallManager {
             }
             else if (message.action == CALL_ENDED) {
                 // A party ended the call, leave active call room
-                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_ENDED $activeMeetTalkCallActivity")
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_ENDED $activeMeetTalkCallActivity")
+                }
                 activeMeetTalkCallActivity?.finish()
                 setActiveCallAsEnded()
 
@@ -405,7 +476,9 @@ class MeetTalkCallManager {
                 }
             }
             else if (message.action == RECIPIENT_ANSWERED_CALL) {
-                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: TARGET_ANSWERED_CALL is self: ${message.user.userID == activeUser.userID}")
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: RECIPIENT_ANSWERED_CALL is self: ${message.user.userID == activeUser.userID}")
+                }
                 if (message.user.userID == activeUser.userID) {
                     // Target answered call elsewhere, dismiss incoming call
                     MeetTalkCallConnection.getInstance().onDisconnect()
@@ -419,7 +492,9 @@ class MeetTalkCallManager {
             }
             else if (message.action == PARTICIPANT_JOINED_CONFERENCE) {
                 // A participant successfully joined the call, notify call activity
-                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: TARGET_JOINED_CALL ${message.user.fullname}")
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: TARGET_JOINED_CALL ${message.user.fullname}")
+                }
                 val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
                 if (activeConferenceInfo != null && updatedConferenceInfo != null) {
                     activeConferenceInfo?.updateValue(updatedConferenceInfo)
@@ -437,7 +512,9 @@ class MeetTalkCallManager {
                 message.action == RECIPIENT_MISSED_CALL)
             ) {
                 // Target did not join call, leave call room & dismiss waiting screen
-                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: TARGET_BUSY | TARGET_REJECTED_CALL | TARGET_MISSED_CALL")
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
+                }
                 activeMeetTalkCallActivity?.finish()
                 setActiveCallAsEnded()
 
@@ -459,7 +536,9 @@ class MeetTalkCallManager {
                 }
             }
             else if (message.action == CONFERENCE_INFO && message.user.userID != activeUser.userID) {
-                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CONFERENCE_INFO - update activity")
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CONFERENCE_INFO - update activity")
+                }
                 // Received updated conference info
                 val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
                 if (activeConferenceInfo != null && updatedConferenceInfo != null) {
@@ -490,10 +569,10 @@ class MeetTalkCallManager {
             action: String
         ) : TAPMessageModel {
             val activeUser = TapTalk.getTapTalkActiveUser(instanceKey)
-            val updatedBody = body.replace("{{user}}", TAPUtils.getFirstWordOfString(activeUser.fullname))
+            //val updatedBody = body.replace("{{sender}}", TAPUtils.getFirstWordOfString(activeUser.fullname))
 
             val notificationMessage = TAPMessageModel.Builder(
-                updatedBody,
+                body,
                 room,
                 CALL_MESSAGE_TYPE,
                 System.currentTimeMillis(),
@@ -540,7 +619,7 @@ class MeetTalkCallManager {
         }
 
         fun sendCallInitiatedNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            val message = generateCallNotificationMessage(instanceKey, room, "{{user}} started call.", CALL_INITIATED)
+            val message = generateCallNotificationMessage(instanceKey, room, "{{sender}} started call.", CALL_INITIATED)
             val participants: ArrayList<MeetTalkParticipantInfo> = ArrayList()
             val host = generateParticipantInfo(instanceKey, HOST)
             participants.add(host)
@@ -568,7 +647,7 @@ class MeetTalkCallManager {
         }
 
         fun sendCallCancelledNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            var message = generateCallNotificationMessage(instanceKey, room, "{{user}} cancelled call.", CALL_CANCELLED)
+            var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} cancelled call.", CALL_CANCELLED)
             message = setMessageConferenceInfoAsEnded(message)
 
             setActiveCallAsEnded()
@@ -579,7 +658,7 @@ class MeetTalkCallManager {
         }
 
         fun sendCallEndedNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            var message = generateCallNotificationMessage(instanceKey, room, "{{user}} ended call.", CALL_ENDED)
+            var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} ended call.", CALL_ENDED)
             message = setMessageConferenceInfoAsEnded(message)
 
             setActiveCallAsEnded()
@@ -590,7 +669,7 @@ class MeetTalkCallManager {
         }
 
         fun sendAnsweredCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            val message = generateCallNotificationMessage(instanceKey, room, "{{user}} answered call.", RECIPIENT_ANSWERED_CALL)
+            val message = generateCallNotificationMessage(instanceKey, room, "{{sender}} answered call.", RECIPIENT_ANSWERED_CALL)
             message.data = activeConferenceInfo?.toHashMap()
             //message.hidden = true
 
@@ -600,7 +679,7 @@ class MeetTalkCallManager {
         }
 
         fun sendJoinedCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            val message = generateCallNotificationMessage(instanceKey, room, "{{user}} joined call.", PARTICIPANT_JOINED_CONFERENCE)
+            val message = generateCallNotificationMessage(instanceKey, room, "{{sender}} joined call.", PARTICIPANT_JOINED_CONFERENCE)
             val participant = generateParticipantInfo(instanceKey, PARTICIPANT)
             activeConferenceInfo?.updateParticipant(participant)
             activeConferenceInfo?.lastUpdated = message.created
@@ -613,7 +692,7 @@ class MeetTalkCallManager {
         }
 
         fun sendBusyNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            var message = generateCallNotificationMessage(instanceKey, room, "{{user}} is busy.", RECIPIENT_BUSY)
+            var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} is busy.", RECIPIENT_BUSY)
             message = setMessageConferenceInfoAsEnded(message)
 
             setActiveCallAsEnded()
@@ -624,7 +703,7 @@ class MeetTalkCallManager {
         }
 
         fun sendRejectedCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            var message = generateCallNotificationMessage(instanceKey, room, "{{user}} rejected call.", RECIPIENT_REJECTED_CALL)
+            var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} rejected call.", RECIPIENT_REJECTED_CALL)
             message = setMessageConferenceInfoAsEnded(message)
 
             setActiveCallAsEnded()
@@ -635,7 +714,7 @@ class MeetTalkCallManager {
         }
 
         fun sendMissedCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            var message = generateCallNotificationMessage(instanceKey, room, "{{user}} missed the call.", RECIPIENT_MISSED_CALL)
+            var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} missed the call.", RECIPIENT_MISSED_CALL)
             message = setMessageConferenceInfoAsEnded(message)
 
             setActiveCallAsEnded()
@@ -704,6 +783,10 @@ class MeetTalkCallManager {
                 }
             }
             missedCallTimer.schedule(timerTask, 0, 1000)
+        }
+
+        fun getRoomAliasMap() : HashMap<String, String> {
+            return roomAliasMap
         }
     }
 }

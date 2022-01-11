@@ -63,6 +63,12 @@ public interface MeetTalkInterface {
 
     void onShowIncomingCallFailed(String instanceKey, TAPMessageModel message, String errorMessage);
 
+    void onIncomingCallAnswered();
+
+    void onIncomingCallRejected();
+
+    void onIncomingCallDisconnected();
+
     /**
      * =============================================================================================
      * MeetTalk conference callbacks
