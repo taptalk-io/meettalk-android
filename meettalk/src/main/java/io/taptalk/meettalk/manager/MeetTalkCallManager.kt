@@ -101,7 +101,7 @@ class MeetTalkCallManager {
         private var pendingIncomingCallRoomID: String? = null
         private var pendingIncomingCallPhoneNumber: String? = null
         private var handledCallNotificationMessageLocalIDs: ArrayList<String> = ArrayList()
-        private var roomAliasMap: HashMap<String, String> = HashMap()
+        private var roomAliasMap: HashMap<String, HashMap<String, String>> = HashMap()
 
         private lateinit var missedCallTimer: Timer
 
@@ -199,8 +199,8 @@ class MeetTalkCallManager {
 
         fun showIncomingCall(message: TAPMessageModel?, displayName: String?, displayPhoneNumber: String?) {
             val name: String
-            if (displayName.isNullOrEmpty() && message != null) {
-                roomAliasMap[message.room.roomID] = displayName!!
+            if (!displayName.isNullOrEmpty() && message != null && activeCallInstanceKey != null) {
+                getRoomAliasMap(activeCallInstanceKey!!)[message.room.roomID] = displayName!!
                 name = message.user?.fullname ?: ""
             }
             else {
@@ -335,7 +335,7 @@ class MeetTalkCallManager {
         }
 
         fun initiateNewConferenceCall(activity: Activity, instanceKey: String, room: TAPRoomModel, recipientDisplayName: String) {
-            roomAliasMap[room.roomID] = recipientDisplayName
+            getRoomAliasMap(instanceKey)[room.roomID] = recipientDisplayName
             initiateNewConferenceCall(activity, instanceKey, room)
         }
 
@@ -375,7 +375,13 @@ class MeetTalkCallManager {
             callState = CallState.IN_CALL
             val conferenceRoomID = String.format("%s%s", MeetTalk.appID, room.roomID)
             val userInfo = JitsiMeetUserInfo()
-            userInfo.avatar = URL(activeUserAvatarUrl ?: "")
+            if (!activeUserAvatarUrl.isNullOrEmpty()) {
+                try {
+                    userInfo.avatar = URL(activeUserAvatarUrl)
+                } catch (e: MalformedURLException) {
+                    e.printStackTrace()
+                }
+            }
             userInfo.displayName = activeUserName ?: ""
             userInfo.email = activeCallMessage?.user?.email ?: ""
             val options: JitsiMeetConferenceOptions = JitsiMeetConferenceOptions.Builder()
@@ -785,8 +791,11 @@ class MeetTalkCallManager {
             missedCallTimer.schedule(timerTask, 0, 1000)
         }
 
-        fun getRoomAliasMap() : HashMap<String, String> {
-            return roomAliasMap
+        fun getRoomAliasMap(instanceKey: String) : HashMap<String, String> {
+            if (roomAliasMap[instanceKey] == null) {
+                roomAliasMap[instanceKey] = HashMap()
+            }
+            return roomAliasMap[instanceKey]!!
         }
     }
 }

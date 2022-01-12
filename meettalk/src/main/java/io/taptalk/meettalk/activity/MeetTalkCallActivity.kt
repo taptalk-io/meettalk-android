@@ -7,14 +7,20 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
 import android.content.res.ColorStateList
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
+import androidx.core.widget.ImageViewCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.INSTANCE_KEY
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
@@ -25,7 +31,6 @@ import io.taptalk.TapTalk.Listener.TapCoreGetMessageListener
 import io.taptalk.TapTalk.Manager.TAPConnectionManager
 import io.taptalk.TapTalk.Manager.TapCoreMessageManager
 import io.taptalk.TapTalk.Model.TAPMessageModel
-import io.taptalk.meettalk.BuildConfig
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_MESSAGE_TYPE
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CONFERENCE_INFO
@@ -346,11 +351,12 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         callInitiatedMessage = intent.getParcelableExtra(MESSAGE)!!
 
-        if (MeetTalkCallManager.getRoomAliasMap()[callInitiatedMessage.room.roomID].isNullOrEmpty()) {
+        if (MeetTalkCallManager.getRoomAliasMap(instanceKey)[callInitiatedMessage.room.roomID].isNullOrEmpty()) {
+
             roomDisplayName = callInitiatedMessage.room.name
         }
         else {
-            roomDisplayName = MeetTalkCallManager.getRoomAliasMap()[callInitiatedMessage.room.roomID]!!
+            roomDisplayName = MeetTalkCallManager.getRoomAliasMap(instanceKey)[callInitiatedMessage.room.roomID]!!
         }
 //        conferenceInfo = intent.getParcelableExtra(CONFERENCE_INFO)!!
 
@@ -379,8 +385,15 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             )
             fl_meettalk_call_view_container.addView(meetTalkCallView)
 
-            tv_calling_user.text = roomDisplayName
-            Glide.with(this).load(callInitiatedMessage.room.imageURL?.fullsize).into(iv_profile_picture)
+            tv_room_display_name.text = roomDisplayName
+
+            if (!callInitiatedMessage.room.imageURL?.fullsize.isNullOrEmpty()) {
+                loadRoomPicture()
+            }
+            else {
+                showRoomInitial()
+            }
+
             iv_button_toggle_audio_mute.alpha = 0.5f
             iv_button_toggle_video_mute.alpha = 0.5f
             showAudioButtonMuted(isAudioMuted)
@@ -388,6 +401,54 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
             iv_button_cancel_call.setOnClickListener { onBackPressed() }
         }
+    }
+
+    private fun loadRoomPicture() {
+        Glide
+            .with(this)
+            .load(callInitiatedMessage.room.imageURL?.fullsize)
+            .listener(object : RequestListener<Drawable> {
+                override fun onLoadFailed(
+                    e: GlideException?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    showRoomInitial()
+                    return false
+                }
+
+                override fun onResourceReady(
+                    resource: Drawable?,
+                    model: Any?,
+                    target: Target<Drawable>?,
+                    dataSource: DataSource?,
+                    isFirstResource: Boolean
+                ): Boolean {
+                    tv_initial.visibility = View.GONE
+                    return false
+                }
+            })
+            .into(iv_profile_picture)
+    }
+
+    private fun showRoomInitial() {
+//        ImageViewCompat.setImageTintList(
+//            iv_profile_picture,
+//            ColorStateList.valueOf(TAPUtils.getRandomColor(this, roomDisplayName))
+//        )
+//        iv_profile_picture.setImageDrawable(
+//            ContextCompat.getDrawable(this, R.drawable.tap_bg_circle_9b9b9b)
+//        )
+        tv_initial.text = TAPUtils.getInitials(
+            roomDisplayName,
+            if (callInitiatedMessage.room.type == TYPE_PERSONAL) 2 else 1
+        )
+        tv_initial.backgroundTintList = ColorStateList.valueOf(
+            TAPUtils.getRandomColor(this, roomDisplayName)
+        )
+        tv_initial.visibility = View.VISIBLE
+        iv_profile_picture.visibility = View.GONE
     }
 
     private fun enableButtons() {

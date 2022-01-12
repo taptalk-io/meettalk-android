@@ -213,7 +213,10 @@ public class MeetTalk {
         if (tapTalkImplementationType != TapTalkImplementationTypeCore) {
             // Initialize call message bubble
             MeetTalkCallChatBubbleListener callChatBubbleListener = (activity, message) -> {
-                initiateNewConferenceCall(activity, instanceKey, message.getRoom());
+                // Trigger listener callback
+                for (MeetTalkListener listener : getMeetTalkListeners(instanceKey)) {
+                    listener.onChatBubbleCallButtonTapped(instanceKey, activity, message);
+                }
             };
             MeetTalkCallChatBubbleClass callChatBubbleClass = new MeetTalkCallChatBubbleClass(
                     instanceKey,

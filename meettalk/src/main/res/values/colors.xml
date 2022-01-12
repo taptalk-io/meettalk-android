@@ -16,6 +16,7 @@
     <!--Call Screen-->
     <color name="meetTalkCallScreenTitleLabelColor">@color/tapWhite</color>
     <color name="meetTalkCallScreenDurationStatusLabelColor">@color/tapWhite</color>
+    <color name="meetTalkCallScreenInitialLabelColor">@color/tapWhite</color>
     <color name="meetTalkCallScreenActiveButtonBackgroundColor">#8cffffff</color>
     <color name="meetTalkCallScreenInactiveButtonBackgroundColor">#4dffffff</color>
     <color name="meetTalkCallScreenDestructiveButtonBackgroundColor">#e02e2e</color>

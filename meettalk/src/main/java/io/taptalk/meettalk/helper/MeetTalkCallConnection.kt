@@ -76,7 +76,7 @@ class MeetTalkCallConnection : Connection() {
 
         // Trigger listener callback
         for (meetTalkListener in MeetTalk.getMeetTalkListeners(MeetTalkCallManager.activeCallInstanceKey)) {
-            meetTalkListener.onIncomingCallAnswered()
+            meetTalkListener.onIncomingCallRejected()
         }
 
         if (BuildConfig.DEBUG) {

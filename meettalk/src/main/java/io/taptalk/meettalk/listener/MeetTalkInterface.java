@@ -3,6 +3,7 @@ package io.taptalk.meettalk.listener;
 import android.app.Activity;
 
 import io.taptalk.TapTalk.Model.TAPMessageModel;
+import io.taptalk.TapTalk.Model.TAPRoomModel;
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo;
 
 public interface MeetTalkInterface {
@@ -82,4 +83,12 @@ public interface MeetTalkInterface {
     void onConferenceJoined(MeetTalkConferenceInfo meetTalkConferenceInfo);
 
     void onConferenceTerminated(MeetTalkConferenceInfo meetTalkConferenceInfo);
+
+    /**
+     * =============================================================================================
+     * MeetTalk UI callbacks
+     * =============================================================================================
+     */
+
+    void onChatBubbleCallButtonTapped(String instanceKey, Activity activity, TAPMessageModel message);
 }

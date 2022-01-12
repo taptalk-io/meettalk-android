@@ -14,8 +14,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:background="@color/tapColorPrimary" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <FrameLayout
         android:id="@+id/fl_meettalk_call_view_container"
@@ -42,6 +41,22 @@
         android:alpha="0.2"
         android:background="@color/tapBlack19" />
 
+    <TextView
+        android:id="@+id/tv_initial"
+        style="@style/meetTalkCallScreenInitialLabelStyle"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="72dp"
+        android:background="@drawable/tap_bg_circle_9b9b9b"
+        android:gravity="center"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="AB" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_label_container"
         android:layout_width="match_parent"
@@ -54,7 +69,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/tv_calling_user"
+            android:id="@+id/tv_room_display_name"
             style="@style/meetTalkCallScreenTitleLabelStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -76,7 +91,7 @@
             android:textColor="@color/tapWhite"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_calling_user" />
+            app:layout_constraintTop_toBottomOf="@id/tv_room_display_name" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
