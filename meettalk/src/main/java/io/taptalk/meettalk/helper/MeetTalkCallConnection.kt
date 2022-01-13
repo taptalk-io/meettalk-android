@@ -43,7 +43,6 @@ class MeetTalkCallConnection : Connection() {
 
     override fun onDisconnect() {
         super.onDisconnect()
-        setDisconnected(DisconnectCause(DisconnectCause.MISSED))
         MeetTalkCallManager.clearPendingIncomingCall()
 
         // Trigger listener callback
@@ -54,11 +53,12 @@ class MeetTalkCallConnection : Connection() {
         if (BuildConfig.DEBUG) {
             Log.e(">>>> TapCallConnection", "onDisconnect")
         }
+
+        setDisconnected(DisconnectCause(DisconnectCause.MISSED))
     }
 
     override fun onAnswer() {
         super.onAnswer()
-        setDisconnected(DisconnectCause(DisconnectCause.LOCAL))
 
         // Trigger listener callback
         for (meetTalkListener in MeetTalk.getMeetTalkListeners(MeetTalkCallManager.activeCallInstanceKey)) {
@@ -68,11 +68,12 @@ class MeetTalkCallConnection : Connection() {
         if (BuildConfig.DEBUG) {
             Log.e(">>>> TapCallConnection", "onAnswer:")
         }
+
+        setDisconnected(DisconnectCause(DisconnectCause.LOCAL))
     }
 
     override fun onReject() {
         super.onReject()
-        setDisconnected(DisconnectCause(DisconnectCause.REJECTED))
 
         // Trigger listener callback
         for (meetTalkListener in MeetTalk.getMeetTalkListeners(MeetTalkCallManager.activeCallInstanceKey)) {
@@ -82,9 +83,14 @@ class MeetTalkCallConnection : Connection() {
         if (BuildConfig.DEBUG) {
             Log.e(">>>> TapCallConnection", "onReject: ")
         }
+
+        setDisconnected(DisconnectCause(DisconnectCause.REJECTED))
     }
 
-//    override fun onShowIncomingCallUi() {
-//        super.onShowIncomingCallUi()
-//    }
+    override fun onShowIncomingCallUi() {
+        super.onShowIncomingCallUi()
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>> TapCallConnection", "onShowIncomingCallUi: ")
+        }
+    }
 }

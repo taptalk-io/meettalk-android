@@ -77,6 +77,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             }
             fetchNewerMessages()
 
+            // TODO: CHECK IF JOINED CALL NOTIFICATION IS ALREADY SENT
+
             // Trigger listener callback
             for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
                 meetTalkListener.onReconnectedToConference(MeetTalkCallManager.activeConferenceInfo)
@@ -129,8 +131,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             intent.putExtra(MESSAGE, callInitiatedMessage)
             intent.putExtra(CONFERENCE_INFO, conferenceInfo)
             if (context !is Activity) {
-                intent.flags = FLAG_ACTIVITY_NEW_TASK
+                intent.flags = FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
+            Log.e(">>>> $TAG", "launch: ${TAPUtils.toJsonString(conferenceInfo)}")
             context.startActivity(intent)
         }
     }
@@ -148,9 +151,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         MeetTalkCallManager.activeMeetTalkCallActivity = this
 
-        if (BuildConfig.DEBUG) {
+//        if (BuildConfig.DEBUG) {
             Log.e(">>>>", "MeetTalkCallActivity onCreate: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
-        }
+//        }
 
         initData()
         initView()
@@ -161,9 +164,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (BuildConfig.DEBUG) {
+//        if (BuildConfig.DEBUG) {
             Log.e(">>>>", "MeetTalkCallActivity onResume: ")
-        }
+//        }
 
         JitsiMeetActivityDelegate.onHostResume(this)
 
@@ -173,9 +176,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onPause() {
         super.onPause()
 
-        if (BuildConfig.DEBUG) {
+//        if (BuildConfig.DEBUG) {
             Log.e(">>>>", "MeetTalkCallActivity onPause: ")
-        }
+//        }
 
         JitsiMeetActivityDelegate.onHostPause(this)
 
@@ -187,9 +190,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-        if (BuildConfig.DEBUG) {
+//        if (BuildConfig.DEBUG) {
             Log.e(">>>>", "MeetTalkCallActivity onDestroy: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
-        }
+//        }
 
         JitsiMeetActivityDelegate.onHostDestroy(this)
 

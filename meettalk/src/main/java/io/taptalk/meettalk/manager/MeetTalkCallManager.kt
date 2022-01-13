@@ -142,6 +142,8 @@ class MeetTalkCallManager {
             JitsiMeet.setDefaultConferenceOptions(defaultOptions)
 
             buildAndRegisterPhoneAccount()
+
+            Log.e(">>>>", "MeetTalkCallManager init:")
         }
 
         fun isPhoneAccountEnabled() : Boolean {
@@ -221,8 +223,8 @@ class MeetTalkCallManager {
 
             buildAndRegisterPhoneAccount()
 
+            Log.e(">>>>", "showIncomingCall: add new incoming call $name $phoneNumber")
             if (BuildConfig.DEBUG) {
-                Log.e(">>>>", "showIncomingCall: add new incoming call $name $phoneNumber")
                 Log.e(">>>>", "showIncomingCall: obtainedPhoneAccount ${TAPUtils.toJsonString(getPhoneAccount())} isEnabled: ${getPhoneAccount()?.isEnabled}")
             }
 
@@ -314,11 +316,13 @@ class MeetTalkCallManager {
         }
 
         fun rejectPendingIncomingConferenceCall() {
+            Log.e(">>>>", "rejectPendingIncomingConferenceCall: ${activeCallMessage?.room?.name ?: "room null"}")
             sendRejectedCallNotification(activeCallInstanceKey ?: return, activeCallMessage?.room ?: return)
             clearPendingIncomingCall()
         }
 
         fun joinPendingIncomingConferenceCall() : Boolean {
+            Log.e(">>>>", "joinPendingIncomingConferenceCall: $pendingIncomingCallRoomID")
             if (pendingIncomingCallRoomID == null) {
                 return false
             }
@@ -340,6 +344,7 @@ class MeetTalkCallManager {
         }
 
         fun launchMeetTalkCallActivity(instanceKey: String, context: Context) : Boolean {
+            Log.e(">>>>", "launchMeetTalkCallActivity: ${activeCallMessage?.body ?: "message null"}")
             if (activeCallMessage == null ||
                 activeCallInstanceKey == null ||
                 activeConferenceInfo == null
@@ -369,9 +374,9 @@ class MeetTalkCallManager {
             ) {
                 return false
             }
-            if (BuildConfig.DEBUG) {
-                Log.e(">>>>", "launchMeetTalkCallActivity: $room.roomID")
-            }
+//            if (BuildConfig.DEBUG) {
+                Log.e(">>>>", "launchMeetTalkCallActivity: $room.roomID $context")
+//            }
             callState = CallState.IN_CALL
             val conferenceRoomID = String.format("%s%s", MeetTalk.appID, room.roomID)
             val userInfo = JitsiMeetUserInfo()
@@ -404,8 +409,12 @@ class MeetTalkCallManager {
         fun handleIncomingCall(message: TAPMessageModel) {
             if (callState == CallState.IDLE) {
                 // Received call initiated notification, show incoming call
+                Log.e(">>>>", "handleIncomingCall: ${message.body}")
                 showIncomingCall(message, "", "")
                 callState = CallState.RINGING
+            }
+            else {
+                Log.e(">>>>", "handleIncomingCall: NOT IDLE")
             }
         }
 
@@ -681,6 +690,8 @@ class MeetTalkCallManager {
 
             TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, null)
 
+            Log.e(">>>>", "sendAnsweredCallNotification: ${message.created}")
+
             return message
         }
 
@@ -715,6 +726,8 @@ class MeetTalkCallManager {
             setActiveCallAsEnded()
 
             TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, null)
+
+            Log.e(">>>>", "sendRejectedCallNotification: ${message.created}")
 
             return message
         }
