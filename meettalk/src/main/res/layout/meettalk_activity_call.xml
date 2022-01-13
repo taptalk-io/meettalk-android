@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/meettalk_bg_call_screen_gradient"
     tools:context=".activity.MeetTalkCallActivity">
 
     <ImageView
@@ -28,34 +29,19 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <View
-        android:id="@+id/v_background_gradient"
+        android:id="@+id/v_background_overlay_gradient"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0.25"
+        android:visibility="gone"
         android:background="@drawable/tap_bg_charcoal_gradient_270" />
 
     <View
-        android:id="@+id/v_background_solid"
+        android:id="@+id/v_background_overlay_solid"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0.2"
         android:background="@color/tapBlack19" />
-
-    <TextView
-        android:id="@+id/tv_initial"
-        style="@style/meetTalkCallScreenInitialLabelStyle"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_margin="72dp"
-        android:background="@drawable/tap_bg_circle_9b9b9b"
-        android:gravity="center"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="AB" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cl_label_container"

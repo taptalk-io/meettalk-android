@@ -14,7 +14,6 @@ import android.view.View
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
-import androidx.core.widget.ImageViewCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -391,7 +390,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 loadRoomPicture()
             }
             else {
-                showRoomInitial()
+                iv_profile_picture.visibility = View.GONE
             }
 
             iv_button_toggle_audio_mute.alpha = 0.5f
@@ -414,7 +413,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                     target: Target<Drawable>?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    showRoomInitial()
+                    iv_profile_picture.visibility = View.GONE
                     return false
                 }
 
@@ -425,30 +424,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                     dataSource: DataSource?,
                     isFirstResource: Boolean
                 ): Boolean {
-                    tv_initial.visibility = View.GONE
+                    iv_profile_picture.visibility = View.VISIBLE
                     return false
                 }
             })
             .into(iv_profile_picture)
-    }
-
-    private fun showRoomInitial() {
-//        ImageViewCompat.setImageTintList(
-//            iv_profile_picture,
-//            ColorStateList.valueOf(TAPUtils.getRandomColor(this, roomDisplayName))
-//        )
-//        iv_profile_picture.setImageDrawable(
-//            ContextCompat.getDrawable(this, R.drawable.tap_bg_circle_9b9b9b)
-//        )
-        tv_initial.text = TAPUtils.getInitials(
-            roomDisplayName,
-            if (callInitiatedMessage.room.type == TYPE_PERSONAL) 2 else 1
-        )
-        tv_initial.backgroundTintList = ColorStateList.valueOf(
-            TAPUtils.getRandomColor(this, roomDisplayName)
-        )
-        tv_initial.visibility = View.VISIBLE
-        iv_profile_picture.visibility = View.GONE
     }
 
     private fun enableButtons() {
@@ -577,32 +557,34 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         else {
             0L
         }
+        val interpolator = AccelerateDecelerateInterpolator()
         runOnUiThread {
             fl_meettalk_call_view_container.animate()
                 .alpha(0f)
                 .setDuration(duration)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setInterpolator(interpolator)
                 .withEndAction { fl_meettalk_call_view_container.visibility = View.INVISIBLE }
                 .start()
             cl_label_container.animate()
+                .alpha(1f)
                 .translationY(0f)
                 .setDuration(duration)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setInterpolator(interpolator)
                 .start()
             cl_button_container.animate()
                 .translationY(0f)
                 .setDuration(duration)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setInterpolator(interpolator)
                 .start()
             v_button_container_background.animate()
                 .alpha(0f)
                 .setDuration(duration)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setInterpolator(interpolator)
                 .start()
-            v_background_solid.animate()
+            v_background_overlay_solid.animate()
                 .alpha(0.2f)
                 .setDuration(duration)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setInterpolator(interpolator)
                 .start()
         }
     }
@@ -617,33 +599,35 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         else {
             0L
         }
+        val interpolator = AccelerateDecelerateInterpolator()
         runOnUiThread {
             fl_meettalk_call_view_container.visibility = View.VISIBLE
             fl_meettalk_call_view_container.alpha = 0f
             fl_meettalk_call_view_container.animate()
                 .alpha(1f)
                 .setDuration(duration)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setInterpolator(interpolator)
                 .start()
             cl_label_container.animate()
+                .alpha(0f)
                 .translationY(TAPUtils.dpToPx(-56).toFloat())
                 .setDuration(duration)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setInterpolator(interpolator)
                 .start()
             cl_button_container.animate()
                 .translationY(TAPUtils.dpToPx(56).toFloat())
                 .setDuration(duration)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setInterpolator(interpolator)
                 .start()
             v_button_container_background.animate()
                 .alpha(1f)
                 .setDuration(duration)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setInterpolator(interpolator)
                 .start()
-            v_background_solid.animate()
+            v_background_overlay_solid.animate()
                 .alpha(0f)
                 .setDuration(duration)
-                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setInterpolator(interpolator)
                 .start()
         }
     }
