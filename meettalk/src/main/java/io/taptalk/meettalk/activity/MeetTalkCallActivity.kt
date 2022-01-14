@@ -25,7 +25,9 @@ import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
+import io.taptalk.TapTalk.Helper.TapTalk.TapTalkSocketConnectionMode.ALWAYS_ON
 import io.taptalk.TapTalk.Listener.TAPSocketListener
+import io.taptalk.TapTalk.Listener.TapCommonListener
 import io.taptalk.TapTalk.Listener.TapCoreGetMessageListener
 import io.taptalk.TapTalk.Manager.TAPConnectionManager
 import io.taptalk.TapTalk.Manager.TapCoreMessageManager
@@ -53,11 +55,12 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     private lateinit var instanceKey: String
     private lateinit var options: JitsiMeetConferenceOptions
     private lateinit var meetTalkCallView: MeetTalkCallView
-    private lateinit var callInitiatedMessage: TAPMessageModel // Change to message.room?
+    private lateinit var callInitiatedMessage: TAPMessageModel
     private lateinit var activeParticipantInfo: MeetTalkParticipantInfo
     private lateinit var activeUserID: String
     private lateinit var roomDisplayName: String
     private lateinit var durationTimer: Timer
+    private lateinit var savedSocketConnectionMode: TapTalk.TapTalkSocketConnectionMode
 
     private var isAudioMuted = false
     private var isVideoMuted = false
@@ -131,7 +134,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             intent.putExtra(MESSAGE, callInitiatedMessage)
             intent.putExtra(CONFERENCE_INFO, conferenceInfo)
             if (context !is Activity) {
-                intent.flags = FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                intent.flags = FLAG_ACTIVITY_NEW_TASK// or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
             Log.e(">>>> $TAG", "launch: ${TAPUtils.toJsonString(conferenceInfo)}")
             context.startActivity(intent)
@@ -191,14 +194,42 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         super.onDestroy()
 
 //        if (BuildConfig.DEBUG) {
-            Log.e(">>>>", "MeetTalkCallActivity onDestroy: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
+            Log.e(">>>>", "MeetTalkCallActivity onDestroy: ${MeetTalkCallManager.activeConferenceInfo?.callEndedTime ?: "info null"}")
 //        }
 
         JitsiMeetActivityDelegate.onHostDestroy(this)
 
+        if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
+            if (MeetTalkCallManager.activeConferenceInfo != null &&
+                MeetTalkCallManager.activeConferenceInfo!!.callEndedTime == 0L &&
+                MeetTalkCallManager.activeConferenceInfo!!.participants.size > 1
+            ) {
+//                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>>", "MeetTalkCallActivity onDestroy: sendCallEndedNotification")
+//                }
+                // Send call ended notification to notify the other party
+                MeetTalkCallManager.sendCallEndedNotification(instanceKey, callInitiatedMessage.room)
+            }
+            else {
+//                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>>", "MeetTalkCallActivity onDestroy: sendCallCancelledNotification")
+//                }
+                // Send call cancelled notification to notify recipient
+                MeetTalkCallManager.sendCallCancelledNotification(instanceKey, callInitiatedMessage.room)
+            }
+        }
+        else {
+            // Send left call notification to conference
+            if (BuildConfig.DEBUG) {
+                Log.e(">>>>>", "MeetTalkCallActivity onDestroy: sendLeftCallNotification")
+            }
+            MeetTalkCallManager.sendLeftCallNotification(instanceKey, callInitiatedMessage.room)
+        }
+
         MeetTalkCallManager.activeMeetTalkCallActivity = null
         MeetTalkCallManager.callState = IDLE
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
+        TapTalk.setTapTalkSocketConnectionMode(instanceKey, savedSocketConnectionMode)
         TAPConnectionManager.getInstance(instanceKey).removeSocketListener(socketListener)
 
         if (isTaskRoot) {
@@ -214,28 +245,28 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
-            MeetTalkCallManager.activeConferenceInfo != null &&
-            MeetTalkCallManager.activeConferenceInfo!!.callEndedTime == 0L
-        ) {
-            if (MeetTalkCallManager.activeConferenceInfo!!.participants.size > 1) {
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>>", "MeetTalkCallActivity onBackPressed: sendCallEndedNotification")
-                }
-                // Send call ended notification to notify the other party
-                MeetTalkCallManager.sendCallEndedNotification(instanceKey, callInitiatedMessage.room)
-            }
-            else {
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>>", "MeetTalkCallActivity onBackPressed: sendCallCancelledNotification")
-                }
-                // Send call cancelled notification to notify recipient
-                MeetTalkCallManager.sendCallCancelledNotification(instanceKey, callInitiatedMessage.room)
-            }
-        }
-        super.onBackPressed()
-    }
+//    override fun onBackPressed() {
+//        if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
+//            MeetTalkCallManager.activeConferenceInfo != null &&
+//            MeetTalkCallManager.activeConferenceInfo!!.callEndedTime == 0L
+//        ) {
+//            if (MeetTalkCallManager.activeConferenceInfo!!.participants.size > 1) {
+//                if (BuildConfig.DEBUG) {
+//                    Log.e(">>>>>", "MeetTalkCallActivity onBackPressed: sendCallEndedNotification")
+//                }
+//                // Send call ended notification to notify the other party
+//                MeetTalkCallManager.sendCallEndedNotification(instanceKey, callInitiatedMessage.room)
+//            }
+//            else {
+//                if (BuildConfig.DEBUG) {
+//                    Log.e(">>>>>", "MeetTalkCallActivity onBackPressed: sendCallCancelledNotification")
+//                }
+//                // Send call cancelled notification to notify recipient
+//                MeetTalkCallManager.sendCallCancelledNotification(instanceKey, callInitiatedMessage.room)
+//            }
+//        }
+//        super.onBackPressed()
+//    }
 
     override fun finish() {
         if (isFinishing) {
@@ -353,14 +384,16 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         callInitiatedMessage = intent.getParcelableExtra(MESSAGE)!!
 
-        if (MeetTalkCallManager.getRoomAliasMap(instanceKey)[callInitiatedMessage.room.roomID].isNullOrEmpty()) {
+        savedSocketConnectionMode = TapTalk.getTapTalkSocketConnectionMode(instanceKey)
+        TapTalk.setTapTalkSocketConnectionMode(instanceKey, ALWAYS_ON)
+        TapTalk.connect(instanceKey, object : TapCommonListener() {})
 
+        if (MeetTalkCallManager.getRoomAliasMap(instanceKey)[callInitiatedMessage.room.roomID].isNullOrEmpty()) {
             roomDisplayName = callInitiatedMessage.room.name
         }
         else {
             roomDisplayName = MeetTalkCallManager.getRoomAliasMap(instanceKey)[callInitiatedMessage.room.roomID]!!
         }
-//        conferenceInfo = intent.getParcelableExtra(CONFERENCE_INFO)!!
 
         if (MeetTalkCallManager.activeConferenceInfo != null) {
             for (participant in MeetTalkCallManager.activeConferenceInfo!!.participants) {

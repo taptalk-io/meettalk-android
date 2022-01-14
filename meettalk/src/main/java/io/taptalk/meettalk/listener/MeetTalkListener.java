@@ -116,6 +116,11 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
     }
 
     @Override
+    public void onReceiveParticipantLeftConferenceNotificationMessage(String instanceKey, TAPMessageModel message, MeetTalkConferenceInfo meetTalkConferenceInfo) {
+
+    }
+
+    @Override
     public void onReceiveConferenceInfoUpdatedNotificationMessage(String instanceKey, TAPMessageModel message, MeetTalkConferenceInfo meetTalkConferenceInfo) {
 
     }

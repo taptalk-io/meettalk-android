@@ -12,7 +12,7 @@ class MeetTalkConstant {
         const val RECIPIENT_MISSED_CALL = "call/timeout"
         const val RECIPIENT_UNABLE_TO_RECEIVE_CALL = "call/unable"
         const val PARTICIPANT_JOINED_CONFERENCE = "conference/join"
-        const val PARTICIPANT_LEFT_CONFERENCE = "conference/left" // TODO: SEND & HANDLE NOTIFICATION
+        const val PARTICIPANT_LEFT_CONFERENCE = "conference/left"
         const val CONFERENCE_INFO = "conference/info"
     }
 

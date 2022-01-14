@@ -52,6 +52,8 @@ public interface MeetTalkInterface {
 
     void onReceiveParticipantJoinedConferenceNotificationMessage(String instanceKey, TAPMessageModel message, MeetTalkConferenceInfo meetTalkConferenceInfo);
 
+    void onReceiveParticipantLeftConferenceNotificationMessage(String instanceKey, TAPMessageModel message, MeetTalkConferenceInfo meetTalkConferenceInfo);
+
     void onReceiveConferenceInfoUpdatedNotificationMessage(String instanceKey, TAPMessageModel message, MeetTalkConferenceInfo meetTalkConferenceInfo);
 
     /**

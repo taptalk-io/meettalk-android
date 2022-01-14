@@ -27,6 +27,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_REJECTED_CALL
 import io.taptalk.meettalk.helper.MeetTalkUtils
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
+import androidx.recyclerview.widget.RecyclerView
 
 class MeetTalkCallChatBubbleViewHolder internal constructor(
         parent: ViewGroup,
@@ -66,13 +67,21 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
             item.action != RECIPIENT_REJECTED_CALL &&
             item.action != RECIPIENT_MISSED_CALL
         ) {
-            clContainer.visibility = View.GONE
-            clContainer.layoutParams.height = 0
+//            clContainer.visibility = View.GONE
+//            clContainer.layoutParams.height = 0
+            itemView.visibility = View.GONE
+            itemView.layoutParams = RecyclerView.LayoutParams(0, 0)
             return
         }
 
-        clContainer.visibility = View.VISIBLE
-        clContainer.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
+//        clContainer.visibility = View.VISIBLE
+//        clContainer.layoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
+
+        itemView.visibility = View.VISIBLE
+        itemView.layoutParams = RecyclerView.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
 
         if (isCallHostedByActiveUser(item)) {
             // Active user is the call host

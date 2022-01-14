@@ -20,6 +20,7 @@ public class MeetTalkParticipantInfo implements Parcelable {
     @JsonProperty("displayName") private String displayName;
     @JsonProperty("imageURL") private String imageURL;
     @JsonProperty("role") private String role;
+    @JsonProperty("leaveTime") private Long leaveTime;
     @JsonProperty("lastUpdated") private Long lastUpdated;
     @Nullable @JsonProperty("isAudioMuted") private Boolean isAudioMuted;
     @Nullable @JsonProperty("isVideoMuted") private Boolean isVideoMuted;
@@ -34,6 +35,7 @@ public class MeetTalkParticipantInfo implements Parcelable {
             String displayName,
             String imageURL,
             String role,
+            Long leaveTime,
             Long lastUpdated,
             @Nullable Boolean isAudioMuted,
             @Nullable Boolean isVideoMuted
@@ -43,6 +45,7 @@ public class MeetTalkParticipantInfo implements Parcelable {
         this.displayName = displayName;
         this.imageURL = imageURL;
         this.role = role;
+        this.leaveTime = leaveTime;
         this.lastUpdated = lastUpdated;
         this.isAudioMuted = isAudioMuted;
         this.isVideoMuted = isVideoMuted;
@@ -120,6 +123,17 @@ public class MeetTalkParticipantInfo implements Parcelable {
         this.role = role;
     }
 
+    public Long getLeaveTime() {
+        if (leaveTime == null) {
+            return 0L;
+        }
+        return leaveTime;
+    }
+
+    public void setLeaveTime(Long leaveTime) {
+        this.leaveTime = leaveTime;
+    }
+
     public Long getLastUpdated() {
         if (lastUpdated == null) {
             return 0L;
@@ -161,6 +175,7 @@ public class MeetTalkParticipantInfo implements Parcelable {
         dest.writeString(this.displayName);
         dest.writeString(this.imageURL);
         dest.writeString(this.role);
+        dest.writeValue(this.leaveTime);
         dest.writeValue(this.lastUpdated);
         dest.writeValue(this.isAudioMuted);
         dest.writeValue(this.isVideoMuted);
@@ -172,6 +187,7 @@ public class MeetTalkParticipantInfo implements Parcelable {
         this.displayName = in.readString();
         this.imageURL = in.readString();
         this.role = in.readString();
+        this.leaveTime = (Long) in.readValue(Long.class.getClassLoader());
         this.lastUpdated = (Long) in.readValue(Long.class.getClassLoader());
         this.isAudioMuted = (Boolean) in.readValue(Boolean.class.getClassLoader());
         this.isVideoMuted = (Boolean) in.readValue(Boolean.class.getClassLoader());
