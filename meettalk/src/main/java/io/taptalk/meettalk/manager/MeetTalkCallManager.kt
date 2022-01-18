@@ -19,6 +19,7 @@ import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.TapTalk.Helper.TapTalkDialog
 import io.taptalk.TapTalk.Listener.TAPSocketListener
 import io.taptalk.TapTalk.Listener.TapCommonListener
+import io.taptalk.TapTalk.Listener.TapCoreGetMessageListener
 import io.taptalk.TapTalk.Manager.TAPChatManager
 import io.taptalk.TapTalk.Manager.TAPConnectionManager
 import io.taptalk.TapTalk.Manager.TapCoreMessageManager
@@ -476,20 +477,59 @@ class MeetTalkCallManager {
                     if (BuildConfig.DEBUG) {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Show incoming call")
                     }
-                    setActiveCallData(instanceKey, message)
-                    /** Note: incoming call will be shown in handleIncomingCall() called in
-                     * MeetTalkListener.onReceiveCallInitiatedNotificationMessage() **/
+                    if (message.data == null) {
+                        TapCoreMessageManager.getInstance(instanceKey).getNewerMessagesAfterTimestamp(
+                                message.room.roomID,
+                                message.created,
+                                message.created,
+                                object : TapCoreGetMessageListener() {
+                                    override fun onSuccess(messages: MutableList<TAPMessageModel>?) {
+                                        if (BuildConfig.DEBUG) {
+                                            Log.e(">>>>", "getNewerMessagesAfterTimestamp onSuccess: ${messages?.size}")
+                                        }
+                                        if (!messages.isNullOrEmpty()) {
+                                            for (newMessage in messages) {
+                                                if (message.localID == newMessage.localID &&
+                                                    newMessage.data != null
+                                                ) {
+                                                    Log.e(">>>>", "getNewerMessagesAfterTimestamp notification message: ${TAPUtils.toJsonString(message)}")
+                                                    Log.e(">>>>", "getNewerMessagesAfterTimestamp API message: ${TAPUtils.toJsonString(newMessage)}")
+                                                    message.data = newMessage.data
+                                                    setActiveCallData(instanceKey, message)
+                                                    /** Note: incoming call will be shown in handleIncomingCall() called in
+                                                     * MeetTalkListener.onReceiveCallInitiatedNotificationMessage() **/
+                                                    // Trigger listener callback
+                                                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                                                        meetTalkListener.onReceiveCallInitiatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                                                    }
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            )
+                    }
+                    else {
+                        setActiveCallData(instanceKey, message)
+                        /** Note: incoming call will be shown in handleIncomingCall() called in
+                         * MeetTalkListener.onReceiveCallInitiatedNotificationMessage() **/
+                        // Trigger listener callback
+                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                            meetTalkListener.onReceiveCallInitiatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                        }
+                    }
                 } else {
                     // Send busy notification when a different call is received
                     if (BuildConfig.DEBUG) {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Target busy")
                     }
                     sendBusyNotification(instanceKey, message.room)
-                }
 
-                // Trigger listener callback
-                for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                    meetTalkListener.onReceiveCallInitiatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onReceiveCallInitiatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                    }
                 }
             }
             else if ((message.action == CALL_CANCELLED && message.user.userID != activeUser.userID) ||
