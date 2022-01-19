@@ -193,29 +193,30 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-//        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.e(">>>>", "MeetTalkCallActivity onDestroy: ${MeetTalkCallManager.activeConferenceInfo?.callEndedTime ?: "info null"}")
-//        }
+        }
 
         JitsiMeetActivityDelegate.onHostDestroy(this)
 
         if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
             if (MeetTalkCallManager.activeConferenceInfo != null &&
-                MeetTalkCallManager.activeConferenceInfo!!.callEndedTime == 0L &&
-                MeetTalkCallManager.activeConferenceInfo!!.participants.size > 1
+                MeetTalkCallManager.activeConferenceInfo!!.callEndedTime == 0L
             ) {
-//                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>>", "MeetTalkCallActivity onDestroy: sendCallEndedNotification")
-//                }
-                // Send call ended notification to notify the other party
-                MeetTalkCallManager.sendCallEndedNotification(instanceKey, callInitiatedMessage.room)
-            }
-            else {
-//                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>>", "MeetTalkCallActivity onDestroy: sendCallCancelledNotification")
-//                }
-                // Send call cancelled notification to notify recipient
-                MeetTalkCallManager.sendCallCancelledNotification(instanceKey, callInitiatedMessage.room)
+                if (isCallStarted || MeetTalkCallManager.activeConferenceInfo!!.participants.size > 1 ) {
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>>", "MeetTalkCallActivity onDestroy: sendCallEndedNotification")
+                    }
+                    // Send call ended notification to notify the other party
+                    MeetTalkCallManager.sendCallEndedNotification(instanceKey, callInitiatedMessage.room)
+                }
+                else if (MeetTalkCallManager.activeConferenceInfo!!.hostUserID == activeUserID) {
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>>", "MeetTalkCallActivity onDestroy: sendCallCancelledNotification")
+                    }
+                    // Send call cancelled notification to notify recipient
+                    MeetTalkCallManager.sendCallCancelledNotification(instanceKey, callInitiatedMessage.room)
+                }
             }
         }
         else {
@@ -226,6 +227,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             MeetTalkCallManager.sendLeftCallNotification(instanceKey, callInitiatedMessage.room)
         }
 
+        MeetTalkCallManager.setActiveCallAsEnded()
         MeetTalkCallManager.activeMeetTalkCallActivity = null
         MeetTalkCallManager.callState = IDLE
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
@@ -347,7 +349,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             meetTalkListener.onConferenceTerminated(MeetTalkCallManager.activeConferenceInfo)
         }
 
-        MeetTalkCallManager.setActiveCallAsEnded()
+        //MeetTalkCallManager.setActiveCallAsEnded()
     }
 
     override fun onParticipantJoined(extraData: HashMap<String, Any>?) {
