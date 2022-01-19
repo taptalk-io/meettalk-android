@@ -20,6 +20,7 @@ import io.taptalk.TapTalk.Helper.TapTalkDialog
 import io.taptalk.TapTalk.Listener.TAPSocketListener
 import io.taptalk.TapTalk.Listener.TapCommonListener
 import io.taptalk.TapTalk.Listener.TapCoreGetMessageListener
+import io.taptalk.TapTalk.Listener.TapCoreSendMessageListener
 import io.taptalk.TapTalk.Manager.TAPChatManager
 import io.taptalk.TapTalk.Manager.TAPConnectionManager
 import io.taptalk.TapTalk.Manager.TapCoreMessageManager
@@ -97,6 +98,7 @@ class MeetTalkCallManager {
         var activeCallInstanceKey: String? = null
         var activeMeetTalkCallActivity: MeetTalkCallActivity? = null
         var activeConferenceInfo: MeetTalkConferenceInfo? = null
+        var pendingNotificationMessageInstanceKey: String? = null
 
         private val appName = TapTalk.appContext.getString(R.string.app_name)
         private val telecomManager = TapTalk.appContext.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
@@ -447,6 +449,7 @@ class MeetTalkCallManager {
             return true
         }
 
+        // TODO: MERGE TO showIncomingCall?
         fun handleIncomingCall(message: TAPMessageModel) {
             if (callState == CallState.IDLE) {
                 // Received call initiated notification, show incoming call
@@ -460,8 +463,14 @@ class MeetTalkCallManager {
         }
 
         fun checkAndHandleCallNotificationFromMessage(message: TAPMessageModel, instanceKey: String, activeUser: TAPUserModel) {
-            if (message.type != CALL_MESSAGE_TYPE || handledCallNotificationMessageLocalIDs.contains(message.localID)) {
-                // Return if message type is invalid or has been previously checked
+            if (message.type != CALL_MESSAGE_TYPE ||
+                handledCallNotificationMessageLocalIDs.contains(message.localID)
+//                (message.action != CALL_INITIATED &&
+//                MeetTalkConferenceInfo.fromMessageModel(message) == null)
+            ) {
+                // Return if:
+                // • Message type is invalid
+                // • Message has been previously handled
                 return
             }
             if (BuildConfig.DEBUG) {
@@ -532,141 +541,147 @@ class MeetTalkCallManager {
                     }
                 }
             }
-            else if ((message.action == CALL_CANCELLED && message.user.userID != activeUser.userID) ||
-                (message.action == RECIPIENT_REJECTED_CALL && message.user.userID == activeUser.userID)
-            ) {
-                // Caller cancelled call or recipient rejected call elsewhere, dismiss incoming call
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
-                }
-                MeetTalkCallConnection.getInstance().onDisconnect()
-                activeMeetTalkCallActivity?.finish()
-                setActiveCallAsEnded()
-
-                // Trigger listener callback
-                if (message.action == CALL_CANCELLED) {
-                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                        meetTalkListener.onReceiveCallCancelledNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+            else if (MeetTalkConferenceInfo.fromMessageModel(message)?.callID == activeConferenceInfo?.callID) {
+                if (((message.action == CALL_CANCELLED && message.user.userID != activeUser.userID) ||
+                    (message.action == RECIPIENT_REJECTED_CALL && message.user.userID == activeUser.userID))
+                ) {
+                    // Caller cancelled call or recipient rejected call elsewhere, dismiss incoming call
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
                     }
-                }
-                else if (message.action == RECIPIENT_REJECTED_CALL) {
-                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                        meetTalkListener.onReceiveActiveUserRejectedCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
-                    }
-                }
-            }
-            else if (message.action == CALL_ENDED) {
-                // A party ended the call, leave active call room
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_ENDED $activeMeetTalkCallActivity")
-                }
-                activeMeetTalkCallActivity?.finish()
-                setActiveCallAsEnded()
-
-                // Trigger listener callback
-                for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                    meetTalkListener.onReceiveCallEndedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
-                }
-            }
-            else if (message.action == RECIPIENT_ANSWERED_CALL) {
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: RECIPIENT_ANSWERED_CALL is self: ${message.user.userID == activeUser.userID}")
-                }
-                if (message.user.userID == activeUser.userID) {
-                    // Target answered call elsewhere, dismiss incoming call
                     MeetTalkCallConnection.getInstance().onDisconnect()
-                    callState = CallState.IDLE
-                }
+                    activeMeetTalkCallActivity?.finish()
+                    setActiveCallAsEnded()
 
-                // Trigger listener callback
-                for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                    meetTalkListener.onReceiveRecipientAnsweredCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
-                }
-            }
-            else if (message.action == PARTICIPANT_JOINED_CONFERENCE) {
-                // A participant successfully joined the call, notify call activity
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: PARTICIPANT_JOINED_CONFERENCE ${message.user.fullname}")
-                }
-                val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
-                if (activeConferenceInfo != null && updatedConferenceInfo != null) {
-                    activeConferenceInfo?.updateValue(updatedConferenceInfo)
-                    activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
-                }
-
-                // Trigger listener callback
-                for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                    meetTalkListener.onReceiveParticipantJoinedConferenceNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
-                }
-            }
-            else if (message.action == PARTICIPANT_LEFT_CONFERENCE) {
-                // A participant left the call
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: PARTICIPANT_LEFT_CONFERENCE ${message.user.fullname}")
-                }
-                val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
-                if (activeConferenceInfo != null && updatedConferenceInfo != null) {
-                    activeConferenceInfo?.updateValue(updatedConferenceInfo)
-                    activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
-                }
-
-                // Trigger listener callback
-                for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                    meetTalkListener.onReceiveParticipantLeftConferenceNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
-                }
-            }
-            else if (message.user.userID != activeUser.userID &&
-                (message.action == RECIPIENT_BUSY ||
-                message.action == RECIPIENT_REJECTED_CALL ||
-                message.action == RECIPIENT_MISSED_CALL)
-            ) {
-                // Target did not join call, leave call room & dismiss waiting screen
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
-                }
-                activeMeetTalkCallActivity?.finish()
-                setActiveCallAsEnded()
-
-                // Trigger listener callback
-                if (message.action == RECIPIENT_BUSY) {
-                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                        meetTalkListener.onReceiveRecipientBusyNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                    // Trigger listener callback
+                    if (message.action == CALL_CANCELLED) {
+                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                            meetTalkListener.onReceiveCallCancelledNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                        }
+                    }
+                    else if (message.action == RECIPIENT_REJECTED_CALL) {
+                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                            meetTalkListener.onReceiveActiveUserRejectedCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                        }
                     }
                 }
-                else if (message.action == RECIPIENT_REJECTED_CALL) {
+                else if (message.action == CALL_ENDED) {
+                    // A party ended the call, leave active call room
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_ENDED $activeMeetTalkCallActivity")
+                    }
+                    activeMeetTalkCallActivity?.finish()
+                    setActiveCallAsEnded()
+
+                    // Trigger listener callback
                     for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                        meetTalkListener.onReceiveRecipientRejectedCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                        meetTalkListener.onReceiveCallEndedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
                     }
                 }
-                else if (message.action == RECIPIENT_MISSED_CALL) {
+                else if (message.action == RECIPIENT_ANSWERED_CALL) {
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: RECIPIENT_ANSWERED_CALL is self: ${message.user.userID == activeUser.userID}")
+                    }
+                    if (message.user.userID == activeUser.userID) {
+                        // Target answered call elsewhere, dismiss incoming call
+                        MeetTalkCallConnection.getInstance().onDisconnect()
+                        callState = CallState.IDLE
+                    }
+
+                    // Trigger listener callback
                     for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                        meetTalkListener.onReceiveRecipientMissedCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                        meetTalkListener.onReceiveRecipientAnsweredCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
                     }
                 }
-            }
-            else if (message.action == CONFERENCE_INFO && message.user.userID != activeUser.userID) {
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CONFERENCE_INFO - update activity")
-                }
-                // Received updated conference info
-                val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
-                if (activeConferenceInfo != null && updatedConferenceInfo != null) {
-                    activeConferenceInfo?.updateValue(updatedConferenceInfo)
-                    activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
-                }
+                else if (message.action == PARTICIPANT_JOINED_CONFERENCE) {
+                    // A participant successfully joined the call, notify call activity
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: PARTICIPANT_JOINED_CONFERENCE ${message.user.fullname}")
+                    }
+                    val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
+                    if (activeConferenceInfo != null && updatedConferenceInfo != null) {
+                        activeConferenceInfo?.updateValue(updatedConferenceInfo)
+                        activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
+                    }
 
-                // Trigger listener callback
-                for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                    meetTalkListener.onReceiveConferenceInfoUpdatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onReceiveParticipantJoinedConferenceNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                    }
                 }
-            }
-            else if (message.action == RECIPIENT_UNABLE_TO_RECEIVE_CALL) {
-                // One of recipient's device is unable to receive the call
-                // TODO:
+                else if (message.action == PARTICIPANT_LEFT_CONFERENCE) {
+                    // A participant left the call
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: PARTICIPANT_LEFT_CONFERENCE ${message.user.fullname}")
+                    }
+                    val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
+                    if (activeConferenceInfo != null && updatedConferenceInfo != null) {
+                        activeConferenceInfo?.updateValue(updatedConferenceInfo)
+                        activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
+                    }
 
-                // Trigger listener callback
-                for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                    meetTalkListener.onReceiveRecipientUnableToReceiveCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onReceiveParticipantLeftConferenceNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                    }
+                }
+                else if (
+                    message.user.userID != activeUser.userID &&
+                    (message.action == RECIPIENT_BUSY ||
+                    message.action == RECIPIENT_REJECTED_CALL ||
+                    message.action == RECIPIENT_MISSED_CALL)
+                ) {
+                    // Recipient did not join call, leave call room
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
+                    }
+                    activeMeetTalkCallActivity?.finish()
+                    setActiveCallAsEnded()
+
+                    // Trigger listener callback
+                    if (message.action == RECIPIENT_BUSY) {
+                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                            meetTalkListener.onReceiveRecipientBusyNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                        }
+                    }
+                    else if (message.action == RECIPIENT_REJECTED_CALL) {
+                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                            meetTalkListener.onReceiveRecipientRejectedCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                        }
+                    }
+                    else if (message.action == RECIPIENT_MISSED_CALL) {
+                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                            meetTalkListener.onReceiveRecipientMissedCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                        }
+                    }
+                }
+                else if (
+                    message.action == CONFERENCE_INFO &&
+                    message.user.userID != activeUser.userID
+                ) {
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CONFERENCE_INFO - update activity")
+                    }
+                    // Received updated conference info
+                    val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
+                    if (activeConferenceInfo != null && updatedConferenceInfo != null) {
+                        activeConferenceInfo?.updateValue(updatedConferenceInfo)
+                        activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
+                    }
+
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onReceiveConferenceInfoUpdatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                    }
+                }
+                else if (message.action == RECIPIENT_UNABLE_TO_RECEIVE_CALL) {
+                    // One of recipient's device is unable to receive the call
+                    // TODO:
+
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onReceiveRecipientUnableToReceiveCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                    }
                 }
             }
         }
@@ -873,35 +888,51 @@ class MeetTalkCallManager {
         }
 
         fun sendPendingCallNotificationMessages() {
-            if (activeConferenceInfo == null || activeCallInstanceKey == null) {
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "sendPendingCallNotificationMessages call ended, clear pending messages: ${pendingCallNotificationMessages.size}")
-                }
-                pendingCallNotificationMessages.clear()
+            if (BuildConfig.DEBUG) {
+                Log.e(">>>>", "sendPendingCallNotificationMessages size: ${pendingCallNotificationMessages.size}")
             }
-            else {
-                for (message in ArrayList(pendingCallNotificationMessages)) {
-                    if (BuildConfig.DEBUG) {
-                        Log.e(">>>>", "sendPendingCallNotificationMessages: ${pendingCallNotificationMessages.size}")
-                    }
-                    pendingCallNotificationMessages.remove(message)
-                    sendCallNotificationMessage(activeCallInstanceKey!!, message)
-                }
+            val pendingMessagesCopy = ArrayList<TAPMessageModel>()
+            pendingMessagesCopy.addAll(pendingCallNotificationMessages)
+            for (message in pendingMessagesCopy) {
+                val messageCopy = message.copyMessageModel()
+                pendingCallNotificationMessages.remove(message)
+                sendCallNotificationMessage(
+                    activeCallInstanceKey ?: pendingNotificationMessageInstanceKey ?: return,
+                    messageCopy
+                )
             }
+            pendingNotificationMessageInstanceKey = null
         }
 
+        // TODO: ADD CALLBACK
         private fun sendCallNotificationMessage(instanceKey: String, message: TAPMessageModel) {
+            if (BuildConfig.DEBUG) {
+                Log.e(">>>>", "sendCallNotificationMessage: ${message.action}")
+            }
             if (TapTalk.isConnected(instanceKey)) {
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "sendCallNotificationMessage: ${message.action}")
-                }
-                TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, null)
+                TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, object : TapCoreSendMessageListener() {
+                    override fun onStart(message: TAPMessageModel?) {
+
+                    }
+
+                    override fun onSuccess(message: TAPMessageModel?) {
+
+                    }
+
+                    override fun onError(message: TAPMessageModel?, errorCode: String?, errorMessage: String?) {
+
+                    }
+                })
             }
             else {
                 if (BuildConfig.DEBUG) {
                     Log.e(">>>>", "sendCallNotificationMessage add to pending array: ${message.action}")
                 }
                 pendingCallNotificationMessages.add(message)
+                if (activeCallInstanceKey == null) {
+                    // Save instance key in case call is already ended
+                    pendingNotificationMessageInstanceKey = instanceKey
+                }
             }
         }
 
@@ -913,7 +944,7 @@ class MeetTalkCallManager {
         }
 
         fun setActiveCallAsEnded() {
-            TAPConnectionManager.getInstance(activeCallInstanceKey).removeSocketListener(socketListener)
+            //TAPConnectionManager.getInstance(activeCallInstanceKey).removeSocketListener(socketListener)
             pendingCallNotificationMessages.clear()
             activeCallMessage = null
             activeConferenceInfo = null
