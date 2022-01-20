@@ -1,5 +1,6 @@
 package io.taptalk.meettalk.manager
 
+import android.Manifest
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
@@ -13,6 +14,7 @@ import android.telecom.TelecomManager
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
@@ -34,10 +36,10 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_CANC
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_ENDED
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_INITIATED
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CONFERENCE_INFO
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_ANSWERED_CALL
-import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_BUSY
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.PARTICIPANT_JOINED_CONFERENCE
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.PARTICIPANT_LEFT_CONFERENCE
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_ANSWERED_CALL
+import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_BUSY
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_MISSED_CALL
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_REJECTED_CALL
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT_UNABLE_TO_RECEIVE_CALL
@@ -67,6 +69,8 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_MUTE_BU
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_SHARE_BUTTON_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.HOST
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
+import io.taptalk.meettalk.constant.MeetTalkConstant.PermissionRequest.AUDIO
+import io.taptalk.meettalk.constant.MeetTalkConstant.PermissionRequest.CAMERA
 import io.taptalk.meettalk.constant.MeetTalkConstant.Url.MEET_URL
 import io.taptalk.meettalk.constant.MeetTalkConstant.Value.INCOMING_CALL_TIMEOUT_DURATION
 import io.taptalk.meettalk.helper.MeetTalk
@@ -342,6 +346,32 @@ class MeetTalkCallManager {
                     "{{sender}} is unable to receive call."
                 )
             }
+        }
+
+        fun checkAndRequestAudioPermission(activity: Activity) : Boolean {
+            if (!TAPUtils.hasPermissions(activity, Manifest.permission.RECORD_AUDIO)) {
+                // Check camera permission
+                ActivityCompat.requestPermissions(
+                    activity,
+                    arrayOf(Manifest.permission.RECORD_AUDIO),
+                    AUDIO
+                )
+                return false
+            }
+            return true
+        }
+
+        fun checkAndRequestCameraPermission(activity: Activity) : Boolean {
+            if (!TAPUtils.hasPermissions(activity, Manifest.permission.CAMERA)) {
+                // Check camera permission
+                ActivityCompat.requestPermissions(
+                    activity,
+                    arrayOf(Manifest.permission.CAMERA),
+                    CAMERA
+                )
+                return false
+            }
+            return true
         }
 
         fun clearPendingIncomingCall() {

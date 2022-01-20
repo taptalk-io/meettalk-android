@@ -385,4 +385,18 @@ public class MeetTalk {
                 activeUserAvatarUrl
         );
     }
+
+    /**
+     * =============================================================================================
+     * Permission
+     * =============================================================================================
+     */
+
+    public static boolean checkAndRequestAudioPermission(Activity activity) {
+        return MeetTalkCallManager.Companion.checkAndRequestAudioPermission(activity);
+    }
+
+    public static boolean checkAndRequestCameraPermission(Activity activity) {
+        return MeetTalkCallManager.Companion.checkAndRequestCameraPermission(activity);
+    }
 }

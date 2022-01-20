@@ -32,6 +32,11 @@ class MeetTalkConstant {
         const val PARTICIPANT = "participant"
     }
 
+    object PermissionRequest {
+        const val AUDIO = 1
+        const val CAMERA = 2
+    }
+
     object Preference {
         const val ENABLE_PHONE_ACCOUNT_SETTINGS_REQUESTED_APP_NAME = "kMeetTalkEnablePhoneAccountSettingsRequestedAppName"
     }
