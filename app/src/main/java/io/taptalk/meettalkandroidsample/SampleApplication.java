@@ -69,7 +69,7 @@ public class SampleApplication extends MultiDexApplication {
 
         @Override
         public void onNotificationReceived(TAPMessageModel message) {
-            TapTalk.showTapTalkNotification(INSTANCE_KEY, message);
+            super.onNotificationReceived(message);
         }
 
         @Override

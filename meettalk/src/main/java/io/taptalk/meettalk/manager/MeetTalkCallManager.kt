@@ -885,10 +885,10 @@ class MeetTalkCallManager {
 
         // TODO: ADD CALLBACK
         private fun sendCallNotificationMessage(instanceKey: String, message: TAPMessageModel) {
-            if (BuildConfig.DEBUG) {
-                Log.e(">>>>", "sendCallNotificationMessage: ${message.action}")
-            }
             if (TapTalk.isConnected(instanceKey)) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "sendCallNotificationMessage: ${message.action}")
+                }
                 TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, object : TapCoreSendMessageListener() {
                     override fun onStart(message: TAPMessageModel?) {
 

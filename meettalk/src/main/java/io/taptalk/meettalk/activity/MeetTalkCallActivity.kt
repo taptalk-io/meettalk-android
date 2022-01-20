@@ -308,6 +308,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         if (BuildConfig.DEBUG) {
             Log.e(">>>>", "MeetTalkCallActivity onConferenceJoined: ${TAPUtils.toJsonString(extraData)}")
         }
+        enableButtons()
 //        retrieveParticipantsInfo()
         if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
             // Joined an existing call, send participant joined notification
@@ -848,7 +849,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 MeetTalkCallManager.activeConferenceInfo!!.callStartedTime = System.currentTimeMillis()
             }
             callStartTimestamp = MeetTalkCallManager.activeConferenceInfo!!.callStartedTime
-            enableButtons()
+            //enableButtons()
             startCallDurationTimer()
 
             // Send updated conference info

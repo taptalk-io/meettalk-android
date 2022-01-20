@@ -154,7 +154,7 @@ public class MeetTalk {
 
                 // Handle call events
                 if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "onNotificationReceived: " + message.getBody());
+                    Log.e(">>>>", "MeetTalk: onNotificationReceived: " + message.getType() + " - " + message.getBody());
                 }
                 MeetTalkCallManager.Companion.checkAndHandleCallNotificationFromMessage(
                         message,
