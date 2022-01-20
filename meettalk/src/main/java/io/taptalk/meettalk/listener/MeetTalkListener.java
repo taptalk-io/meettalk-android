@@ -67,7 +67,7 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
 
     @Override
     public void onReceiveCallInitiatedNotificationMessage(String instanceKey, TAPMessageModel message, MeetTalkConferenceInfo meetTalkConferenceInfo) {
-        MeetTalkCallManager.Companion.handleIncomingCall(message);
+        MeetTalkCallManager.Companion.showIncomingCall(message, "", "");
     }
 
     @Override

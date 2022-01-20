@@ -136,7 +136,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             if (context !is Activity) {
                 intent.flags = FLAG_ACTIVITY_NEW_TASK// or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
-            Log.e(">>>> $TAG", "launch: ${TAPUtils.toJsonString(conferenceInfo)}")
             context.startActivity(intent)
         }
     }
@@ -154,9 +153,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         MeetTalkCallManager.activeMeetTalkCallActivity = this
 
-//        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.e(">>>>", "MeetTalkCallActivity onCreate: ${MeetTalkCallManager.activeMeetTalkCallActivity}")
-//        }
+        }
 
         initData()
         initView()
@@ -167,9 +166,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onResume() {
         super.onResume()
 
-//        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.e(">>>>", "MeetTalkCallActivity onResume: ")
-//        }
+        }
 
         JitsiMeetActivityDelegate.onHostResume(this)
 
@@ -179,9 +178,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     override fun onPause() {
         super.onPause()
 
-//        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG) {
             Log.e(">>>>", "MeetTalkCallActivity onPause: ")
-//        }
+        }
 
         JitsiMeetActivityDelegate.onHostPause(this)
 
@@ -247,29 +246,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
     }
 
-//    override fun onBackPressed() {
-//        if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
-//            MeetTalkCallManager.activeConferenceInfo != null &&
-//            MeetTalkCallManager.activeConferenceInfo!!.callEndedTime == 0L
-//        ) {
-//            if (MeetTalkCallManager.activeConferenceInfo!!.participants.size > 1) {
-//                if (BuildConfig.DEBUG) {
-//                    Log.e(">>>>>", "MeetTalkCallActivity onBackPressed: sendCallEndedNotification")
-//                }
-//                // Send call ended notification to notify the other party
-//                MeetTalkCallManager.sendCallEndedNotification(instanceKey, callInitiatedMessage.room)
-//            }
-//            else {
-//                if (BuildConfig.DEBUG) {
-//                    Log.e(">>>>>", "MeetTalkCallActivity onBackPressed: sendCallCancelledNotification")
-//                }
-//                // Send call cancelled notification to notify recipient
-//                MeetTalkCallManager.sendCallCancelledNotification(instanceKey, callInitiatedMessage.room)
-//            }
-//        }
-//        super.onBackPressed()
-//    }
-
     override fun finish() {
         if (isFinishing) {
             return
@@ -289,8 +265,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
      */
 
     override fun getJitsiView(): JitsiMeetView {
-//        val fragment = supportFragmentManager.findFragmentById(io.taptalk.meettalk.R.id.fragment_meettalk_call) as MeetTalkCallFragment
-//        return fragment.meetTalkCallView
         if (!this::meetTalkCallView.isInitialized) {
             meetTalkCallView = MeetTalkCallView(this)
         }
@@ -348,8 +322,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
             meetTalkListener.onConferenceTerminated(MeetTalkCallManager.activeConferenceInfo)
         }
-
-        //MeetTalkCallManager.setActiveCallAsEnded()
     }
 
     override fun onParticipantJoined(extraData: HashMap<String, Any>?) {
