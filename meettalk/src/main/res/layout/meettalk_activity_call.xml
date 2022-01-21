@@ -116,8 +116,7 @@
             app:layout_constraintEnd_toStartOf="@id/iv_button_toggle_video_mute"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="UseAppTint"
-            tools:targetApi="lollipop" />
+            tools:ignore="UseAppTint" />
 
         <ImageView
             android:id="@+id/iv_button_toggle_video_mute"
@@ -134,8 +133,7 @@
             app:layout_constraintEnd_toStartOf="@id/iv_button_toggle_audio_mute"
             app:layout_constraintStart_toEndOf="@id/iv_button_flip_camera"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="UseAppTint"
-            tools:targetApi="lollipop" />
+            tools:ignore="UseAppTint" />
 
         <ImageView
             android:id="@+id/iv_button_toggle_audio_mute"
@@ -152,8 +150,7 @@
             app:layout_constraintEnd_toStartOf="@id/iv_button_cancel_call"
             app:layout_constraintStart_toEndOf="@id/iv_button_toggle_video_mute"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="UseAppTint"
-            tools:targetApi="lollipop" />
+            tools:ignore="UseAppTint" />
 
         <ImageView
             android:id="@+id/iv_button_cancel_call"
@@ -171,8 +168,7 @@
             app:layout_constraintStart_toEndOf="@id/iv_button_toggle_audio_mute"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/tapWhite"
-            tools:ignore="UseAppTint"
-            tools:targetApi="lollipop" />
+            tools:ignore="UseAppTint" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

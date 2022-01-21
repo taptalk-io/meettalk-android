@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/notification_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/tap_bg_button_white"
+    tools:context=".activity.MeetTalkIncomingCallActivity">
+
+    <ImageView
+        android:id="@+id/iv_button_reject_call"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:layout_marginStart="24dp"
+        android:background="@drawable/tap_bg_circle_9b9b9b"
+        android:backgroundTint="@color/tapButtonDestructiveBackgroundColor"
+        android:padding="16dp"
+        android:src="@drawable/meettalk_ic_hang_up_white"
+        android:tint="@color/tapWhite"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/iv_button_answer_call"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="@color/tapWhite"
+        tools:ignore="UseAppTint" />
+
+    <ImageView
+        android:id="@+id/iv_button_answer_call"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_gravity="end"
+        android:background="@drawable/tap_bg_circle_9b9b9b"
+        android:backgroundTint="@color/tapColorSuccess"
+        android:padding="16dp"
+        android:src="@drawable/meettalk_ic_hang_up_white"
+        android:tint="@color/tapWhite"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/iv_button_reject_call"
+        app:tint="@color/tapWhite"
+        tools:ignore="UseAppTint" />
+
+</FrameLayout>

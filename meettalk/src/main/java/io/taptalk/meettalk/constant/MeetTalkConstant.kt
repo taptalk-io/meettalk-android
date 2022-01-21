@@ -2,6 +2,11 @@ package io.taptalk.meettalk.constant
 
 class MeetTalkConstant {
 
+    object Broadcast {
+        const val ANSWER_INCOMING_CALL = "kMeetTalkBroadcastEventAnswerIncomingCall"
+        const val REJECT_INCOMING_CALL = "kMeetTalkBroadcastEventRejectIncomingCall"
+    }
+
     object CallMessageAction {
         const val CALL_INITIATED = "call/initiate"
         const val CALL_CANCELLED = "call/cancel"
@@ -24,6 +29,12 @@ class MeetTalkConstant {
         const val CALLER_NAME = "kMeetTalkExtraCallerName"
         const val CALLER_NUMBER = "kMeetTalkExtraCallerNumber"
         const val CONFERENCE_INFO = "kMeetTalkExtraConferenceInfo"
+    }
+
+    object IncomingCallNotification {
+        const val INCOMING_CALL_NOTIFICATION_CHANNEL_ID = "meettalk_incoming_call_notification_id"
+        const val INCOMING_CALL_NOTIFICATION_CHANNEL_NAME = "Incoming Calls"
+        const val INCOMING_CALL_NOTIFICATION_CHANNEL_DESCRIPTION = "MeetTalk Incoming Calls"
     }
 
     object ParticipantRole {

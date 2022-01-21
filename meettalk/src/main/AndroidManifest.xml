@@ -7,22 +7,28 @@
     <application
         android:largeHeap="true"
         android:requestLegacyExternalStorage="true">
+        <activity
+            android:name=".activity.MeetTalkIncomingCallActivity"
+            android:exported="false" />
 
         <service
             android:name=".helper.MeetTalkConnectionService"
-            android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE">
             <intent-filter>
                 <action android:name="android.telecom.ConnectionService" />
             </intent-filter>
         </service>
-
+        <service
+            android:name=".helper.MeetTalkIncomingCallService"
+            android:exported="true">
+        </service>
         <service
             android:name=".helper.MeetTalkCallScreeningService"
-            android:permission="android.permission.BIND_SCREENING_SERVICE"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.BIND_SCREENING_SERVICE">
             <intent-filter>
-                <action android:name="android.telecom.CallScreeningService"/>
+                <action android:name="android.telecom.CallScreeningService" />
             </intent-filter>
         </service>
 
@@ -31,7 +37,6 @@
             android:exported="true"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" />
-
     </application>
 
 </manifest>
