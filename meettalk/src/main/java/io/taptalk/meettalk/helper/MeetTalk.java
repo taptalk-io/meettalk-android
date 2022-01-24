@@ -314,6 +314,10 @@ public class MeetTalk {
         MeetTalkCallManager.Companion.openPhoneAccountSettings();
     }
 
+    public static void openAppNotificationSettings(Context context) {
+        MeetTalkCallManager.Companion.openAppNotificationSettings(context);
+    }
+
     public static void showIncomingCall(TAPMessageModel message) {
         showIncomingCall(message, "", "");
     }

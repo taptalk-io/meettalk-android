@@ -12,6 +12,7 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.telecom.PhoneAccount
 import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
@@ -21,6 +22,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
 import io.taptalk.TapTalk.Helper.TAPBroadcastManager
 import io.taptalk.TapTalk.Helper.TAPUtils
@@ -102,6 +104,12 @@ import java.net.URL
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import androidx.core.content.ContextCompat.startActivity
+import com.fasterxml.jackson.databind.util.ClassUtil
+
+import com.fasterxml.jackson.databind.util.ClassUtil.getPackageName
+import io.taptalk.TapTalk.Manager.TapUI
+
 
 @RequiresApi(Build.VERSION_CODES.M)
 class MeetTalkCallManager {
@@ -175,6 +183,7 @@ class MeetTalkCallManager {
 
             initSocketListener()
             initBroadcastReceiver()
+            createIncomingCallNotificationChannel()
         }
 
         private fun initSocketListener() {
@@ -274,6 +283,21 @@ class MeetTalkCallManager {
 
         private fun getPhoneAccount() : PhoneAccount? {
             return telecomManager.getPhoneAccount(phoneAccountHandle)
+        }
+
+        fun openAppNotificationSettings(context: Context) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val settingsIntent: Intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    .putExtra(Settings.EXTRA_CHANNEL_ID, INCOMING_CALL_NOTIFICATION_CHANNEL_ID)
+                context.startActivity(settingsIntent)
+            }
+            else {
+                val settingsIntent: Intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(settingsIntent)
+            }
         }
 
         fun showIncomingCall(message: TAPMessageModel?, displayName: String?, displayPhoneNumber: String?) {
@@ -436,8 +460,10 @@ class MeetTalkCallManager {
             }
         }
 
-        private fun createIncomingCallNotificationChannel(context: Context) {
+        private fun createIncomingCallNotificationChannel() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val notificationManager = MeetTalk.appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
                 val notificationChannel = NotificationChannel(
                     INCOMING_CALL_NOTIFICATION_CHANNEL_ID,
                     INCOMING_CALL_NOTIFICATION_CHANNEL_NAME,
@@ -453,13 +479,12 @@ class MeetTalkCallManager {
                         .build()
                 )
                 notificationChannel.description = INCOMING_CALL_NOTIFICATION_CHANNEL_DESCRIPTION
+                notificationChannel.setShowBadge(true)
                 notificationChannel.enableLights(true)
-                notificationChannel.lightColor = context.getColor(R.color.tapColorPrimary)
+                notificationChannel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
+                notificationChannel.lightColor = MeetTalk.appContext.getColor(R.color.tapColorPrimary)
 
-                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 notificationManager.createNotificationChannel(notificationChannel)
-
-                Log.e(">>>>>>>", "createIncomingCallNotificationChannel: ")
             }
         }
 
