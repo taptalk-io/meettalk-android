@@ -56,6 +56,8 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.RECIPIENT
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_MESSAGE_TYPE
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CALLER_NAME
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CALLER_NUMBER
+import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.INCOMING_CALL_NOTIFICATION_CONTENT
+import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.INCOMING_CALL_NOTIFICATION_TITLE
 import io.taptalk.meettalk.constant.MeetTalkConstant.IncomingCallNotification.INCOMING_CALL_NOTIFICATION_CHANNEL_DESCRIPTION
 import io.taptalk.meettalk.constant.MeetTalkConstant.IncomingCallNotification.INCOMING_CALL_NOTIFICATION_CHANNEL_ID
 import io.taptalk.meettalk.constant.MeetTalkConstant.IncomingCallNotification.INCOMING_CALL_NOTIFICATION_CHANNEL_NAME
@@ -115,6 +117,7 @@ class MeetTalkCallManager {
         var activeCallMessage: TAPMessageModel? = null
         var activeCallInstanceKey: String? = null
         var activeMeetTalkCallActivity: MeetTalkCallActivity? = null
+        var activeMeetTalkIncomingCallActivity: MeetTalkIncomingCallActivity? = null
         var activeConferenceInfo: MeetTalkConferenceInfo? = null
         var pendingNotificationMessageInstanceKey: String? = null
 
@@ -171,7 +174,7 @@ class MeetTalkCallManager {
             buildAndRegisterPhoneAccount()
 
             initSocketListener()
-            initBroadcastReceiver(MeetTalk.appContext)
+            initBroadcastReceiver()
         }
 
         private fun initSocketListener() {
@@ -195,8 +198,8 @@ class MeetTalkCallManager {
             }
         }
 
-        private fun initBroadcastReceiver(context: Context) {
-            TAPBroadcastManager.register(context, object : BroadcastReceiver() {
+        private fun initBroadcastReceiver() {
+            TAPBroadcastManager.register(MeetTalk.appContext, object : BroadcastReceiver() {
                 override fun onReceive(context: Context?, intent: Intent?) {
                     Log.e(">>>>>>>", "onReceive broadcast: ${intent?.action ?: "null"}")
                     if (intent?.action == ANSWER_INCOMING_CALL && activeCallInstanceKey != null) {
@@ -274,17 +277,19 @@ class MeetTalkCallManager {
         }
 
         fun showIncomingCall(message: TAPMessageModel?, displayName: String?, displayPhoneNumber: String?) {
-            // TODO: TEST
             if (callState != CallState.IDLE) {
                 return
             }
             val name: String
             if (!displayName.isNullOrEmpty() && message != null && activeCallInstanceKey != null) {
-                getRoomAliasMap(activeCallInstanceKey!!)[message.room.roomID] = displayName!!
+                getRoomAliasMap(activeCallInstanceKey!!)[message.room.roomID] = displayName
+                name = displayName
+            }
+            else if (message != null) {
                 name = message.user?.fullname ?: ""
             }
             else {
-                name = displayName!!
+                name = ""
             }
             val phoneNumber = if (displayPhoneNumber.isNullOrEmpty()) {
                 if (message?.user != null) {
@@ -313,124 +318,122 @@ class MeetTalkCallManager {
             }
 
             startMissedCallTimer()
+            showIncomingCallNotification(activeCallInstanceKey!!, MeetTalk.appContext, name, phoneNumber)
+        }
 
-            showIncomingCallNotification(activeCallInstanceKey!!, MeetTalk.appContext)
+        fun showNativeIncomingCallScreen(message: TAPMessageModel?, displayName: String?, displayPhoneNumber: String?) {
+            if (callState != CallState.IDLE) {
+                return
+            }
+            val name: String
+            if (!displayName.isNullOrEmpty() && message != null && activeCallInstanceKey != null) {
+                getRoomAliasMap(activeCallInstanceKey!!)[message.room.roomID] = displayName!!
+                name = message.user?.fullname ?: ""
+            }
+            else {
+                name = displayName!!
+            }
+            val phoneNumber = if (displayPhoneNumber.isNullOrEmpty()) {
+                if (message?.user != null) {
+                    // TODO: HANDLE COUNTRY CODE IN NUMBER
+                    String.format("0%s", message.user.phone)
+                }
+                else {
+                    "Unknown Number"
+                }
+            }
+            else {
+                displayPhoneNumber
+            }
 
-//            return
-//
-//
-//            if (callState != CallState.IDLE) {
-//                return
-//            }
-//            val name: String
-//            if (!displayName.isNullOrEmpty() && message != null && activeCallInstanceKey != null) {
-//                getRoomAliasMap(activeCallInstanceKey!!)[message.room.roomID] = displayName!!
-//                name = message.user?.fullname ?: ""
-//            }
-//            else {
-//                name = displayName!!
-//            }
-//            val phoneNumber = if (displayPhoneNumber.isNullOrEmpty()) {
-//                if (message?.user != null) {
-//                    // TODO: HANDLE COUNTRY CODE IN NUMBER
-//                    String.format("0%s", message.user.phone)
-//                }
-//                else {
-//                    "Unknown Number"
-//                }
-//            }
-//            else {
-//                displayPhoneNumber
-//            }
-//
-//            buildAndRegisterPhoneAccount()
-//
-//            if (BuildConfig.DEBUG) {
-//                Log.e(">>>>", "showIncomingCall: obtainedPhoneAccount ${TAPUtils.toJsonString(getPhoneAccount())} isEnabled: ${getPhoneAccount()?.isEnabled}")
-//            }
-//
-//            val extras = Bundle()
-//            val uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, phoneNumber, null)
-//            extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri)
-//            extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, phoneAccountHandle)
-//            extras.putString(CALLER_NAME, name)
-//            extras.putString(CALLER_NUMBER, phoneNumber)
-//            try {
-//                // Show incoming call
-//                callState = CallState.RINGING
-//                telecomManager.addNewIncomingCall(phoneAccountHandle, extras)
-//
-//                if (message != null) {
-//                    pendingIncomingCallRoomID = message.room.roomID
-//                    pendingIncomingCallPhoneNumber = phoneNumber
-//
-//                    // Trigger listener callback
-//                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-//                        meetTalkListener.onIncomingCallReceived(activeCallInstanceKey, message)
-//                    }
-//                }
-//
-//                startMissedCallTimer()
-//            }
-//            catch (e: SecurityException) {
-//                e.printStackTrace()
-//                // This PhoneAccountHandle is not enabled for this user
-//                callState = CallState.IDLE
-//
-//                val errorMessage =
-//                    String.format(
-//                        MeetTalk.appContext.getString(R.string.meettalk_format_received_call_phone_account_not_enabled),
-//                        TAPUtils.getFirstWordOfString(name),
-//                        appName
-//                    )
-//
-//                if (message != null) {
-//                    // Trigger listener callback
-//                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-//                        meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, errorMessage)
-//                    }
-//                }
-//
-//                Toast.makeText(
-//                    MeetTalk.appContext,
-//                    errorMessage,
-//                    Toast.LENGTH_LONG
-//                ).show()
-//
-//                sendUnableToReceiveCallNotification(
-//                    activeCallInstanceKey ?: return,
-//                    activeCallMessage?.room ?: return,
-//                    "{{sender}} has not enabled app's phone account."
-//                )
-//            }
-//            catch (e: Exception) {
-//                e.printStackTrace()
-//                // Other exceptions
-//                callState = CallState.IDLE
-//
-//                if (message != null) {
-//                    // Trigger listener callback
-//                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-//                        meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, e.message)
-//                    }
-//                }
-//
-//                Toast.makeText(
-//                    MeetTalk.appContext,
-//                    String.format(
-//                        MeetTalk.appContext.getString(R.string.meettalk_format_unable_to_receive_call),
-//                        TAPUtils.getFirstWordOfString(name),
-//                        e.localizedMessage
-//                    ),
-//                    Toast.LENGTH_LONG
-//                ).show()
-//
-//                sendUnableToReceiveCallNotification(
-//                    activeCallInstanceKey ?: return,
-//                    activeCallMessage?.room ?: return,
-//                    "{{sender}} is unable to receive call."
-//                )
-//            }
+            buildAndRegisterPhoneAccount()
+
+            if (BuildConfig.DEBUG) {
+                Log.e(">>>>", "showIncomingCall: obtainedPhoneAccount ${TAPUtils.toJsonString(getPhoneAccount())} isEnabled: ${getPhoneAccount()?.isEnabled}")
+            }
+
+            val extras = Bundle()
+            val uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, phoneNumber, null)
+            extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri)
+            extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, phoneAccountHandle)
+            extras.putString(CALLER_NAME, name)
+            extras.putString(CALLER_NUMBER, phoneNumber)
+            try {
+                // Show incoming call
+                callState = CallState.RINGING
+                telecomManager.addNewIncomingCall(phoneAccountHandle, extras)
+
+                if (message != null) {
+                    pendingIncomingCallRoomID = message.room.roomID
+                    pendingIncomingCallPhoneNumber = phoneNumber
+
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onIncomingCallReceived(activeCallInstanceKey, message)
+                    }
+                }
+
+                startMissedCallTimer()
+            }
+            catch (e: SecurityException) {
+                e.printStackTrace()
+                // This PhoneAccountHandle is not enabled for this user
+                callState = CallState.IDLE
+
+                val errorMessage =
+                    String.format(
+                        MeetTalk.appContext.getString(R.string.meettalk_format_received_call_phone_account_not_enabled),
+                        TAPUtils.getFirstWordOfString(name),
+                        appName
+                    )
+
+                if (message != null) {
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, errorMessage)
+                    }
+                }
+
+                Toast.makeText(
+                    MeetTalk.appContext,
+                    errorMessage,
+                    Toast.LENGTH_LONG
+                ).show()
+
+                sendUnableToReceiveCallNotification(
+                    activeCallInstanceKey ?: return,
+                    activeCallMessage?.room ?: return,
+                    "{{sender}} has not enabled app's phone account."
+                )
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+                // Other exceptions
+                callState = CallState.IDLE
+
+                if (message != null) {
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, e.message)
+                    }
+                }
+
+                Toast.makeText(
+                    MeetTalk.appContext,
+                    String.format(
+                        MeetTalk.appContext.getString(R.string.meettalk_format_unable_to_receive_call),
+                        TAPUtils.getFirstWordOfString(name),
+                        e.localizedMessage
+                    ),
+                    Toast.LENGTH_LONG
+                ).show()
+
+                sendUnableToReceiveCallNotification(
+                    activeCallInstanceKey ?: return,
+                    activeCallMessage?.room ?: return,
+                    "{{sender}} is unable to receive call."
+                )
+            }
         }
 
         private fun createIncomingCallNotificationChannel(context: Context) {
@@ -460,7 +463,13 @@ class MeetTalkCallManager {
             }
         }
 
-        fun showIncomingCallNotification(instanceKey: String, context: Context) {//, activityClass: Class<Activity>) {
+        fun showIncomingCallNotification(
+            instanceKey: String,
+            context: Context,
+            notificationTitle: String,
+            notificationContent: String
+            //, activityClass: Class<Activity>
+        ) {
 
 //            // Create an intent which triggers your fullscreen incoming call user interface.
 //            val intent = Intent(Intent.ACTION_MAIN, null)
@@ -484,8 +493,8 @@ class MeetTalkCallManager {
 //
 //            // Setup notification content.
 //            builder.setSmallIcon(TapTalk.getClientAppIcon(instanceKey))
-//            builder.setContentTitle("TITLE")
-//            builder.setContentText("CONTENT TEXT")
+//            builder.setContentTitle(notificationTitle)
+//            builder.setContentText(notificationContent)
 //
 //            // Set notification as insistent to cause your ringtone to loop.
 //            val notification: Notification = builder.build()
@@ -496,10 +505,36 @@ class MeetTalkCallManager {
 //            createIncomingCallNotificationChannel(context)
 //            notificationManager.notify(INCOMING_CALL_NOTIFICATION_CHANNEL_ID, 0, notification)
 
-
-            context.startService(Intent(context, MeetTalkIncomingCallService::class.java))
+            val incomingCallNotificationIntent = Intent(context, MeetTalkIncomingCallService::class.java)
+            incomingCallNotificationIntent.putExtra(INCOMING_CALL_NOTIFICATION_TITLE, notificationTitle)
+            incomingCallNotificationIntent.putExtra(INCOMING_CALL_NOTIFICATION_CONTENT, notificationContent)
+            context.startService(incomingCallNotificationIntent)
 
             Log.e(">>>>>>>", "showIncomingCallNotification: ")
+        }
+
+        fun closeIncomingCallNotification(context: Context) {
+            context.stopService(Intent(context, MeetTalkIncomingCallService::class.java))
+        }
+
+        fun answerIncomingCall() {
+            if (activeCallInstanceKey == null) {
+                return
+            }
+            for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                meetTalkListener.onIncomingCallAnswered()
+            }
+            clearPendingIncomingCall()
+        }
+
+        fun rejectIncomingCall() {
+            if (activeCallInstanceKey == null) {
+                return
+            }
+            for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                meetTalkListener.onIncomingCallRejected()
+            }
+            clearPendingIncomingCall()
         }
 
         fun checkAndRequestAudioPermission(activity: Activity) : Boolean {
@@ -716,8 +751,10 @@ class MeetTalkCallManager {
                     if (BuildConfig.DEBUG) {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
                     }
+                    closeIncomingCallNotification(MeetTalk.appContext)
                     MeetTalkCallConnection.getInstance().onDisconnect()
                     activeMeetTalkCallActivity?.finish()
+                    activeMeetTalkIncomingCallActivity?.closeIncomingCall()
                     setActiveCallAsEnded()
 
                     // Trigger listener callback

@@ -3,6 +3,9 @@
     <string name="app_name" translatable="false">MeetTalk</string>
 
     <!--Incoming Call-->
+    <string name="meettalk_answer">Answer</string>
+    <string name="meettalk_reject">Reject</string>
+
     <string name="meettalk_enable_voice_call">Enable Voice Call</string>
     <string name="meettalk_format_enable_phone_account_message">To receive voice calls from other users, please enable \"%s\" Phone Account in the Settings.</string>
     <string name="meettalk_format_received_call_phone_account_not_enabled">Your device is unable to receive call from \"%s\" because you have not enabled Phone account for \"%s\".</string>

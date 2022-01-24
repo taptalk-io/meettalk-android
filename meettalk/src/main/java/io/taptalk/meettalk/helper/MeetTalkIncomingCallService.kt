@@ -15,9 +15,10 @@ import androidx.core.app.NotificationCompat
 import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.activity.MeetTalkIncomingCallActivity
-import io.taptalk.meettalk.constant.MeetTalkConstant
-import io.taptalk.meettalk.constant.MeetTalkConstant.Broadcast.ANSWER_INCOMING_CALL
-import io.taptalk.meettalk.constant.MeetTalkConstant.Broadcast.REJECT_INCOMING_CALL
+import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.INCOMING_CALL_ANSWERED
+import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.INCOMING_CALL_NOTIFICATION_CONTENT
+import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.INCOMING_CALL_NOTIFICATION_TITLE
+import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.INCOMING_CALL_REJECTED
 import io.taptalk.meettalk.constant.MeetTalkConstant.IncomingCallNotification.INCOMING_CALL_NOTIFICATION_CHANNEL_DESCRIPTION
 import io.taptalk.meettalk.constant.MeetTalkConstant.IncomingCallNotification.INCOMING_CALL_NOTIFICATION_CHANNEL_ID
 import io.taptalk.meettalk.constant.MeetTalkConstant.IncomingCallNotification.INCOMING_CALL_NOTIFICATION_CHANNEL_NAME
@@ -32,31 +33,44 @@ class MeetTalkIncomingCallService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
         Log.e(">>>>>>>", "onStartCommand: ")
+        val context = MeetTalk.appContext
+        val instanceKey = MeetTalkCallManager.activeCallInstanceKey ?: ""
+
+        // Set notification title and content
+        val notificationTitle = intent?.getStringExtra(INCOMING_CALL_NOTIFICATION_TITLE) ?: context.getString(R.string.meettalk_incoming_call)
+        val notificationContent = intent?.getStringExtra(INCOMING_CALL_NOTIFICATION_CONTENT) ?: TapTalk.getClientAppName(instanceKey)
 
         val incomingCallNotificationView = RemoteViews(packageName, R.layout.meettalk_notification_incoming_call)
 
+        incomingCallNotificationView.setTextViewText(R.id.tv_notification_title, notificationTitle)
+        incomingCallNotificationView.setTextViewText(R.id.tv_notification_content, notificationContent)
+
+        // Set container and button intent
         val notificationIntent = Intent(this, MeetTalkIncomingCallActivity::class.java)
-//        val answerIntent = Intent(this, MeetTalkCallActivity::class.java)
-        val answerIntent = Intent(ANSWER_INCOMING_CALL)
-        val rejectIntent = Intent(REJECT_INCOMING_CALL)
-        // TODO: BROADCAST INTENT NOT SENT
+        notificationIntent.putExtra(INCOMING_CALL_ANSWERED, false)
+        notificationIntent.putExtra(INCOMING_CALL_REJECTED, false)
+        val answerIntent = Intent(this, MeetTalkIncomingCallActivity::class.java)
+        answerIntent.putExtra(INCOMING_CALL_ANSWERED, true)
+        answerIntent.putExtra(INCOMING_CALL_REJECTED, false)
+        val rejectIntent = Intent(this, MeetTalkIncomingCallActivity::class.java)
+        rejectIntent.putExtra(INCOMING_CALL_ANSWERED, false)
+        rejectIntent.putExtra(INCOMING_CALL_REJECTED, true)
 
         val notificationPendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-        val answerPendingIntent = PendingIntent.getBroadcast(this, 0, answerIntent, PendingIntent.FLAG_UPDATE_CURRENT)
-        val rejectPendingIntent = PendingIntent.getBroadcast(this, 0, rejectIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val answerPendingIntent = PendingIntent.getActivity(this, 1, answerIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val rejectPendingIntent = PendingIntent.getActivity(this, 2, rejectIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
-        incomingCallNotificationView.setOnClickPendingIntent(R.id.notification_container, notificationPendingIntent)
+//        incomingCallNotificationView.setOnClickPendingIntent(R.id.fl_notification_container, notificationPendingIntent)
         incomingCallNotificationView.setOnClickPendingIntent(R.id.iv_button_answer_call, answerPendingIntent)
         incomingCallNotificationView.setOnClickPendingIntent(R.id.iv_button_reject_call, rejectPendingIntent)
 
-        val context = MeetTalk.appContext
-        val instanceKey = MeetTalkCallManager.activeCallInstanceKey ?: ""
+        val notification: NotificationCompat.Builder
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+            // Create/update notification channel
             val notificationChannel = NotificationChannel(
                 INCOMING_CALL_NOTIFICATION_CHANNEL_ID,
                 INCOMING_CALL_NOTIFICATION_CHANNEL_NAME,
@@ -79,47 +93,43 @@ class MeetTalkIncomingCallService : Service() {
 
             notificationManager.createNotificationChannel(notificationChannel)
 
-            val notification = NotificationCompat.Builder(
+            notification = NotificationCompat.Builder(
                 context,
                 INCOMING_CALL_NOTIFICATION_CHANNEL_ID
             )
-            notification.setContentTitle(TapTalk.getClientAppName(instanceKey))
-            notification.setContentText("CONTENT TEXT TEST")
-            notification.setTicker("TEST TICKER")
-            notification.setSmallIcon(TapTalk.getClientAppIcon(instanceKey))
-            notification.setLargeIcon(BitmapFactory.decodeResource(this.resources, TapTalk.getClientAppIcon(instanceKey)))
-            notification.setDefaults(Notification.DEFAULT_SOUND or Notification.DEFAULT_VIBRATE)
-            notification.setCategory(NotificationCompat.CATEGORY_CALL)
-            notification.setOngoing(true)
             notification.setFullScreenIntent(notificationPendingIntent, true)
-            notification.priority = NotificationCompat.PRIORITY_MAX
             notification.setStyle(NotificationCompat.DecoratedCustomViewStyle())
             notification.setCustomContentView(incomingCallNotificationView)
             notification.setCustomBigContentView(incomingCallNotificationView)
-
-            startForeground(1124, notification.build())
-
-            Log.e(">>>>>>>", "onStartCommand: O+")
         }
         else {
-            val notification = NotificationCompat.Builder(this)
-            notification.setContentTitle(TapTalk.getClientAppName(instanceKey))
-            notification.setContentText("CONTENT TEXT TEST")
-            notification.setTicker("TEST TICKER")
-            notification.setSmallIcon(TapTalk.getClientAppIcon(instanceKey))
-            notification.setLargeIcon(BitmapFactory.decodeResource(this.resources, TapTalk.getClientAppIcon(instanceKey)))
-            notification.setDefaults(Notification.DEFAULT_SOUND or Notification.DEFAULT_VIBRATE)
+            notification = NotificationCompat.Builder(context)
             notification.setContentIntent(notificationPendingIntent)
-            notification.setOngoing(true)
-            notification.setCategory(NotificationCompat.CATEGORY_CALL)
-            notification.priority = NotificationCompat.PRIORITY_MAX
-//            val rejectCallAction = NotificationCompat.Action.Builder(android.R.drawable.sym_action_chat, "HANG UP", rejectPendingIntent)
-//                .build()
-//            notification.addAction(rejectCallAction)
-            startForeground(1124, notification.build())
-
-            Log.e(">>>>>>>", "onStartCommand: < O")
+            val answerCallAction = NotificationCompat.Action.Builder(
+                android.R.drawable.sym_action_chat,
+                context.getString(R.string.meettalk_answer),
+                answerPendingIntent
+            ).build()
+            val rejectCallAction = NotificationCompat.Action.Builder(
+                android.R.drawable.sym_action_chat,
+                context.getString(R.string.meettalk_reject),
+                rejectPendingIntent
+            ).build()
+            notification.addAction(answerCallAction)
+            notification.addAction(rejectCallAction)
         }
+
+        notification.setContentTitle(notificationTitle)
+        notification.setContentText(notificationContent)
+        notification.setTicker(notificationTitle)
+        notification.setSmallIcon(TapTalk.getClientAppIcon(instanceKey))
+        notification.setLargeIcon(BitmapFactory.decodeResource(this.resources, TapTalk.getClientAppIcon(instanceKey)))
+        notification.setDefaults(Notification.DEFAULT_SOUND or Notification.DEFAULT_VIBRATE)
+        notification.setCategory(NotificationCompat.CATEGORY_CALL)
+        notification.setOngoing(true)
+        notification.priority = NotificationCompat.PRIORITY_MAX
+
+        startForeground(1124, notification.build())
 
         return super.onStartCommand(intent, flags, startId)
     }

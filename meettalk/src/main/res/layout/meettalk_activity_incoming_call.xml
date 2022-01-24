@@ -7,7 +7,7 @@
     android:background="@drawable/meettalk_bg_call_screen_gradient"
     tools:context=".activity.MeetTalkIncomingCallActivity">
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_button_reject_call"
         android:layout_width="64dp"
         android:layout_height="64dp"
@@ -24,7 +24,7 @@
         app:tint="@color/tapWhite"
         tools:ignore="UseAppTint" />
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_button_answer_call"
         android:layout_width="64dp"
         android:layout_height="64dp"
@@ -33,7 +33,7 @@
         android:background="@drawable/tap_bg_circle_9b9b9b"
         android:backgroundTint="@color/tapColorSuccess"
         android:padding="16dp"
-        android:src="@drawable/meettalk_ic_hang_up_white"
+        android:src="@drawable/meettalk_ic_answer_call_white"
         android:tint="@color/tapWhite"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

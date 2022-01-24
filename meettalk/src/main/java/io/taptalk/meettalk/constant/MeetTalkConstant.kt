@@ -29,6 +29,10 @@ class MeetTalkConstant {
         const val CALLER_NAME = "kMeetTalkExtraCallerName"
         const val CALLER_NUMBER = "kMeetTalkExtraCallerNumber"
         const val CONFERENCE_INFO = "kMeetTalkExtraConferenceInfo"
+        const val INCOMING_CALL_NOTIFICATION_TITLE = "kMeetTalkExtraIncomingCallNotificationTitle"
+        const val INCOMING_CALL_NOTIFICATION_CONTENT = "kMeetTalkExtraIncomingCallNotificationContent"
+        const val INCOMING_CALL_ANSWERED = "kMeetTalkExtraIncomingCallAnswered"
+        const val INCOMING_CALL_REJECTED = "kMeetTalkExtraIncomingCallRejected"
     }
 
     object IncomingCallNotification {

@@ -22,4 +22,8 @@
     <color name="meetTalkCallScreenDestructiveButtonBackgroundColor">#e02e2e</color>
     <color name="meetTalkCallScreenButtonContainerBackgroundColor">#8c191919</color>
 
+    <!--Incoming Call Notification-->
+    <color name="meetTalkIncomingCallNotificationTitleLabelColor">@color/tapColorTextDark</color>
+    <color name="meetTalkIncomingCallNotificationContentLabelColor">@color/tapColorTextDark</color>
+
 </resources>

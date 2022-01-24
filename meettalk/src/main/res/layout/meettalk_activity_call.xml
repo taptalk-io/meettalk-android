@@ -7,7 +7,7 @@
     android:background="@drawable/meettalk_bg_call_screen_gradient"
     tools:context=".activity.MeetTalkCallActivity">
 
-    <ImageView
+    <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_profile_picture"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -54,7 +54,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tv_room_display_name"
             style="@style/meetTalkCallScreenTitleLabelStyle"
             android:layout_width="match_parent"
@@ -66,7 +66,7 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Calling User" />
 
-        <TextView
+        <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tv_call_duration_status"
             style="@style/meetTalkCallScreenDurationStatusLabelStyle"
             android:layout_width="match_parent"
@@ -100,7 +100,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_button_flip_camera"
             android:layout_width="64dp"
             android:layout_height="64dp"
@@ -118,7 +118,7 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseAppTint" />
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_button_toggle_video_mute"
             android:layout_width="64dp"
             android:layout_height="64dp"
@@ -135,7 +135,7 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseAppTint" />
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_button_toggle_audio_mute"
             android:layout_width="64dp"
             android:layout_height="64dp"
@@ -152,7 +152,7 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseAppTint" />
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_button_cancel_call"
             android:layout_width="64dp"
             android:layout_height="64dp"
