@@ -6,7 +6,6 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.net.Uri
@@ -20,9 +19,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
 import io.taptalk.TapTalk.Helper.TAPBroadcastManager
 import io.taptalk.TapTalk.Helper.TAPUtils
@@ -86,8 +82,8 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_MUTE_BU
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_SHARE_BUTTON_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.HOST
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
-import io.taptalk.meettalk.constant.MeetTalkConstant.PermissionRequest.AUDIO
-import io.taptalk.meettalk.constant.MeetTalkConstant.PermissionRequest.CAMERA
+import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_AUDIO
+import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_CAMERA
 import io.taptalk.meettalk.constant.MeetTalkConstant.Url.MEET_URL
 import io.taptalk.meettalk.constant.MeetTalkConstant.Value.INCOMING_CALL_TIMEOUT_DURATION
 import io.taptalk.meettalk.helper.MeetTalk
@@ -104,11 +100,6 @@ import java.net.URL
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import androidx.core.content.ContextCompat.startActivity
-import com.fasterxml.jackson.databind.util.ClassUtil
-
-import com.fasterxml.jackson.databind.util.ClassUtil.getPackageName
-import io.taptalk.TapTalk.Manager.TapUI
 
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -182,7 +173,7 @@ class MeetTalkCallManager {
             buildAndRegisterPhoneAccount()
 
             initSocketListener()
-            initBroadcastReceiver()
+//            initBroadcastReceiver()
             createIncomingCallNotificationChannel()
         }
 
@@ -207,30 +198,30 @@ class MeetTalkCallManager {
             }
         }
 
-        private fun initBroadcastReceiver() {
-            TAPBroadcastManager.register(MeetTalk.appContext, object : BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent?) {
-                    Log.e(">>>>>>>", "onReceive broadcast: ${intent?.action ?: "null"}")
-                    if (intent?.action == ANSWER_INCOMING_CALL && activeCallInstanceKey != null) {
-                        // Trigger listener callback
-                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                            meetTalkListener.onIncomingCallAnswered()
-                        }
-                        clearPendingIncomingCall()
-                    }
-                    else if (intent?.action == REJECT_INCOMING_CALL && activeCallInstanceKey != null) {
-                        // Trigger listener callback
-                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                            meetTalkListener.onIncomingCallRejected()
-                        }
-                        clearPendingIncomingCall()
-                    }
-                }
-            },
-            ANSWER_INCOMING_CALL,
-            REJECT_INCOMING_CALL
-            )
-        }
+//        private fun initBroadcastReceiver() {
+//            TAPBroadcastManager.register(MeetTalk.appContext, object : BroadcastReceiver() {
+//                override fun onReceive(context: Context?, intent: Intent?) {
+//                    Log.e(">>>>>>>", "onReceive broadcast: ${intent?.action ?: "null"}")
+//                    if (intent?.action == ANSWER_INCOMING_CALL && activeCallInstanceKey != null) {
+//                        // Trigger listener callback
+//                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+//                            meetTalkListener.onIncomingCallAnswered()
+//                        }
+//                        clearPendingIncomingCall()
+//                    }
+//                    else if (intent?.action == REJECT_INCOMING_CALL && activeCallInstanceKey != null) {
+//                        // Trigger listener callback
+//                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+//                            meetTalkListener.onIncomingCallRejected()
+//                        }
+//                        clearPendingIncomingCall()
+//                    }
+//                }
+//            },
+//            ANSWER_INCOMING_CALL,
+//            REJECT_INCOMING_CALL
+//            )
+//        }
 
         fun isPhoneAccountEnabled() : Boolean {
             return getPhoneAccount()?.isEnabled == true
@@ -568,7 +559,7 @@ class MeetTalkCallManager {
                 ActivityCompat.requestPermissions(
                     activity,
                     arrayOf(Manifest.permission.RECORD_AUDIO),
-                    AUDIO
+                    REQUEST_PERMISSION_AUDIO
                 )
                 return false
             }
@@ -581,7 +572,7 @@ class MeetTalkCallManager {
                 ActivityCompat.requestPermissions(
                     activity,
                     arrayOf(Manifest.permission.CAMERA),
-                    CAMERA
+                    REQUEST_PERMISSION_CAMERA
                 )
                 return false
             }
@@ -608,6 +599,16 @@ class MeetTalkCallManager {
             pendingIncomingCallRoomID = null
             pendingIncomingCallPhoneNumber = null
             return true
+        }
+
+        private fun closeIncomingCall() {
+            if (activeMeetTalkIncomingCallActivity == null) {
+                closeIncomingCallNotification(MeetTalk.appContext)
+                clearPendingIncomingCall()
+            }
+            else {
+                activeMeetTalkIncomingCallActivity!!.closeIncomingCall()
+            }
         }
 
         fun initiateNewConferenceCall(activity: Activity, instanceKey: String, room: TAPRoomModel) {
@@ -728,8 +729,6 @@ class MeetTalkCallManager {
                                                 ) {
                                                     message.data = newMessage.data
                                                     setActiveCallData(instanceKey, message)
-                                                    /** Note: incoming call will be shown in handleIncomingCall() called in
-                                                     * MeetTalkListener.onReceiveCallInitiatedNotificationMessage() **/
                                                     // Trigger listener callback
                                                     for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
                                                         meetTalkListener.onReceiveCallInitiatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
@@ -748,8 +747,6 @@ class MeetTalkCallManager {
                             Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Show incoming call")
                         }
                         setActiveCallData(instanceKey, message)
-                        /** Note: incoming call will be shown in handleIncomingCall() called in
-                         * MeetTalkListener.onReceiveCallInitiatedNotificationMessage() **/
                         // Trigger listener callback
                         for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
                             meetTalkListener.onReceiveCallInitiatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
@@ -779,7 +776,7 @@ class MeetTalkCallManager {
                     closeIncomingCallNotification(MeetTalk.appContext)
                     MeetTalkCallConnection.getInstance().onDisconnect()
                     activeMeetTalkCallActivity?.finish()
-                    activeMeetTalkIncomingCallActivity?.closeIncomingCall()
+                    closeIncomingCall()
                     setActiveCallAsEnded()
 
                     // Trigger listener callback
@@ -814,6 +811,7 @@ class MeetTalkCallManager {
                     if (message.user.userID == activeUser.userID) {
                         // Recipient answered call elsewhere, dismiss incoming call
                         MeetTalkCallConnection.getInstance().onDisconnect()
+                        closeIncomingCall()
                         callState = CallState.IDLE
                     }
 
@@ -1195,6 +1193,7 @@ class MeetTalkCallManager {
                                 activeCallMessage!!.room
                             )
                             MeetTalkCallConnection.getInstance().onDisconnect()
+                            closeIncomingCall()
                             callState = CallState.IDLE
                         }
                     }

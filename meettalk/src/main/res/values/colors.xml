@@ -25,5 +25,7 @@
     <!--Incoming Call Notification-->
     <color name="meetTalkIncomingCallNotificationTitleLabelColor">@color/tapColorTextDark</color>
     <color name="meetTalkIncomingCallNotificationContentLabelColor">@color/tapColorTextDark</color>
+    <color name="meetTalkIncomingCallNotificationAnswerButtonColor">@color/tapColorSuccessIcon</color>
+    <color name="meetTalkIncomingCallNotificationRejectButtonColor">@color/tapColorDestructiveIcon</color>
 
 </resources>

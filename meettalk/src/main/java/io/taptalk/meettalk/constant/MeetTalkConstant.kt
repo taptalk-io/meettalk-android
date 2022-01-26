@@ -47,9 +47,12 @@ class MeetTalkConstant {
         const val PARTICIPANT = "participant"
     }
 
-    object PermissionRequest {
-        const val AUDIO = 1
-        const val CAMERA = 2
+    object RequestCode {
+        const val PENDING_INTENT_INCOMING_CALL_NOTIFICATION = 0
+        const val PENDING_INTENT_INCOMING_CALL_ANSWER = 1
+        const val PENDING_INTENT_INCOMING_CALL_REJECT = 2
+        const val REQUEST_PERMISSION_AUDIO = 1
+        const val REQUEST_PERMISSION_CAMERA = 2
     }
 
     object Preference {

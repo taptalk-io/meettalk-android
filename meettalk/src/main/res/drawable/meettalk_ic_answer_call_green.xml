@@ -1,0 +1,9 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="40"
+    android:viewportHeight="40">
+  <path
+      android:pathData="M32.0168,25.4499L27.7835,24.9666C26.7668,24.8499 25.7668,25.1999 25.0501,25.9166L21.9835,28.9833C17.2668,26.5833 13.4001,22.7333 11.0001,17.9999L14.0835,14.9166C14.8001,14.1999 15.1501,13.1833 15.0335,12.1833L14.5501,7.9833C14.3668,6.2999 12.9335,5.0166 11.2501,5.0166H8.3668C6.4835,5.0166 4.9168,6.5833 5.0335,8.4666C5.9168,22.6999 17.3001,34.0666 31.5168,34.9499C33.4001,35.0666 34.9668,33.4999 34.9668,31.6166V28.7333C34.9835,27.0666 33.7001,25.6333 32.0168,25.4499Z"
+      android:fillColor="@color/meetTalkIncomingCallNotificationAnswerButtonColor"/>
+</vector>

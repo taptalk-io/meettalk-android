@@ -255,21 +255,22 @@ public class MeetTalk {
         return getMeetTalkListenerMap().get(instanceKey);
     }
 
-    public static void addMeetTalkListener(MeetTalkListener meetTalkListener) {
+    // FIXME: METHODS INSIDE CALLBACK IN LISTENER TRIGGERED MORE THAN ONCE WHEN ADDED MORE THAN ONCE
+    private static void addMeetTalkListener(MeetTalkListener meetTalkListener) {
         addMeetTalkListener("", meetTalkListener);
     }
 
-    public static void addMeetTalkListener(String instanceKey, MeetTalkListener meetTalkListener) {
+    private static void addMeetTalkListener(String instanceKey, MeetTalkListener meetTalkListener) {
         if (!getMeetTalkListeners(instanceKey).contains(meetTalkListener)) {
             getMeetTalkListeners(instanceKey).add(meetTalkListener);
         }
     }
 
-    public static void removeMeetTalkListener(MeetTalkListener meetTalkListener) {
+    private static void removeMeetTalkListener(MeetTalkListener meetTalkListener) {
         removeMeetTalkListener("", meetTalkListener);
     }
 
-    public static void removeMeetTalkListener(String instanceKey, MeetTalkListener meetTalkListener) {
+    private static void removeMeetTalkListener(String instanceKey, MeetTalkListener meetTalkListener) {
         getMeetTalkListeners(instanceKey).remove(meetTalkListener);
     }
 
@@ -321,10 +322,6 @@ public class MeetTalk {
     public static void showIncomingCall(TAPMessageModel message) {
         showIncomingCall(message, "", "");
     }
-
-//    public static void showIncomingCall(String name, String phoneNumber) {
-//        showIncomingCall(null, name, phoneNumber);
-//    }
 
     public static void showIncomingCall(TAPMessageModel message, String name, String phoneNumber) {
         MeetTalkCallManager.Companion.showIncomingCall(message, name, phoneNumber);

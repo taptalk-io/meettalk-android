@@ -9,9 +9,6 @@
     <application
         android:largeHeap="true"
         android:requestLegacyExternalStorage="true">
-        <activity
-            android:name=".activity.MeetTalkIncomingCallActivity"
-            android:exported="false" />
 
         <service
             android:name=".helper.MeetTalkConnectionService"
@@ -21,10 +18,12 @@
                 <action android:name="android.telecom.ConnectionService" />
             </intent-filter>
         </service>
+
         <service
             android:name=".helper.MeetTalkIncomingCallService"
             android:exported="true">
         </service>
+
         <service
             android:name=".helper.MeetTalkCallScreeningService"
             android:exported="true"
@@ -35,10 +34,17 @@
         </service>
 
         <activity
+            android:name=".activity.MeetTalkIncomingCallActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"  />
+
+        <activity
             android:name=".activity.MeetTalkCallActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" />
+
     </application>
 
 </manifest>

@@ -43,14 +43,12 @@
 
     <!--Incoming Call Notification-->
 
-    <style name="meetTalkIncomingCallNotificationTitleLabelStyle" parent="tapFontFamilyBold">
+    <style name="meetTalkIncomingCallNotificationTitleLabelStyle" parent="TextAppearance.Compat.Notification.Title">
         <item name="android:textColor">@color/meetTalkIncomingCallNotificationTitleLabelColor</item>
-        <item name="android:textSize">18sp</item>
     </style>
 
-    <style name="meetTalkIncomingCallNotificationContentLabelStyle" parent="tapFontFamilyRegular">
+    <style name="meetTalkIncomingCallNotificationContentLabelStyle" parent="TextAppearance.Compat.Notification">
         <item name="android:textColor">@color/meetTalkIncomingCallNotificationContentLabelColor</item>
-        <item name="android:textSize">16sp</item>
     </style>
 
 </resources>
