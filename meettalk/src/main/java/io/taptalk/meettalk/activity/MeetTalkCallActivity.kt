@@ -50,6 +50,7 @@ import kotlinx.android.synthetic.main.meettalk_activity_call.*
 import org.jitsi.meet.sdk.*
 import java.util.*
 import android.view.WindowManager
+import io.taptalk.TapTalk.R.anim.*
 
 class MeetTalkCallActivity : JitsiMeetActivity() {
 
@@ -111,7 +112,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             }
             showVoiceCallLayout(true)
             stopCallDurationTimer()
-            tv_call_duration_status.text = getString(R.string.meettalk_connecting)
+            tv_call_duration_status.text = getString(R.string.meettalk_connecting_ellipsis)
         }
 
         override fun onSocketError() {
@@ -140,6 +141,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 intent.flags = FLAG_ACTIVITY_NEW_TASK// or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
             context.startActivity(intent)
+            if (context is Activity) {
+                context.overridePendingTransition(tap_fade_in, tap_stay)
+            }
         }
     }
 
@@ -271,6 +275,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
         runOnUiThread {
             super.finish()
+            overridePendingTransition(tap_stay, tap_fade_out)
         }
         if (BuildConfig.DEBUG) {
             Log.e(">>>>>", "MeetTalkCallActivity finish: ")
@@ -320,7 +325,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             // Set status text to Waiting for User
             if (!isCallStarted) {
                 tv_call_duration_status.text = String.format(
-                    getString(R.string.meettalk_format_waiting_for_user),
+                    getString(R.string.meettalk_format_waiting_for_user_ellipsis),
                     TAPUtils.getFirstWordOfString(roomDisplayName)
                 )
             }

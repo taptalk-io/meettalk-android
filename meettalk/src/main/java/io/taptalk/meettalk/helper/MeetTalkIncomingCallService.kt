@@ -4,7 +4,6 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
@@ -14,6 +13,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.INSTANCE_KEY
+import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE
 import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.activity.MeetTalkIncomingCallActivity
@@ -39,24 +39,34 @@ class MeetTalkIncomingCallService : Service() {
         Log.e(">>>>>>>", "onStartCommand: ")
         val context = MeetTalk.appContext
         val instanceKey = MeetTalkCallManager.activeCallInstanceKey ?: ""
+        val activeCallMessage = MeetTalkCallManager.activeCallMessage
 
         // Set notification title and content
         val notificationTitle = intent?.getStringExtra(INCOMING_CALL_NOTIFICATION_TITLE) ?: TapTalk.getClientAppName(instanceKey)
-        val notificationContent = intent?.getStringExtra(INCOMING_CALL_NOTIFICATION_CONTENT) ?: context.getString(R.string.meettalk_incoming_call)
+        val notificationContent = intent?.getStringExtra(INCOMING_CALL_NOTIFICATION_CONTENT) ?: context.getString(R.string.meettalk_incoming_call_ellipsis)
 
         val incomingCallNotificationView = RemoteViews(packageName, R.layout.meettalk_notification_incoming_call)
 
         incomingCallNotificationView.setTextViewText(R.id.tv_notification_title, notificationTitle)
         incomingCallNotificationView.setTextViewText(R.id.tv_notification_content, notificationContent)
 
-        // Set container and button intent
+        // Set notification and action button intent
         val notificationIntent = Intent(this, MeetTalkIncomingCallActivity::class.java)
         notificationIntent.putExtra(INSTANCE_KEY, instanceKey)
+        notificationIntent.putExtra(MESSAGE, activeCallMessage)
+        notificationIntent.putExtra(INCOMING_CALL_NOTIFICATION_TITLE, notificationTitle)
+        notificationIntent.putExtra(INCOMING_CALL_NOTIFICATION_CONTENT, notificationContent)
         val answerIntent = Intent(this, MeetTalkIncomingCallActivity::class.java)
         answerIntent.putExtra(INSTANCE_KEY, instanceKey)
+        answerIntent.putExtra(MESSAGE, activeCallMessage)
+        answerIntent.putExtra(INCOMING_CALL_NOTIFICATION_TITLE, notificationTitle)
+        answerIntent.putExtra(INCOMING_CALL_NOTIFICATION_CONTENT, notificationContent)
         answerIntent.putExtra(INCOMING_CALL_ANSWERED, true)
         val rejectIntent = Intent(this, MeetTalkIncomingCallActivity::class.java)
         rejectIntent.putExtra(INSTANCE_KEY, instanceKey)
+        rejectIntent.putExtra(MESSAGE, activeCallMessage)
+        rejectIntent.putExtra(INCOMING_CALL_NOTIFICATION_TITLE, notificationTitle)
+        rejectIntent.putExtra(INCOMING_CALL_NOTIFICATION_CONTENT, notificationContent)
         rejectIntent.putExtra(INCOMING_CALL_REJECTED, true)
 
         val notificationPendingIntent = PendingIntent.getActivity(
@@ -98,14 +108,14 @@ class MeetTalkIncomingCallService : Service() {
             notificationBuilder.setContentIntent(notificationPendingIntent)
             val answerActionString = HtmlCompat.fromHtml(
                 "<font color=\"" +
-                        ContextCompat.getColor(context, R.color.meetTalkIncomingCallNotificationAnswerButtonColor) +
+                        ContextCompat.getColor(context, R.color.meetTalkIncomingCallAnswerButtonBackgroundColor) +
                         "\">" + context.getString(R.string.meettalk_answer) +
                         "</font>",
                 HtmlCompat.FROM_HTML_MODE_LEGACY
             )
             val rejectActionString = HtmlCompat.fromHtml(
                 "<font color=\"" +
-                        ContextCompat.getColor(context, R.color.meetTalkIncomingCallNotificationRejectButtonColor) +
+                        ContextCompat.getColor(context, R.color.meetTalkIncomingCallRejectButtonBackgroundColor) +
                         "\">" + context.getString(R.string.meettalk_reject) +
                         "</font>",
                 HtmlCompat.FROM_HTML_MODE_LEGACY

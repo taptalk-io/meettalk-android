@@ -7,20 +7,90 @@
     android:background="@drawable/meettalk_bg_call_screen_gradient"
     tools:context=".activity.MeetTalkIncomingCallActivity">
 
+    <View
+        android:id="@+id/v_background_overlay_gradient"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.25"
+        android:background="@drawable/tap_bg_charcoal_gradient_270" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_incoming_call_info_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="32dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <io.taptalk.TapTalk.Helper.CircleImageView
+            android:id="@+id/civ_avatar"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/tap_bg_circle_9b9b9b" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_avatar_label"
+            style="@style/meetTalkIncomingCallInitialLabelStyle"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:textAllCaps="true"
+            app:layout_constraintBottom_toBottomOf="@id/civ_avatar"
+            app:layout_constraintEnd_toEndOf="@id/civ_avatar"
+            app:layout_constraintStart_toStartOf="@id/civ_avatar"
+            app:layout_constraintTop_toTopOf="@id/civ_avatar"
+            tools:text="A" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_incoming_call_title"
+            style="@style/meetTalkIncomingCallTitleLabelStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            app:layout_constraintBottom_toTopOf="@id/tv_incoming_call_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/civ_avatar"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="Calling User" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_incoming_call_content"
+            style="@style/meetTalkCallScreenDurationStatusLabelStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/tapWhite"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/tv_incoming_call_title"
+            app:layout_constraintTop_toBottomOf="@id/tv_incoming_call_title"
+            tools:text="@string/meettalk_incoming_call_ellipsis" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_button_reject_call"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="80dp"
+        android:layout_marginEnd="64dp"
+        android:layout_marginBottom="64dp"
         android:background="@drawable/tap_bg_circle_9b9b9b"
-        android:backgroundTint="@color/tapButtonDestructiveBackgroundColor"
-        android:padding="16dp"
+        android:backgroundTint="@color/meetTalkIncomingCallRejectButtonBackgroundColor"
+        android:padding="12dp"
         android:src="@drawable/meettalk_ic_hang_up_white"
-        android:tint="@color/tapWhite"
+        android:tint="@color/tapColorWhiteIcon"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/iv_button_answer_call"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:tint="@color/tapWhite"
         tools:ignore="UseAppTint" />
 
@@ -28,16 +98,15 @@
         android:id="@+id/iv_button_answer_call"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginBottom="80dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginBottom="64dp"
         android:background="@drawable/tap_bg_circle_9b9b9b"
-        android:backgroundTint="@color/tapColorSuccess"
-        android:padding="16dp"
+        android:backgroundTint="@color/meetTalkIncomingCallAnswerButtonBackgroundColor"
+        android:padding="12dp"
         android:src="@drawable/meettalk_ic_answer_call_white"
-        android:tint="@color/tapWhite"
+        android:tint="@color/tapColorWhiteIcon"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/iv_button_reject_call"
+        app:layout_constraintStart_toStartOf="parent"
         app:tint="@color/tapWhite"
         tools:ignore="UseAppTint" />
 

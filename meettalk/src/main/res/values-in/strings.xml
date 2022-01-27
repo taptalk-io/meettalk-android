@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+
+    <!--Connection-->
+    <string name="meettalk_connected">Terhubung</string>
+    <string name="meettalk_connecting_ellipsis">Menghubungkan…</string>
+    <string name="meettalk_disconnected">Koneksi terputus</string>
+    <string name="meettalk_format_waiting_for_user_ellipsis">Menunggu %s…</string>
+
     <!--Incoming Call-->
     <string name="meettalk_answer">Jawab</string>
     <string name="meettalk_reject">Tolak</string>
+    <string name="meettalk_incoming_call_ellipsis">Panggilan Masuk…</string>
+    <string name="meettalk_incoming_voice_call_ellipsis">Panggilan Suara Masuk…</string>
+    <string name="meettalk_incoming_video_call_ellipsis">Panggilan Video Masuk…</string>
 
     <string name="meettalk_enable_voice_call">Izinkan Voice Call</string>
     <string name="meettalk_format_enable_phone_account_message">Untuk menerima panggilan dari user lain, harap nyalakan izin untuk Phone Account \"%s\" di halaman pengaturan.</string>
@@ -15,12 +25,6 @@
     <string name="meettalk_outgoing_call">Panggilan Keluar</string>
     <string name="meettalk_missed_call">Panggilan Tidak Terjawab</string>
     <string name="meettalk_cancelled_call">Panggilan Dibatalkan</string>
-
-    <!--Connection-->
-    <string name="meettalk_connected">Terhubung</string>
-    <string name="meettalk_connecting">Menghubungkan…</string>
-    <string name="meettalk_disconnected">Koneksi terputus</string>
-    <string name="meettalk_format_waiting_for_user">Menunggu %s…</string>
 
     <!--General-->
     <string name="meettalk_dismiss">Tutup</string>

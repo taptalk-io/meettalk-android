@@ -5,5 +5,5 @@
     android:viewportHeight="24">
   <path
       android:pathData="M4.51,15.4799L6.51,13.8899C6.99,13.5099 7.27,12.9299 7.27,12.3199V9.7199C10.29,8.7399 13.56,8.7299 16.59,9.7199V12.3299C16.59,12.9399 16.87,13.5199 17.35,13.8999L19.34,15.4799C20.14,16.1099 21.28,16.0499 22,15.3299L23.22,14.1099C24.02,13.3099 24.02,11.9799 23.17,11.2299C16.76,5.5699 7.1,5.5699 0.69,11.2299C-0.16,11.9799 -0.16,13.3099 0.64,14.1099L1.86,15.3299C2.57,16.0499 3.71,16.1099 4.51,15.4799Z"
-      android:fillColor="@color/meetTalkIncomingCallNotificationRejectButtonColor"/>
+      android:fillColor="@color/meetTalkIncomingCallRejectButtonBackgroundColor"/>
 </vector>

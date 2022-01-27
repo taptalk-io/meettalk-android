@@ -16,16 +16,24 @@
     <!--Call Screen-->
     <color name="meetTalkCallScreenTitleLabelColor">@color/tapWhite</color>
     <color name="meetTalkCallScreenDurationStatusLabelColor">@color/tapWhite</color>
-    <color name="meetTalkCallScreenInitialLabelColor">@color/tapWhite</color>
-    <color name="meetTalkCallScreenActiveButtonBackgroundColor">#8cffffff</color>
-    <color name="meetTalkCallScreenInactiveButtonBackgroundColor">#4dffffff</color>
-    <color name="meetTalkCallScreenDestructiveButtonBackgroundColor">#e02e2e</color>
-    <color name="meetTalkCallScreenButtonContainerBackgroundColor">#8c191919</color>
+    <color name="meetTalkCallScreenActiveButtonBackgroundColor">@color/meetTalkWhiteAlpha55</color>
+    <color name="meetTalkCallScreenInactiveButtonBackgroundColor">@color/meetTalkWhiteAlpha30</color>
+    <color name="meetTalkCallScreenDestructiveButtonBackgroundColor">@color/meetTalkDestructiveButtonColor</color>
+    <color name="meetTalkCallScreenButtonContainerBackgroundColor">@color/meetTalkBlackAlpha55</color>
 
-    <!--Incoming Call Notification-->
+    <!--Incoming Call-->
+    <color name="meetTalkIncomingCallTitleLabelColor">@color/tapWhite</color>
+    <color name="meetTalkIncomingCallContentLabelColor">@color/tapWhite</color>
+    <color name="meetTalkIncomingCallInitialLabelColor">@color/tapWhite</color>
+    <color name="meetTalkIncomingCallAnswerButtonBackgroundColor">@color/tapVibrantGreen</color>
+    <color name="meetTalkIncomingCallRejectButtonBackgroundColor">@color/meetTalkDestructiveButtonColor</color>
     <color name="meetTalkIncomingCallNotificationTitleLabelColor">@color/tapColorTextDark</color>
     <color name="meetTalkIncomingCallNotificationContentLabelColor">@color/tapColorTextDark</color>
-    <color name="meetTalkIncomingCallNotificationAnswerButtonColor">@color/tapColorSuccessIcon</color>
-    <color name="meetTalkIncomingCallNotificationRejectButtonColor">@color/tapColorDestructiveIcon</color>
+
+    <!--Color Palette-->
+    <color name="meetTalkWhiteAlpha55">#8cffffff</color>
+    <color name="meetTalkWhiteAlpha30">#4dffffff</color>
+    <color name="meetTalkBlackAlpha55">#8c191919</color>
+    <color name="meetTalkDestructiveButtonColor">#e02e2e</color>
 
 </resources>
