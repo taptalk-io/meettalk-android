@@ -2,7 +2,6 @@ package io.taptalk.meettalk.manager
 
 import android.Manifest
 import android.app.*
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -20,7 +19,6 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
-import io.taptalk.TapTalk.Helper.TAPBroadcastManager
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.TapTalk.Helper.TapTalkDialog
@@ -38,8 +36,6 @@ import io.taptalk.meettalk.BuildConfig
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.activity.MeetTalkCallActivity
 import io.taptalk.meettalk.activity.MeetTalkIncomingCallActivity
-import io.taptalk.meettalk.constant.MeetTalkConstant.Broadcast.ANSWER_INCOMING_CALL
-import io.taptalk.meettalk.constant.MeetTalkConstant.Broadcast.REJECT_INCOMING_CALL
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_CANCELLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_ENDED
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageAction.CALL_INITIATED
@@ -93,6 +89,7 @@ import io.taptalk.meettalk.helper.MeetTalkIncomingCallService
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 import io.taptalk.meettalk.model.MeetTalkParticipantInfo
 import org.jitsi.meet.sdk.JitsiMeet
+import org.jitsi.meet.sdk.JitsiMeetActivity
 import org.jitsi.meet.sdk.JitsiMeetConferenceOptions
 import org.jitsi.meet.sdk.JitsiMeetUserInfo
 import java.net.MalformedURLException
@@ -100,7 +97,6 @@ import java.net.URL
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-
 
 @RequiresApi(Build.VERSION_CODES.M)
 class MeetTalkCallManager {
@@ -111,6 +107,9 @@ class MeetTalkCallManager {
             RINGING, // Incoming call received
             IN_CALL, // In outgoing call or accepted incoming call
         }
+
+        val defaultAudioMuted = BuildConfig.DEBUG
+        const val defaultVideoMuted = true
 
         var callState = CallState.IDLE
         var activeCallMessage: TAPMessageModel? = null
@@ -123,8 +122,6 @@ class MeetTalkCallManager {
         private val appName = TapTalk.appContext.getString(R.string.app_name)
         private val telecomManager = TapTalk.appContext.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
         private val phoneAccountHandle = PhoneAccountHandle(ComponentName(TapTalk.appContext, MeetTalkConnectionService::class.java), appName)
-        private val defaultAudioMuted = BuildConfig.DEBUG
-        private const val defaultVideoMuted = true
         private var pendingIncomingCallRoomID: String? = null
         private var pendingIncomingCallPhoneNumber: String? = null
         private var pendingCallNotificationMessages: ArrayList<TAPMessageModel> = ArrayList()
@@ -145,28 +142,28 @@ class MeetTalkCallManager {
 
             val defaultOptions = JitsiMeetConferenceOptions.Builder()
                 .setServerURL(serverURL)
-                .setWelcomePageEnabled(false)
-                .setFeatureFlag(ADD_PEOPLE_ENABLED, false)
-                .setFeatureFlag(AUDIO_MUTE_BUTTON_ENABLED, false)
-                .setFeatureFlag(CALL_INTEGRATION_ENABLED, false)
-                .setFeatureFlag(CHAT_ENABLED, false)
-                .setFeatureFlag(FILMSTRIP_ENABLED, false)
-                .setFeatureFlag(HELP_BUTTON_ENABLED, false)
-                .setFeatureFlag(INVITE_ENABLED, false)
-                .setFeatureFlag(KICK_OUT_ENABLED, false)
-                .setFeatureFlag(LOBBY_MODE_ENABLED, false)
-                .setFeatureFlag(MEETING_NAME_ENABLED, false)
-                .setFeatureFlag(MEETING_PASSWORD_ENABLED, false)
-                .setFeatureFlag(NOTIFICATIONS_ENABLED, false)
-                .setFeatureFlag(OVERFLOW_MENU_ENABLED, false)
-                .setFeatureFlag(RAISE_HAND_ENABLED, false)
-                .setFeatureFlag(REACTIONS_ENABLED, false)
-                .setFeatureFlag(RECORDING_ENABLED, false)
-                .setFeatureFlag(SECURITY_OPTIONS_ENABLED, false)
-                .setFeatureFlag(TILE_VIEW_ENABLED, false)
-                .setFeatureFlag(TOOLBOX_ENABLED, false)
-                .setFeatureFlag(VIDEO_MUTE_BUTTON_ENABLED, false)
-                .setFeatureFlag(VIDEO_SHARE_BUTTON_ENABLED, false)
+                //.setWelcomePageEnabled(false)
+//                .setFeatureFlag(ADD_PEOPLE_ENABLED, false)
+////                .setFeatureFlag(AUDIO_MUTE_BUTTON_ENABLED, false)
+//                .setFeatureFlag(CALL_INTEGRATION_ENABLED, false)
+//                .setFeatureFlag(CHAT_ENABLED, false)
+////                .setFeatureFlag(FILMSTRIP_ENABLED, false)
+//                .setFeatureFlag(HELP_BUTTON_ENABLED, false)
+//                .setFeatureFlag(INVITE_ENABLED, false)
+//                .setFeatureFlag(KICK_OUT_ENABLED, false)
+//                .setFeatureFlag(LOBBY_MODE_ENABLED, false)
+//                .setFeatureFlag(MEETING_NAME_ENABLED, false)
+//                .setFeatureFlag(MEETING_PASSWORD_ENABLED, false)
+//                .setFeatureFlag(NOTIFICATIONS_ENABLED, false)
+//                .setFeatureFlag(OVERFLOW_MENU_ENABLED, false)
+//                .setFeatureFlag(RAISE_HAND_ENABLED, false)
+//                .setFeatureFlag(REACTIONS_ENABLED, false)
+//                .setFeatureFlag(RECORDING_ENABLED, false)
+//                .setFeatureFlag(SECURITY_OPTIONS_ENABLED, false)
+////                .setFeatureFlag(TILE_VIEW_ENABLED, false)
+////                .setFeatureFlag(TOOLBOX_ENABLED, false)
+////                .setFeatureFlag(VIDEO_MUTE_BUTTON_ENABLED, false)
+////                .setFeatureFlag(VIDEO_SHARE_BUTTON_ENABLED, false)
                 .build()
             JitsiMeet.setDefaultConferenceOptions(defaultOptions)
 
@@ -673,7 +670,7 @@ class MeetTalkCallManager {
             }
             val options: JitsiMeetConferenceOptions = JitsiMeetConferenceOptions.Builder()
                 .setRoom(conferenceRoomID)
-                .setWelcomePageEnabled(false)
+                //.setWelcomePageEnabled(false)
                 .setAudioMuted(defaultAudioMuted)
                 .setVideoMuted(defaultVideoMuted)
                 .setUserInfo(userInfo)
@@ -681,6 +678,9 @@ class MeetTalkCallManager {
             if (BuildConfig.DEBUG) {
                 Log.e(">>>>", "launchMeetTalkCallActivity: ${options.room} - ${userInfo.displayName} - ${userInfo.avatar}")
             }
+//            JitsiMeetActivity.launch(
+//                context, options
+//            )
             MeetTalkCallActivity.launch(
                 instanceKey,
                 context,
@@ -893,6 +893,7 @@ class MeetTalkCallManager {
                     val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
                     if (activeConferenceInfo != null && updatedConferenceInfo != null) {
                         activeConferenceInfo?.updateValue(updatedConferenceInfo)
+                        activeMeetTalkCallActivity?.retrieveParticipantsInfo()
                         activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
                     }
 

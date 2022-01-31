@@ -45,7 +45,7 @@ import io.taptalk.meettalk.manager.MeetTalkCallManager
 import io.taptalk.meettalk.manager.MeetTalkCallManager.Companion.CallState.IDLE
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 import io.taptalk.meettalk.model.MeetTalkParticipantInfo
-import io.taptalk.meettalk.view.MeetTalkCallView
+//import io.taptalk.meettalk.view.MeetTalkCallView
 import kotlinx.android.synthetic.main.meettalk_activity_call.*
 import org.jitsi.meet.sdk.*
 import java.util.*
@@ -58,7 +58,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     private lateinit var instanceKey: String
     private lateinit var options: JitsiMeetConferenceOptions
-    private lateinit var meetTalkCallView: MeetTalkCallView
+//    private lateinit var meetTalkCallView: MeetTalkCallView
+    private lateinit var meetTalkCallView: JitsiMeetView
     private lateinit var callInitiatedMessage: TAPMessageModel
     private lateinit var activeParticipantInfo: MeetTalkParticipantInfo
     private lateinit var activeUserID: String
@@ -290,7 +291,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     override fun getJitsiView(): JitsiMeetView {
         if (!this::meetTalkCallView.isInitialized) {
-            meetTalkCallView = MeetTalkCallView(this)
+//            meetTalkCallView = MeetTalkCallView(this)
+            meetTalkCallView = JitsiMeetView(this)
         }
         return meetTalkCallView
     }
@@ -407,8 +409,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
 
         options = intent.getParcelableExtra("JitsiMeetConferenceOptions") ?: JitsiMeet.getDefaultConferenceOptions()
-        isAudioMuted = options.audioMuted
-        isVideoMuted = options.videoMuted
+        isAudioMuted = MeetTalkCallManager.defaultAudioMuted //options.audioMuted
+        isVideoMuted = MeetTalkCallManager.defaultVideoMuted //options.videoMuted
     }
 
     private fun initView() {
@@ -556,7 +558,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
     }
 
-    private fun retrieveParticipantsInfo() {
+    fun retrieveParticipantsInfo() {
         val retrieveParticipantIntent = Intent(RETRIEVE_PARTICIPANTS_INFO)
         retrieveParticipantIntent.putExtra("requestId ", System.currentTimeMillis().toString())
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(retrieveParticipantIntent)
@@ -568,7 +570,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
         var hasVideoFootage = false
         for (participant in MeetTalkCallManager.activeConferenceInfo!!.participants) {
-            if (participant?.userID != activeUserID &&
+            if (//participant?.userID != activeUserID &&
                 participant?.videoMuted != null &&
                 !participant.videoMuted!!
             ) {

@@ -1,14 +1,11 @@
 package io.taptalk.meettalk.view
 
-import android.app.Activity
 import android.content.Context
 import android.util.Log
-import com.facebook.react.bridge.ReadableMap
-import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.meettalk.BuildConfig
+import io.taptalk.meettalk.manager.MeetTalkCallManager
 import org.jitsi.meet.sdk.JitsiMeetConferenceOptions
 import org.jitsi.meet.sdk.JitsiMeetView
-import java.lang.Exception
 
 class MeetTalkCallView(context: Context) : JitsiMeetView(context) {
     override fun onDetachedFromWindow() {
@@ -30,6 +27,10 @@ class MeetTalkCallView(context: Context) : JitsiMeetView(context) {
             Log.e(">>>>> MeetTalkCallView", "onCurrentConferenceChanged: $conferenceUrl")
         }
         super.onCurrentConferenceChanged(conferenceUrl)
+//        if (conferenceUrl.isNullOrEmpty()) {
+//            // TODO: HANDLE RECONNECT
+//            MeetTalkCallManager.activeMeetTalkIncomingCallActivity?.finish()
+//        }
     }
 
     override fun enterPictureInPicture() {
