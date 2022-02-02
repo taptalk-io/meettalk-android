@@ -134,7 +134,8 @@ class MeetTalkCallManager {
         init {
             // Initialize Jitsi Meet
             val serverURL: URL = try {
-                URL(MEET_URL)
+//                URL(MEET_URL)
+                URL("https://meet.jit.si")
             } catch (e: MalformedURLException) {
                 e.printStackTrace()
                 throw RuntimeException("Invalid server URL!")

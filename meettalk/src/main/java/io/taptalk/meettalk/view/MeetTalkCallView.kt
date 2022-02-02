@@ -1,5 +1,6 @@
 package io.taptalk.meettalk.view
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
 import io.taptalk.meettalk.BuildConfig
@@ -8,6 +9,7 @@ import org.jitsi.meet.sdk.JitsiMeetConferenceOptions
 import org.jitsi.meet.sdk.JitsiMeetView
 
 class MeetTalkCallView(context: Context) : JitsiMeetView(context) {
+
     override fun onDetachedFromWindow() {
         if (BuildConfig.DEBUG) {
             Log.e(">>>>> MeetTalkCallView", "onDetachedFromWindow: ")
@@ -27,9 +29,12 @@ class MeetTalkCallView(context: Context) : JitsiMeetView(context) {
             Log.e(">>>>> MeetTalkCallView", "onCurrentConferenceChanged: $conferenceUrl")
         }
         super.onCurrentConferenceChanged(conferenceUrl)
-        if (conferenceUrl.isNullOrEmpty()) {
+        if (conferenceUrl.isNullOrEmpty() && context is Activity) {
             // TODO: HANDLE RECONNECT
-            MeetTalkCallManager.activeMeetTalkIncomingCallActivity?.finish()
+            (context as Activity).runOnUiThread {
+                leave()
+                MeetTalkCallManager.activeMeetTalkIncomingCallActivity?.finish()
+            }
         }
     }
 
