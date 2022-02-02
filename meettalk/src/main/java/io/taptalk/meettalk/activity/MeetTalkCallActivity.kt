@@ -45,7 +45,7 @@ import io.taptalk.meettalk.manager.MeetTalkCallManager
 import io.taptalk.meettalk.manager.MeetTalkCallManager.Companion.CallState.IDLE
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 import io.taptalk.meettalk.model.MeetTalkParticipantInfo
-//import io.taptalk.meettalk.view.MeetTalkCallView
+import io.taptalk.meettalk.view.MeetTalkCallView
 import kotlinx.android.synthetic.main.meettalk_activity_call.*
 import org.jitsi.meet.sdk.*
 import java.util.*
@@ -58,8 +58,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     private lateinit var instanceKey: String
     private lateinit var options: JitsiMeetConferenceOptions
-//    private lateinit var meetTalkCallView: MeetTalkCallView
-    private lateinit var meetTalkCallView: JitsiMeetView
+    private lateinit var meetTalkCallView: MeetTalkCallView
     private lateinit var callInitiatedMessage: TAPMessageModel
     private lateinit var activeParticipantInfo: MeetTalkParticipantInfo
     private lateinit var activeUserID: String
@@ -291,8 +290,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     override fun getJitsiView(): JitsiMeetView {
         if (!this::meetTalkCallView.isInitialized) {
-//            meetTalkCallView = MeetTalkCallView(this)
-            meetTalkCallView = JitsiMeetView(this)
+            meetTalkCallView = MeetTalkCallView(this)
         }
         return meetTalkCallView
     }
@@ -570,7 +568,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
         var hasVideoFootage = false
         for (participant in MeetTalkCallManager.activeConferenceInfo!!.participants) {
-            if (//participant?.userID != activeUserID &&
+            if (participant?.userID != activeUserID && // TODO: SHOW OWN VIDEO FOOTAGE
                 participant?.videoMuted != null &&
                 !participant.videoMuted!!
             ) {

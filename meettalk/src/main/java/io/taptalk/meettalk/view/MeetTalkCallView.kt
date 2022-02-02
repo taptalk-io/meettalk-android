@@ -27,10 +27,10 @@ class MeetTalkCallView(context: Context) : JitsiMeetView(context) {
             Log.e(">>>>> MeetTalkCallView", "onCurrentConferenceChanged: $conferenceUrl")
         }
         super.onCurrentConferenceChanged(conferenceUrl)
-//        if (conferenceUrl.isNullOrEmpty()) {
-//            // TODO: HANDLE RECONNECT
-//            MeetTalkCallManager.activeMeetTalkIncomingCallActivity?.finish()
-//        }
+        if (conferenceUrl.isNullOrEmpty()) {
+            // TODO: HANDLE RECONNECT
+            MeetTalkCallManager.activeMeetTalkIncomingCallActivity?.finish()
+        }
     }
 
     override fun enterPictureInPicture() {
