@@ -3,6 +3,7 @@ package io.taptalk.meettalk.helper
 import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.Build
@@ -26,6 +27,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.PENDING_INTENT_
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.PENDING_INTENT_INCOMING_CALL_NOTIFICATION
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.PENDING_INTENT_INCOMING_CALL_REJECT
 import io.taptalk.meettalk.manager.MeetTalkCallManager
+import android.os.PowerManager
 
 class MeetTalkIncomingCallService : Service() {
 
@@ -147,7 +149,19 @@ class MeetTalkIncomingCallService : Service() {
         val notification = notificationBuilder.build()
         notification.flags = Notification.FLAG_INSISTENT
 
+        // Show notification
         startForeground(1124, notification)
+
+        // Wake lock
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val isScreenOn = powerManager.isInteractive
+        if (!isScreenOn) {
+            val wakeLock = powerManager.newWakeLock(
+                PowerManager.SCREEN_DIM_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                "myApp:notificationLock"
+            )
+            wakeLock.acquire(5000)
+        }
 
         return super.onStartCommand(intent, flags, startId)
     }
