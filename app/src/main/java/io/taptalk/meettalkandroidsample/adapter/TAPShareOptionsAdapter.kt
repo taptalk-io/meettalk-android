@@ -30,15 +30,14 @@ import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.TapTalk.Manager.TAPChatManager
 import io.taptalk.TapTalk.Manager.TAPContactManager
-import io.taptalk.TapTalk.Manager.TAPGroupManager.Companion.getInstance
 import io.taptalk.TapTalk.Manager.TapUI
 import io.taptalk.TapTalk.Model.TAPRoomListModel
 import io.taptalk.TapTalk.Model.TAPRoomModel
 import io.taptalk.TapTalk.Model.TAPUserModel
 import io.taptalk.TapTalk.R
 import io.taptalk.TapTalk.View.Adapter.TAPBaseAdapter
-import io.taptalk.TapTalk.ViewModel.TAPShareOptionsViewModel
 import io.taptalk.meettalkandroidsample.listener.TAPShareOptionsInterface
+import io.taptalk.meettalkandroidsample.viewmodel.TAPShareOptionsViewModel
 
 class TAPShareOptionsAdapter(
     val instanceKey: String,
@@ -94,7 +93,7 @@ class TAPShareOptionsAdapter(
             if (room.type == RoomType.TYPE_PERSONAL) {
                 user = TAPContactManager.getInstance(instanceKey).getUserData(TAPChatManager.getInstance(instanceKey).getOtherUserIdFromRoom(room.roomID))
             } else if (room.type == RoomType.TYPE_GROUP || room.type == RoomType.TYPE_TRANSACTION) {
-                group = getInstance(instanceKey).getGroupData(room.roomID)
+//                group = getInstance(instanceKey).getGroupData(room.roomID) // TODO: GET GROUP DATA UNRESOLVED
             }
 
             // Set room image

@@ -19,7 +19,6 @@ import androidx.recyclerview.widget.RecyclerView.*
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
-import io.taptalk.meettalkandroidsample.adapter.TAPShareOptionsAdapter
 import io.taptalk.meettalkandroidsample.adapter.TAPShareOptionsSelectedAdapter
 import io.taptalk.TapTalk.API.Api.TAPApiManager
 import io.taptalk.TapTalk.Const.TAPDefaultConstant
@@ -39,10 +38,11 @@ import io.taptalk.TapTalk.Model.*
 import io.taptalk.TapTalk.View.Activity.TAPBaseActivity
 import io.taptalk.TapTalk.View.Activity.TapUIChatActivity
 import io.taptalk.TapTalk.View.Activity.TapUIRoomListActivity
-import io.taptalk.TapTalk.ViewModel.TAPShareOptionsViewModel
 import io.taptalk.meettalkandroidsample.R
 import io.taptalk.meettalkandroidsample.SampleApplication
+import io.taptalk.meettalkandroidsample.adapter.TAPShareOptionsAdapter
 import io.taptalk.meettalkandroidsample.listener.TAPShareOptionsInterface
+import io.taptalk.meettalkandroidsample.viewmodel.TAPShareOptionsViewModel
 import kotlinx.android.synthetic.main.activity_share_options.*
 import java.io.File
 import java.util.*

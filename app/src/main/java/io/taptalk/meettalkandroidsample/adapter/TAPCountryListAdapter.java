@@ -77,7 +77,7 @@ public class TAPCountryListAdapter extends TAPBaseAdapter<TAPCountryRecycleItem,
         }
 
         @Override
-        protected void onBind(TAPCountryRecycleItem item, int position) {
+        public void onBind(TAPCountryRecycleItem item, int position) {
             tvCountryName.setText(item.getCountryListItem().getCommonName());
 
             Glide.with(itemView).load(item.getCountryListItem().getFlagIconUrl()).into(ivCountryFlag);
@@ -101,7 +101,7 @@ public class TAPCountryListAdapter extends TAPBaseAdapter<TAPCountryRecycleItem,
         }
 
         @Override
-        protected void onBind(TAPCountryRecycleItem item, int position) {
+        public void onBind(TAPCountryRecycleItem item, int position) {
             tvCountryInitial.setText(item.getCountryInitial() + "");
         }
     }

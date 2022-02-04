@@ -135,7 +135,7 @@ class MeetTalkCallManager {
             // Initialize Jitsi Meet
             val serverURL: URL = try {
 //                URL(MEET_URL)
-                URL("https://meet.jit.si")
+                URL("https://meet.jit.si") // FIXME: TEMPORARILY DIRECT CALL TO DEFAULT SERVER
             } catch (e: MalformedURLException) {
                 e.printStackTrace()
                 throw RuntimeException("Invalid server URL!")
@@ -707,6 +707,18 @@ class MeetTalkCallManager {
                 Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.body} - ${TAPUtils.toJsonString(message.data)}")
             }
             handledCallNotificationMessageLocalIDs.add(message.localID)
+
+            if (message.hidden == false &&
+                message.action != CALL_ENDED &&
+                message.action != CALL_CANCELLED &&
+                message.action != RECIPIENT_BUSY &&
+                message.action != RECIPIENT_REJECTED_CALL &&
+                message.action != RECIPIENT_MISSED_CALL
+            ) {
+                // Mark invisible message as read
+                TapCoreMessageManager.getInstance(instanceKey).markMessageAsRead(message)
+            }
+
             if (message.action == CALL_INITIATED &&
                 message.user.userID != activeUser.userID &&
                 System.currentTimeMillis() - message.created < INCOMING_CALL_TIMEOUT_DURATION
