@@ -80,6 +80,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.HOST
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_AUDIO
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_CAMERA
+import io.taptalk.meettalk.constant.MeetTalkConstant.Url.MEET_ROOM_ID_PREFIX
 import io.taptalk.meettalk.constant.MeetTalkConstant.Url.MEET_URL
 import io.taptalk.meettalk.constant.MeetTalkConstant.Value.INCOMING_CALL_TIMEOUT_DURATION
 import io.taptalk.meettalk.helper.MeetTalk
@@ -654,7 +655,12 @@ class MeetTalkCallManager {
                 return false
             }
             callState = CallState.IN_CALL
-            val conferenceRoomID = String.format("%s%s", MeetTalk.appID, room.roomID)
+            val conferenceRoomID = String.format(
+                "%s%s%s",
+                MEET_ROOM_ID_PREFIX,
+                MeetTalk.appID,
+                room.roomID
+            )
             val userInfo = JitsiMeetUserInfo()
             if (!activeUserAvatarUrl.isNullOrEmpty()) {
                 try {
@@ -978,7 +984,7 @@ class MeetTalkCallManager {
                 if (conferenceInfo.callStartedTime > 0L) {
                     conferenceInfo.callDuration = conferenceInfo.callEndedTime - conferenceInfo.callStartedTime
                 }
-                message.data = conferenceInfo.toHashMap()
+                conferenceInfo.attachToMessage(message)
                 message.filterID = conferenceInfo.callID
             }
             return message
@@ -1000,7 +1006,7 @@ class MeetTalkCallManager {
                 message.created,
                 participants
             )
-            message.data = newConferenceInfo.toHashMap()
+            newConferenceInfo.attachToMessage(message)
             message.filterID = newConferenceInfo.callID
 
             setActiveCallData(instanceKey, message)
@@ -1033,7 +1039,7 @@ class MeetTalkCallManager {
 
         fun sendAnsweredCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
             val message = generateCallNotificationMessage(instanceKey, room, "{{sender}} answered call.", RECIPIENT_ANSWERED_CALL)
-            message.data = activeConferenceInfo?.toHashMap()
+            activeConferenceInfo?.attachToMessage(message)
             //message.hidden = true
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1046,7 +1052,7 @@ class MeetTalkCallManager {
             val participant = generateParticipantInfo(instanceKey, PARTICIPANT)
             activeConferenceInfo?.updateParticipant(participant)
             activeConferenceInfo?.lastUpdated = message.created
-            message.data = activeConferenceInfo?.toHashMap()
+            activeConferenceInfo?.attachToMessage(message)
             message.hidden = true
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1058,7 +1064,7 @@ class MeetTalkCallManager {
             val message = generateCallNotificationMessage(instanceKey, room, "{{sender}} left call.", PARTICIPANT_LEFT_CONFERENCE)
 
             activeConferenceInfo?.lastUpdated = message.created
-            message.data = activeConferenceInfo?.toHashMap()
+            activeConferenceInfo?.attachToMessage(message)
             message.hidden = true
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1116,7 +1122,7 @@ class MeetTalkCallManager {
             }
             val message = generateCallNotificationMessage(instanceKey, room, "Call info updated.", CONFERENCE_INFO)
             activeConferenceInfo?.lastUpdated = message.created
-            message.data = activeConferenceInfo!!.toHashMap()
+            activeConferenceInfo?.attachToMessage(message)
             message.hidden = true
 
             sendCallNotificationMessage(instanceKey, message)

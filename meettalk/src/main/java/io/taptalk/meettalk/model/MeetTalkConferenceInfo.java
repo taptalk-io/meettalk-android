@@ -1,5 +1,7 @@
 package io.taptalk.meettalk.model;
 
+import static io.taptalk.meettalk.constant.MeetTalkConstant.ConferenceInfoKey.CONFERENCE_MESSAGE_DATA;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -62,7 +64,11 @@ public class MeetTalkConferenceInfo implements Parcelable {
 
     public static MeetTalkConferenceInfo fromMessageModel(TAPMessageModel message) {
         try {
-            return fromHashMap(message.getData());
+            if (message.getData() == null || message.getData().get(CONFERENCE_MESSAGE_DATA) == null) {
+                return null;
+            }
+            HashMap<String, Object> conferenceInfoMap = (HashMap<String, Object>) message.getData().get(CONFERENCE_MESSAGE_DATA);
+            return fromHashMap(conferenceInfoMap);
         } catch (Exception e) {
             return null;
         }
@@ -70,6 +76,21 @@ public class MeetTalkConferenceInfo implements Parcelable {
 
     public HashMap<String, Object> toHashMap() {
         return TAPUtils.toHashMap(this);
+    }
+
+    public TAPMessageModel attachToMessage(TAPMessageModel message) {
+        if (message.getData() == null) {
+            message.setData(new HashMap<>());
+        }
+        MeetTalkConferenceInfo existingConferenceInfo = fromMessageModel(message);
+        if (existingConferenceInfo != null) {
+            existingConferenceInfo.updateValue(this);
+            message.getData().put(CONFERENCE_MESSAGE_DATA, existingConferenceInfo.toHashMap());
+        }
+        else {
+            message.getData().put(CONFERENCE_MESSAGE_DATA, toHashMap());
+        }
+        return message;
     }
 
     public void updateValue(MeetTalkConferenceInfo updatedConferenceInfo) {

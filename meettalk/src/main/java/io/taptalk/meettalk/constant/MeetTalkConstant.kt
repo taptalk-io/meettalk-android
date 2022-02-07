@@ -25,6 +25,10 @@ class MeetTalkConstant {
         const val CALL_MESSAGE_TYPE = 8001
     }
 
+    object ConferenceInfoKey {
+        const val CONFERENCE_MESSAGE_DATA = "meetTalkConferenceInfo"
+    }
+
     object Extra {
         const val CALLER_NAME = "kMeetTalkExtraCallerName"
         const val CALLER_NUMBER = "kMeetTalkExtraCallerNumber"
@@ -61,6 +65,7 @@ class MeetTalkConstant {
 
     object Url {
         const val MEET_URL = "https://meet.taptalk.io"
+        const val MEET_ROOM_ID_PREFIX = "meet-taptalk-io-"
     }
 
     object Value {
