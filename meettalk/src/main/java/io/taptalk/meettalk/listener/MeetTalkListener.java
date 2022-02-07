@@ -189,6 +189,11 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
      */
 
     @Override
+    public void onTaskRootCallActivityClosed(Activity activity) {
+
+    }
+
+    @Override
     public void onChatBubbleCallButtonTapped(String instanceKey, Activity activity, TAPMessageModel message) {
         MeetTalkCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, message.getRoom());
     }

@@ -258,13 +258,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         if (isTaskRoot) {
             // Trigger listener callback if no other activity is open
-            for (tapTalkInstance in TapTalk.getTapTalkInstances()) {
-                for (listener in TapTalk.getTapTalkListeners(tapTalkInstance.key)) {
-                    if (BuildConfig.DEBUG) {
-                        Log.e(">>>> $TAG", "onTaskRootChatRoomClosed: ${tapTalkInstance.key}")
-                    }
-                    listener.onTaskRootChatRoomClosed(this)
-                }
+            for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
+                meetTalkListener.onTaskRootCallActivityClosed(this)
             }
         }
     }
