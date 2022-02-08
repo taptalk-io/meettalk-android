@@ -52,12 +52,8 @@
         <item name="android:textSize">24sp</item>
     </style>
 
-    <style name="meetTalkIncomingCallNotificationTitleLabelStyle" parent="TextAppearance.Compat.Notification.Title">
-        <item name="android:textColor">@color/meetTalkIncomingCallNotificationTitleLabelColor</item>
-    </style>
+    <style name="meetTalkIncomingCallNotificationTitleLabelStyle" parent="TextAppearance.Compat.Notification.Title" />
 
-    <style name="meetTalkIncomingCallNotificationContentLabelStyle" parent="TextAppearance.Compat.Notification">
-        <item name="android:textColor">@color/meetTalkIncomingCallNotificationContentLabelColor</item>
-    </style>
+    <style name="meetTalkIncomingCallNotificationContentLabelStyle" parent="TextAppearance.Compat.Notification.Info" />
 
 </resources>
