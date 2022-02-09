@@ -27,7 +27,6 @@ import io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.MESSAGE
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
-import io.taptalk.TapTalk.Helper.TapTalk.TapTalkSocketConnectionMode.ALWAYS_ON
 import io.taptalk.TapTalk.Listener.TAPSocketListener
 import io.taptalk.TapTalk.Listener.TapCommonListener
 import io.taptalk.TapTalk.Listener.TapCoreGetMessageListener
@@ -50,6 +49,7 @@ import kotlinx.android.synthetic.main.meettalk_activity_call.*
 import org.jitsi.meet.sdk.*
 import java.util.*
 import android.view.WindowManager
+import io.taptalk.TapTalk.Manager.TAPNetworkStateManager
 import io.taptalk.TapTalk.R.anim.*
 
 class MeetTalkCallActivity : JitsiMeetActivity() {
@@ -64,12 +64,12 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     private lateinit var activeUserID: String
     private lateinit var roomDisplayName: String
     private lateinit var durationTimer: Timer
-    private lateinit var savedSocketConnectionMode: TapTalk.TapTalkSocketConnectionMode
 
     private var isAudioMuted = false
     private var isVideoMuted = false
-    private var isCallStarted = false
     private var callStartTimestamp = 0L
+
+    var isCallStarted = false
 
     private val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -221,39 +221,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         JitsiMeetActivityDelegate.onHostDestroy(this)
 
-        if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
-            if (MeetTalkCallManager.activeConferenceInfo != null &&
-                MeetTalkCallManager.activeConferenceInfo!!.callEndedTime == 0L
-            ) {
-                if (isCallStarted || MeetTalkCallManager.activeConferenceInfo!!.participants.size > 1 ) {
-                    if (BuildConfig.DEBUG) {
-                        Log.e(">>>>>", "MeetTalkCallActivity onDestroy: sendCallEndedNotification")
-                    }
-                    // Send call ended notification to notify the other party
-                    MeetTalkCallManager.sendCallEndedNotification(instanceKey, callInitiatedMessage.room)
-                }
-                else if (MeetTalkCallManager.activeConferenceInfo!!.hostUserID == activeUserID) {
-                    if (BuildConfig.DEBUG) {
-                        Log.e(">>>>>", "MeetTalkCallActivity onDestroy: sendCallCancelledNotification")
-                    }
-                    // Send call cancelled notification to notify recipient
-                    MeetTalkCallManager.sendCallCancelledNotification(instanceKey, callInitiatedMessage.room)
-                }
-            }
-        }
-        else {
-            // Send left call notification to conference
-            if (BuildConfig.DEBUG) {
-                Log.e(">>>>>", "MeetTalkCallActivity onDestroy: sendLeftCallNotification")
-            }
-            MeetTalkCallManager.sendLeftCallNotification(instanceKey, callInitiatedMessage.room)
-        }
-
+        MeetTalkCallManager.handleSendNotificationOnLeavingConference()
         MeetTalkCallManager.setActiveCallAsEnded()
         MeetTalkCallManager.activeMeetTalkCallActivity = null
         MeetTalkCallManager.callState = IDLE
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
-        TapTalk.setTapTalkSocketConnectionMode(instanceKey, savedSocketConnectionMode)
         TAPConnectionManager.getInstance(instanceKey).removeSocketListener(socketListener)
 
         if (isTaskRoot) {
@@ -378,8 +350,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         callInitiatedMessage = intent.getParcelableExtra(MESSAGE)!!
 
-        savedSocketConnectionMode = TapTalk.getTapTalkSocketConnectionMode(instanceKey)
-        TapTalk.setTapTalkSocketConnectionMode(instanceKey, ALWAYS_ON)
         TapTalk.connect(instanceKey, object : TapCommonListener() {})
 
         if (MeetTalkCallManager.getRoomAliasMap(instanceKey)[callInitiatedMessage.room.roomID].isNullOrEmpty()) {

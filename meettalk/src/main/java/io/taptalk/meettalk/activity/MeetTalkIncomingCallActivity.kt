@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -21,6 +22,7 @@ import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.TapTalk.Model.TAPMessageModel
 import io.taptalk.TapTalk.R.anim.tap_fade_out
 import io.taptalk.TapTalk.R.anim.tap_stay
+import io.taptalk.meettalk.BuildConfig
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.INCOMING_CALL_ANSWERED
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.INCOMING_CALL_NOTIFICATION_CONTENT
@@ -46,12 +48,13 @@ class MeetTalkIncomingCallActivity : AppCompatActivity() {
         initDataAndView()
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        handleCallIntent(intent)
-    }
-
     override fun onDestroy() {
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>>>", "MeetTalkIncomingCallActivity onDestroy: ")
+        }
+        if (!isNotificationSent && !shouldNotSendRejectCallNotification) {
+            rejectCall()
+        }
         MeetTalkCallManager.closeIncomingCallNotification(this)
         MeetTalkCallManager.clearPendingIncomingCall()
         MeetTalkCallManager.activeMeetTalkIncomingCallActivity = null
@@ -60,22 +63,21 @@ class MeetTalkIncomingCallActivity : AppCompatActivity() {
         for (meetTalkListener in MeetTalk.getMeetTalkListeners(MeetTalkCallManager.activeCallInstanceKey)) {
             meetTalkListener.onIncomingCallDisconnected()
         }
-
         super.onDestroy()
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        handleCallIntent(intent)
     }
 
     override fun finish() {
         if (isFinishing) {
             return
         }
-        if (!isNotificationSent && !shouldNotSendRejectCallNotification) {
-            rejectCall()
-        }
-        else {
-            runOnUiThread {
-                super.finish()
-                overridePendingTransition(tap_stay, tap_fade_out)
-            }
+        runOnUiThread {
+            super.finish()
+            overridePendingTransition(tap_stay, tap_fade_out)
         }
     }
 
@@ -146,15 +148,15 @@ class MeetTalkIncomingCallActivity : AppCompatActivity() {
     }
 
     private fun answerCall() {
-        MeetTalkCallManager.answerIncomingCall()
         isNotificationSent = true
         finish()
+        MeetTalkCallManager.answerIncomingCall()
     }
 
     private fun rejectCall() {
-        MeetTalkCallManager.rejectIncomingCall()
         isNotificationSent = true
         finish()
+        MeetTalkCallManager.rejectIncomingCall()
     }
 
     fun closeIncomingCall() {

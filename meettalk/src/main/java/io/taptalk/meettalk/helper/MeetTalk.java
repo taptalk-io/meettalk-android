@@ -4,6 +4,7 @@ import static io.taptalk.TapTalk.Helper.TapTalk.TapTalkImplementationType.TapTal
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -227,6 +228,10 @@ public class MeetTalk {
             TapUI.getInstance(instanceKey).addCustomBubble(callChatBubbleClass);
         }
 
+        // Start service to handle sending notification when app is killed
+        appContext.startService(new Intent(appContext, MeetTalkTaskRemovedService.class));
+
+        // Trigger initialization completed callback
         meetTalkListener.onInitializationCompleted(instanceKey);
     }
 
