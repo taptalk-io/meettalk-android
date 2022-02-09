@@ -1,6 +1,7 @@
 package io.taptalk.meettalk.helper;
 
 import static io.taptalk.TapTalk.Helper.TapTalk.TapTalkImplementationType.TapTalkImplementationTypeCore;
+import static io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_MESSAGE_TYPE;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,9 +14,11 @@ import java.util.HashMap;
 import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Listener.TapCoreMessageListener;
 import io.taptalk.TapTalk.Listener.TapListener;
+import io.taptalk.TapTalk.Listener.TapUIRoomListListener;
 import io.taptalk.TapTalk.Manager.TapCoreMessageManager;
 import io.taptalk.TapTalk.Manager.TapUI;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
+import io.taptalk.TapTalk.Model.TAPRoomListModel;
 import io.taptalk.TapTalk.Model.TAPRoomModel;
 import io.taptalk.meettalk.BuildConfig;
 import io.taptalk.meettalk.R;
@@ -226,6 +229,19 @@ public class MeetTalk {
                     callChatBubbleListener
             );
             TapUI.getInstance(instanceKey).addCustomBubble(callChatBubbleClass);
+
+
+            // Add room list listener to replace room list message body
+            TapUI.getInstance(instanceKey).addRoomListListener(new TapUIRoomListListener() {
+                @Override
+                public String setRoomListContentText(TAPRoomListModel roomList, int position, Context context) {
+                    if (roomList.getLastMessage().getType() == CALL_MESSAGE_TYPE) {
+                        String body = roomList.getLastMessage().getBody();
+                        return body.replace("{{sender}}", roomList.getLastMessage().getUser().getFullname());
+                    }
+                    return super.setRoomListContentText(roomList, position, context);
+                }
+            });
         }
 
         // Start service to handle sending notification when app is killed

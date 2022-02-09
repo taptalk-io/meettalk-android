@@ -50,10 +50,6 @@ public class SampleApplication extends MultiDexApplication {
         TapUI.getInstance(INSTANCE_KEY).setLogoutButtonVisible(true);
         TapUI.getInstance(INSTANCE_KEY).setConnectionStatusIndicatorVisible(false);
         TapUI.getInstance(INSTANCE_KEY).addCustomKeyboardListener(customKeyboardListener);
-
-        if (BuildConfig.DEBUG) {
-            TapUI.getInstance(INSTANCE_KEY).setCloseButtonInRoomListVisible(true);
-        }
     }
 
     MeetTalkListener meetTalkListener = new MeetTalkListener(INSTANCE_KEY) {

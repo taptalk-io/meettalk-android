@@ -25,10 +25,6 @@ class MeetTalkTaskRemovedService : Service() {
         return START_NOT_STICKY
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
     override fun onTaskRemoved(rootIntent: Intent?) {
         handleAppExiting()
     }
@@ -48,9 +44,6 @@ class MeetTalkTaskRemovedService : Service() {
              * will be executed from activity instead.
              */
             if (MeetTalkCallManager.callState == MeetTalkCallManager.Companion.CallState.RINGING) {
-//            if (MeetTalkCallManager.activeMeetTalkCallActivity == null ||
-//                MeetTalkCallManager.activeMeetTalkCallActivity?.isCallStarted == false
-//            ) {
                 if (BuildConfig.DEBUG) {
                     Log.e(">>>>>", "handleAppExiting: sendRejectedCallNotification")
                 }

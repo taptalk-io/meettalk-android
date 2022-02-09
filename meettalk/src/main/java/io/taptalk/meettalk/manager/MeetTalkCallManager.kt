@@ -24,7 +24,6 @@ import androidx.core.app.ActivityCompat
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
-import io.taptalk.TapTalk.Helper.TapTalk.TapTalkSocketConnectionMode.ALWAYS_OFF
 import io.taptalk.TapTalk.Helper.TapTalk.TapTalkSocketConnectionMode.ALWAYS_ON
 import io.taptalk.TapTalk.Helper.TapTalkDialog
 import io.taptalk.TapTalk.Listener.TAPSocketListener
@@ -190,7 +189,7 @@ class MeetTalkCallManager {
                     if (BuildConfig.DEBUG) {
                         Log.e(">>>>", "MeetTalkCallManager onSocketDisconnected: ")
                     }
-                    // FIXME: SOCKET IS DISCONNECTED WHEN NATIVE INCOMING CALL IS SHOWN
+                    // FIXME: SOCKET IS DISCONNECTED WHEN NATIVE INCOMING CALL IS SHOWN IN NATIVE INCOMING CALL
                     if (callState == CallState.RINGING) {
                         TapTalk.connect(activeCallInstanceKey!!, object : TapCommonListener() {})
                     }
@@ -1233,8 +1232,7 @@ class MeetTalkCallManager {
             TAPConnectionManager.getInstance(instanceKey).addSocketListener(socketListener)
             savedSocketConnectionMode = TapTalk.getTapTalkSocketConnectionMode(instanceKey)
             if (TapTalk.getTapTalkInstance(instanceKey) != null) {
-//                TapTalk.setTapTalkSocketConnectionMode(instanceKey, ALWAYS_ON)
-                TapTalk.setTapTalkSocketConnectionMode(instanceKey, ALWAYS_OFF) // TODO: CHANGE TO ALWAYS_ON AFTER UPDATE
+                TapTalk.setTapTalkSocketConnectionMode(instanceKey, ALWAYS_ON)
             }
             MeetTalkTaskRemovedService.instanceKey = instanceKey
         }
