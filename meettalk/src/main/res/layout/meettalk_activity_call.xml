@@ -23,7 +23,7 @@
         android:layout_height="0dp"
         android:alpha="0"
         android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cl_button_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -33,8 +33,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0.25"
-        android:visibility="gone"
-        android:background="@drawable/tap_bg_charcoal_gradient_270" />
+        android:background="@drawable/tap_bg_charcoal_gradient_270"
+        android:visibility="gone" />
 
     <View
         android:id="@+id/v_background_overlay_solid"
@@ -83,6 +83,8 @@
         android:id="@+id/cl_button_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="-56dp"
+        android:translationY="-56dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -92,11 +94,12 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:alpha="0"
-            android:background="@drawable/meettalk_bg_call_screen_button_container"
+            android:background="@color/tapBlack19"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+        <!--        android:background="@drawable/meettalk_bg_call_screen_button_container"-->
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_button_flip_camera"

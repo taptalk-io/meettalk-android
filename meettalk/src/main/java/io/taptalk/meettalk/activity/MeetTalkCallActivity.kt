@@ -49,7 +49,6 @@ import kotlinx.android.synthetic.main.meettalk_activity_call.*
 import org.jitsi.meet.sdk.*
 import java.util.*
 import android.view.WindowManager
-import io.taptalk.TapTalk.Manager.TAPNetworkStateManager
 import io.taptalk.TapTalk.R.anim.*
 
 class MeetTalkCallActivity : JitsiMeetActivity() {
@@ -521,30 +520,17 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
     }
 
-    fun retrieveParticipantsInfo() {
-        val retrieveParticipantIntent = Intent(RETRIEVE_PARTICIPANTS_INFO)
-        retrieveParticipantIntent.putExtra("requestId ", System.currentTimeMillis().toString())
-        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(retrieveParticipantIntent)
-    }
-
     private fun updateLayout(animated: Boolean) {
         if (MeetTalkCallManager.activeConferenceInfo == null) {
             return
         }
-        var hasVideoFootage = false
         for (participant in MeetTalkCallManager.activeConferenceInfo!!.participants) {
-            if (participant?.userID != activeUserID && // TODO: SHOW OWN VIDEO FOOTAGE
-                participant?.videoMuted != null &&
-                !participant.videoMuted!!
-            ) {
+            if (participant?.videoMuted != null && !participant.videoMuted!!) {
                 showVideoCallLayout(animated)
-                hasVideoFootage = true
-                break
+                return
             }
         }
-        if (!hasVideoFootage) {
-            showVoiceCallLayout(animated)
-        }
+        showVoiceCallLayout(animated)
     }
 
     private fun showVoiceCallLayout(animated: Boolean) {
@@ -572,7 +558,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 .setInterpolator(interpolator)
                 .start()
             cl_button_container.animate()
-                .translationY(0f)
+                .translationY(TAPUtils.dpToPx(-56).toFloat())
                 .setDuration(duration)
                 .setInterpolator(interpolator)
                 .start()
@@ -615,7 +601,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 .setInterpolator(interpolator)
                 .start()
             cl_button_container.animate()
-                .translationY(TAPUtils.dpToPx(56).toFloat())
+                .translationY(0f)
                 .setDuration(duration)
                 .setInterpolator(interpolator)
                 .start()
@@ -679,6 +665,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         activeParticipantInfo.videoMuted = isVideoMuted
         activeParticipantInfo.lastUpdated = System.currentTimeMillis()
         updateActiveParticipantInConferenceInfo()
+        updateLayout(true)
         if (isCallStarted) {
             MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
         }
@@ -832,5 +819,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         if (isCallStarted) {
             updateLayout(true)
         }
+    }
+
+    fun retrieveParticipantsInfo() {
+        val retrieveParticipantIntent = Intent(RETRIEVE_PARTICIPANTS_INFO)
+        retrieveParticipantIntent.putExtra("requestId ", System.currentTimeMillis().toString())
+        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(retrieveParticipantIntent)
     }
 }

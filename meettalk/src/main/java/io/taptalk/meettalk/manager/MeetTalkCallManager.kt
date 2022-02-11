@@ -149,7 +149,7 @@ class MeetTalkCallManager {
                 .setFeatureFlag(AUDIO_MUTE_BUTTON_ENABLED, false)
                 .setFeatureFlag(CALL_INTEGRATION_ENABLED, false)
                 .setFeatureFlag(CHAT_ENABLED, false)
-                .setFeatureFlag(FILMSTRIP_ENABLED, false)
+                //.setFeatureFlag(FILMSTRIP_ENABLED, false)
                 .setFeatureFlag(HELP_BUTTON_ENABLED, false)
                 .setFeatureFlag(INVITE_ENABLED, false)
                 .setFeatureFlag(KICK_OUT_ENABLED, false)
