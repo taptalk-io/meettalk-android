@@ -229,8 +229,7 @@ public class MeetTalk {
                     callChatBubbleListener
             );
             TapUI.getInstance(instanceKey).addCustomBubble(callChatBubbleClass);
-
-
+            
             // Add room list listener to replace room list message body
             TapUI.getInstance(instanceKey).addRoomListListener(new TapUIRoomListListener() {
                 @Override

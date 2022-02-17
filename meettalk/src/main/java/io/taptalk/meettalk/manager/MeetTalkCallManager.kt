@@ -307,11 +307,10 @@ class MeetTalkCallManager {
             }
             val phoneNumber = if (displayPhoneNumber.isNullOrEmpty()) {
                 if (message?.user != null) {
-                    // TODO: HANDLE COUNTRY CODE IN NUMBER
-                    String.format("0%s", message.user.phone)
+                    String.format("+%s", message.user.phone)
                 }
                 else {
-                    "Unknown Number"
+                    ""
                 }
             }
             else {
