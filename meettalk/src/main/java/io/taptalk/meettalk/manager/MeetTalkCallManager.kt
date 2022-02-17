@@ -275,19 +275,27 @@ class MeetTalkCallManager {
             return telecomManager.getPhoneAccount(phoneAccountHandle)
         }
 
-        fun openAppNotificationSettings(context: Context) {
+        fun openAppNotificationSettings(context: Context, openIncomingCallChannelSettings: Boolean) {
+            val settingsIntent = Intent()
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val settingsIntent: Intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
-                    .putExtra(Settings.EXTRA_CHANNEL_ID, INCOMING_CALL_NOTIFICATION_CHANNEL_ID)
-                context.startActivity(settingsIntent)
+                if (openIncomingCallChannelSettings) {
+                    settingsIntent.action = Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS
+                    settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    settingsIntent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    settingsIntent.putExtra(Settings.EXTRA_CHANNEL_ID, INCOMING_CALL_NOTIFICATION_CHANNEL_ID)
+                }
+                else {
+                    settingsIntent.action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                    settingsIntent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                }
             }
             else {
-                val settingsIntent: Intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(settingsIntent)
+                settingsIntent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                settingsIntent.data = Uri.parse("package:" + context.packageName)
+                settingsIntent.addCategory(Intent.CATEGORY_DEFAULT)
+                settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
+            context.startActivity(settingsIntent)
         }
 
         fun showIncomingCall(message: TAPMessageModel?, displayName: String?, displayPhoneNumber: String?) {

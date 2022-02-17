@@ -229,7 +229,7 @@ public class MeetTalk {
                     callChatBubbleListener
             );
             TapUI.getInstance(instanceKey).addCustomBubble(callChatBubbleClass);
-            
+
             // Add room list listener to replace room list message body
             TapUI.getInstance(instanceKey).addRoomListListener(new TapUIRoomListListener() {
                 @Override
@@ -336,7 +336,11 @@ public class MeetTalk {
     }
 
     public static void openAppNotificationSettings(Context context) {
-        MeetTalkCallManager.Companion.openAppNotificationSettings(context);
+        MeetTalkCallManager.Companion.openAppNotificationSettings(context, false);
+    }
+
+    public static void openAppIncomingCallNotificationChannelSettings(Context context) {
+        MeetTalkCallManager.Companion.openAppNotificationSettings(context, true);
     }
 
     public static void showIncomingCall(TAPMessageModel message) {
