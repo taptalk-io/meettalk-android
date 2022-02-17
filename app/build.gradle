@@ -17,8 +17,8 @@ android {
         applicationId "io.taptalk.meettalkandroidsample"
         minSdk 23
         targetSdk 30
-        versionCode 19
-        versionName "0.4.3"
+        versionCode 20
+        versionName "0.5.0"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
