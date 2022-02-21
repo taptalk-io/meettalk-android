@@ -53,12 +53,12 @@ public class TAPLoginActivity extends TAPBaseActivity {
         initView();
         initFirstPage();
 
-        if (BuildConfig.DEBUG && !MeetTalk.isPhoneAccountEnabled()) {
-            MeetTalk.requestEnablePhoneAccountSettings(INSTANCE_KEY, this);
-        }
-        else {
-            MeetTalk.checkAndRequestEnablePhoneAccountSettings(INSTANCE_KEY, this);
-        }
+//        if (BuildConfig.DEBUG && !MeetTalk.isPhoneAccountEnabled()) {
+//            MeetTalk.requestEnablePhoneAccountSettings(INSTANCE_KEY, this);
+//        }
+//        else {
+//            MeetTalk.checkAndRequestEnablePhoneAccountSettings(INSTANCE_KEY, this);
+//        }
     }
 
     @Override

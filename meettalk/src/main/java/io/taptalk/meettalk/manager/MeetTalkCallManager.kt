@@ -280,7 +280,6 @@ class MeetTalkCallManager {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 if (openIncomingCallChannelSettings) {
                     settingsIntent.action = Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS
-                    settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     settingsIntent.putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                     settingsIntent.putExtra(Settings.EXTRA_CHANNEL_ID, INCOMING_CALL_NOTIFICATION_CHANNEL_ID)
                 }
@@ -293,8 +292,8 @@ class MeetTalkCallManager {
                 settingsIntent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                 settingsIntent.data = Uri.parse("package:" + context.packageName)
                 settingsIntent.addCategory(Intent.CATEGORY_DEFAULT)
-                settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
+            settingsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(settingsIntent)
         }
 
@@ -313,16 +312,24 @@ class MeetTalkCallManager {
             else {
                 name = ""
             }
-            val phoneNumber = if (displayPhoneNumber.isNullOrEmpty()) {
-                if (message?.user != null) {
-                    String.format("+%s", message.user.phone)
+            val phoneNumber: String
+            if (displayPhoneNumber.isNullOrEmpty()) {
+                if (message?.user != null &&
+                    !message.user.phone.isNullOrEmpty()
+                ) {
+                    if (!message.user.countryCallingCode.isNullOrEmpty()) {
+                        phoneNumber = String.format("+%s%s", message.user.countryCallingCode, message.user.phone)
+                    }
+                    else {
+                        phoneNumber = message.user.phone!!
+                    }
                 }
                 else {
-                    ""
+                    phoneNumber = ""
                 }
             }
             else {
-                displayPhoneNumber
+                phoneNumber = displayPhoneNumber
             }
 
             // Show incoming call
