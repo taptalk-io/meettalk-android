@@ -143,6 +143,7 @@ class MeetTalkIncomingCallService : Service() {
         notificationBuilder.setShowWhen(false)
         notificationBuilder.setDefaults(Notification.DEFAULT_SOUND or Notification.DEFAULT_VIBRATE)
         notificationBuilder.setCategory(NotificationCompat.CATEGORY_CALL)
+        notificationBuilder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
         notificationBuilder.setOngoing(true)
         notificationBuilder.priority = NotificationCompat.PRIORITY_MAX
 
