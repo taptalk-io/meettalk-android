@@ -128,7 +128,7 @@
             android:background="@drawable/tap_bg_circle_9b9b9b"
             android:backgroundTint="@color/meetTalkCallScreenActiveButtonBackgroundColor"
             android:padding="16dp"
-            android:src="@drawable/tap_ic_video_white_outline"
+            android:src="@drawable/meettalk_ic_video_camera_white"
             android:tint="@color/tapWhite"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/iv_button_toggle_audio_mute"

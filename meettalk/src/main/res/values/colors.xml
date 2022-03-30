@@ -19,7 +19,7 @@
     <color name="meetTalkCallScreenActiveButtonBackgroundColor">@color/meetTalkWhiteAlpha55</color>
     <color name="meetTalkCallScreenInactiveButtonBackgroundColor">@color/meetTalkWhiteAlpha30</color>
     <color name="meetTalkCallScreenDestructiveButtonBackgroundColor">@color/meetTalkDestructiveButtonColor</color>
-    <color name="meetTalkCallScreenButtonContainerBackgroundColor">@color/meetTalkBlackAlpha55</color>
+    <color name="meetTalkCallScreenButtonContainerBackgroundColor">@color/meetTalkBlackAlpha55</color> <!--Unused-->
 
     <!--Incoming Call-->
     <color name="meetTalkIncomingCallTitleLabelColor">@color/tapWhite</color>

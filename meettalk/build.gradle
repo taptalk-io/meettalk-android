@@ -74,7 +74,7 @@ dependencies {
     api 'com.github.taptalk-io:taptalk.io-android:1.5.0'
 
     // Jitsi Meet
-    implementation ('org.jitsi.react:jitsi-meet-sdk:4.1.0') { transitive = true }
+    implementation ('org.jitsi.react:jitsi-meet-sdk:5.0.2') { transitive = true }
 
     // Jackson
     implementation "com.fasterxml.jackson.core:jackson-core:2.10.3"

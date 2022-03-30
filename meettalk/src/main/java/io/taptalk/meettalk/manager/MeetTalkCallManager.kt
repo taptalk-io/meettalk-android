@@ -686,9 +686,6 @@ class MeetTalkCallManager {
             if (!activeUserName.isNullOrEmpty()) {
                 userInfo.displayName = activeUserName
             }
-            if (!activeCallMessage?.user?.email.isNullOrEmpty()) {
-                userInfo.email = activeCallMessage?.user?.email ?: ""
-            }
             val options: JitsiMeetConferenceOptions = JitsiMeetConferenceOptions.Builder()
                 .setRoom(conferenceRoomID)
                 //.setWelcomePageEnabled(false)
