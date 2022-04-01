@@ -11,8 +11,8 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 31
-        versionCode 23
-        versionName "0.5.3"
+        versionCode 24
+        versionName "0.6.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -71,7 +71,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     // TapTalk
-    api 'com.github.taptalk-io:taptalk.io-android:1.5.0'
+    api 'com.github.taptalk-io:taptalk.io-android:1.6.0'
 
     // Jitsi Meet
     implementation ('org.jitsi.react:jitsi-meet-sdk:5.0.2') { transitive = true }
