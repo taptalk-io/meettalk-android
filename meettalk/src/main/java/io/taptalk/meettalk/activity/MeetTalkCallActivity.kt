@@ -7,12 +7,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
@@ -33,11 +35,14 @@ import io.taptalk.TapTalk.Listener.TapCoreGetMessageListener
 import io.taptalk.TapTalk.Manager.TAPConnectionManager
 import io.taptalk.TapTalk.Manager.TapCoreMessageManager
 import io.taptalk.TapTalk.Model.TAPMessageModel
+import io.taptalk.TapTalk.R.anim.*
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_MESSAGE_TYPE
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CONFERENCE_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetBroadcastEventType.RETRIEVE_PARTICIPANTS_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
+import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_AUDIO
+import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_CAMERA
 import io.taptalk.meettalk.helper.MeetTalk
 import io.taptalk.meettalk.helper.MeetTalkUtils
 import io.taptalk.meettalk.manager.MeetTalkCallManager
@@ -48,8 +53,6 @@ import io.taptalk.meettalk.view.MeetTalkCallView
 import kotlinx.android.synthetic.main.meettalk_activity_call.*
 import org.jitsi.meet.sdk.*
 import java.util.*
-import android.view.WindowManager
-import io.taptalk.TapTalk.R.anim.*
 
 class MeetTalkCallActivity : JitsiMeetActivity() {
 
@@ -245,6 +248,24 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
         if (BuildConfig.DEBUG) {
             Log.e(">>>>>", "MeetTalkCallActivity finish: ")
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            when (requestCode) {
+                REQUEST_PERMISSION_AUDIO -> {
+                    toggleAudioMute()
+                }
+                REQUEST_PERMISSION_CAMERA -> {
+                    toggleVideoMute()
+                }
+            }
         }
     }
 
@@ -632,6 +653,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun toggleAudioMute() {
+        if (!MeetTalkCallManager.checkAndRequestAudioPermission(this)) {
+            return
+        }
         isAudioMuted = !isAudioMuted
         showAudioButtonMuted(isAudioMuted)
         val muteBroadcastIntent = BroadcastIntentHelper.buildSetAudioMutedIntent(isAudioMuted)
@@ -657,6 +681,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun toggleVideoMute() {
+        if (!MeetTalkCallManager.checkAndRequestCameraPermission(this)) {
+            return
+        }
         isVideoMuted = !isVideoMuted
         showVideoButtonMuted(isVideoMuted)
         val muteBroadcastIntent = BroadcastIntentHelper.buildSetVideoMutedIntent(isVideoMuted)
