@@ -670,13 +670,15 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun showAudioButtonMuted(isMuted: Boolean) {
-        if (isMuted) {
-            iv_button_toggle_audio_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_mic_off_white))
-            iv_button_toggle_audio_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenInactiveButtonBackgroundColor))
-        }
-        else {
-            iv_button_toggle_audio_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_mic_white))
-            iv_button_toggle_audio_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenActiveButtonBackgroundColor))
+        runOnUiThread {
+            if (isMuted) {
+                iv_button_toggle_audio_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_mic_off_white))
+                iv_button_toggle_audio_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenInactiveButtonBackgroundColor))
+            }
+            else {
+                iv_button_toggle_audio_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_mic_white))
+                iv_button_toggle_audio_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenActiveButtonBackgroundColor))
+            }
         }
     }
 
@@ -699,13 +701,15 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun showVideoButtonMuted(isMuted: Boolean) {
-        if (isMuted) {
-            iv_button_toggle_video_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_video_camera_off_white))
-            iv_button_toggle_video_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenInactiveButtonBackgroundColor))
-        }
-        else {
-            iv_button_toggle_video_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_video_camera_white))
-            iv_button_toggle_video_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenActiveButtonBackgroundColor))
+        runOnUiThread {
+            if (isMuted) {
+                iv_button_toggle_video_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_video_camera_off_white))
+                iv_button_toggle_video_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenInactiveButtonBackgroundColor))
+            }
+            else {
+                iv_button_toggle_video_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_video_camera_white))
+                iv_button_toggle_video_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenActiveButtonBackgroundColor))
+            }
         }
     }
 
@@ -759,9 +763,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                     if (!messages.isNullOrEmpty()) {
                         messages.reverse()
                         for (message in messages) {
-                            if (message.room.roomID == callInitiatedMessage.room.roomID &&
-                                message.type == CALL_MESSAGE_TYPE
-                            ) {
+                            if (message.room.roomID == callInitiatedMessage.room.roomID) {
                                 MeetTalkCallManager.checkAndHandleCallNotificationFromMessage(
                                     message,
                                     instanceKey,

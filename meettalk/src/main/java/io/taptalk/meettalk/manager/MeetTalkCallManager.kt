@@ -673,7 +673,8 @@ class MeetTalkCallManager {
             val conferenceRoomID = String.format(
                 "%s%s%s",
                 MEET_ROOM_ID_PREFIX,
-                MeetTalk.appID,
+                //MeetTalk.appID,
+                activeConferenceInfo!!.callID,
                 room.roomID
             )
             val userInfo = JitsiMeetUserInfo()
