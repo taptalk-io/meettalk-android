@@ -48,6 +48,11 @@ class MeetTalkIncomingCallActivity : AppCompatActivity() {
         initDataAndView()
     }
 
+    override fun onResume() {
+        super.onResume()
+        checkIfCallIsEnded()
+    }
+
     override fun onDestroy() {
         if (BuildConfig.DEBUG) {
             Log.e(">>>>>", "MeetTalkIncomingCallActivity onDestroy: ")
@@ -59,9 +64,17 @@ class MeetTalkIncomingCallActivity : AppCompatActivity() {
         MeetTalkCallManager.clearPendingIncomingCall()
         MeetTalkCallManager.activeMeetTalkIncomingCallActivity = null
 
-        // Trigger listener callback
-        for (meetTalkListener in MeetTalk.getMeetTalkListeners(MeetTalkCallManager.activeCallInstanceKey)) {
-            meetTalkListener.onIncomingCallDisconnected()
+        if (isTaskRoot) {
+            // Trigger task root closed callback if no other activity is open
+            for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
+                meetTalkListener.onTaskRootCallActivityClosed(this)
+            }
+        }
+        else {
+            // Trigger incoming call disconnected callback
+            for (meetTalkListener in MeetTalk.getMeetTalkListeners(MeetTalkCallManager.activeCallInstanceKey)) {
+                meetTalkListener.onIncomingCallDisconnected()
+            }
         }
         super.onDestroy()
     }
@@ -162,5 +175,15 @@ class MeetTalkIncomingCallActivity : AppCompatActivity() {
     fun closeIncomingCall() {
         shouldNotSendRejectCallNotification = true
         finish()
+    }
+
+    private fun checkIfCallIsEnded() : Boolean {
+        if (MeetTalkCallManager.activeConferenceInfo == null ||
+            MeetTalkCallManager.activeConferenceInfo!!.callEndedTime > 0L
+        ) {
+            closeIncomingCall()
+            return true
+        }
+        return false
     }
 }
