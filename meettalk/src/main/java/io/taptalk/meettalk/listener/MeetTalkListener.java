@@ -8,8 +8,7 @@ import androidx.annotation.Keep;
 
 import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
-import io.taptalk.TapTalk.Model.TAPRoomModel;
-import io.taptalk.meettalk.manager.MeetTalkCallManager;
+import io.taptalk.meettalk.helper.MeetTalk;
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo;
 
 @Keep
@@ -67,7 +66,7 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
 
     @Override
     public void onReceiveCallInitiatedNotificationMessage(String instanceKey, TAPMessageModel message, MeetTalkConferenceInfo meetTalkConferenceInfo) {
-        MeetTalkCallManager.Companion.showIncomingCall(message, "", "");
+        MeetTalk.showIncomingCall(message);
     }
 
     @Override
@@ -143,12 +142,12 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
 
     @Override
     public void onIncomingCallAnswered() {
-        MeetTalkCallManager.Companion.joinPendingIncomingConferenceCall();
+        MeetTalk.joinPendingIncomingConferenceCall();
     }
 
     @Override
     public void onIncomingCallRejected() {
-        MeetTalkCallManager.Companion.rejectPendingIncomingConferenceCall();
+        MeetTalk.rejectPendingIncomingConferenceCall();
     }
 
     @Override
@@ -195,6 +194,6 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
 
     @Override
     public void onChatBubbleCallButtonTapped(String instanceKey, Activity activity, TAPMessageModel message) {
-        MeetTalkCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, message.getRoom());
+        MeetTalk.initiateNewConferenceCall(activity, instanceKey, message.getRoom());
     }
 }

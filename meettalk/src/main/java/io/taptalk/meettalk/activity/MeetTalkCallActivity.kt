@@ -301,6 +301,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             Log.e(">>>>", "MeetTalkCallActivity onConferenceJoined: ${TAPUtils.toJsonString(extraData)}")
         }
         enableButtons()
+        updateLayout(true)
 //        retrieveParticipantsInfo()
         if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
             // Joined an existing call, send participant joined notification
@@ -388,12 +389,17 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             }
         }
         if (!this::activeParticipantInfo.isInitialized) {
-            activeParticipantInfo = MeetTalkCallManager.generateParticipantInfo(instanceKey, PARTICIPANT)
+            activeParticipantInfo = MeetTalkCallManager.generateParticipantInfo(
+                instanceKey,
+                PARTICIPANT,
+                MeetTalkCallManager.defaultAudioMuted,
+                MeetTalkCallManager.defaultVideoMuted
+            )
         }
 
         options = intent.getParcelableExtra("JitsiMeetConferenceOptions") ?: JitsiMeet.getDefaultConferenceOptions()
-        isAudioMuted = MeetTalkCallManager.defaultAudioMuted //options.audioMuted
-        isVideoMuted = MeetTalkCallManager.defaultVideoMuted //options.videoMuted
+        isAudioMuted = MeetTalkCallManager.activeConferenceInfo?.startWithAudioMuted ?: MeetTalkCallManager.defaultAudioMuted
+        isVideoMuted = MeetTalkCallManager.activeConferenceInfo?.startWithVideoMuted ?: MeetTalkCallManager.defaultVideoMuted
     }
 
     private fun initView() {

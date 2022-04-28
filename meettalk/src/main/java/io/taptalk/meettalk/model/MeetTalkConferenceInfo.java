@@ -5,6 +5,8 @@ import static io.taptalk.meettalk.constant.MeetTalkConstant.ConferenceInfoKey.CO
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 
@@ -25,6 +27,8 @@ public class MeetTalkConferenceInfo implements Parcelable {
     @JsonProperty("callEndedTime") private Long callEndedTime;
     @JsonProperty("callDuration") private Long callDuration;
     @JsonProperty("lastUpdated") private Long lastUpdated;
+    @JsonProperty("startWithAudioMuted") private Boolean startWithAudioMuted;
+    @JsonProperty("startWithVideoMuted") private Boolean startWithVideoMuted;
     @JsonProperty("participants") private List<MeetTalkParticipantInfo> participants;
 
     public MeetTalkConferenceInfo() {
@@ -40,6 +44,8 @@ public class MeetTalkConferenceInfo implements Parcelable {
             Long callEndedTime,
             Long callDuration,
             Long lastUpdated,
+            Boolean startWithAudioMuted,
+            Boolean startWithVideoMuted,
             List<MeetTalkParticipantInfo> participants
     ) {
         this.callID = callID;
@@ -50,6 +56,8 @@ public class MeetTalkConferenceInfo implements Parcelable {
         this.callEndedTime = callEndedTime;
         this.callDuration = callDuration;
         this.lastUpdated = lastUpdated;
+        this.startWithAudioMuted = startWithAudioMuted;
+        this.startWithVideoMuted = startWithVideoMuted;
         this.participants = participants;
     }
 
@@ -118,6 +126,12 @@ public class MeetTalkConferenceInfo implements Parcelable {
         if (updatedConferenceInfo.getLastUpdated() > 0L) {
             setCallDuration(updatedConferenceInfo.getLastUpdated());
         }
+        if (updatedConferenceInfo.getStartWithAudioMuted() != null) {
+            setStartWithAudioMuted(updatedConferenceInfo.getStartWithAudioMuted());
+        }
+        if (updatedConferenceInfo.getStartWithVideoMuted() != null) {
+            setStartWithVideoMuted(updatedConferenceInfo.getStartWithVideoMuted());
+        }
 //        if (!updatedConferenceInfo.getParticipants().isEmpty()) {
 //            for (String key : updatedConferenceInfo.getParticipants().keySet()) {
 //                MeetTalkParticipantInfo participant = updatedConferenceInfo.getParticipants().get(key);
@@ -145,6 +159,8 @@ public class MeetTalkConferenceInfo implements Parcelable {
                 this.callEndedTime,
                 this.callDuration,
                 this.lastUpdated,
+                this.startWithAudioMuted,
+                this.startWithVideoMuted,
                 this.participants
         );
     }
@@ -226,19 +242,40 @@ public class MeetTalkConferenceInfo implements Parcelable {
         this.callDuration = callDuration;
     }
 
-    public List<MeetTalkParticipantInfo> getParticipants() {
-        if (participants == null) {
-            return new ArrayList<>();
-        }
-        return participants;
-    }
-
     public Long getLastUpdated() {
+        if (lastUpdated == null) {
+            return 0L;
+        }
         return lastUpdated;
     }
 
     public void setLastUpdated(Long lastUpdated) {
         this.lastUpdated = lastUpdated;
+    }
+
+    @Nullable
+    public Boolean getStartWithAudioMuted() {
+        return startWithAudioMuted;
+    }
+
+    public void setStartWithAudioMuted(Boolean startWithAudioMuted) {
+        this.startWithAudioMuted = startWithAudioMuted;
+    }
+
+    @Nullable
+    public Boolean getStartWithVideoMuted() {
+        return startWithVideoMuted;
+    }
+
+    public void setStartWithVideoMuted(Boolean startWithVideoMuted) {
+        this.startWithVideoMuted = startWithVideoMuted;
+    }
+
+    public List<MeetTalkParticipantInfo> getParticipants() {
+        if (participants == null) {
+            return new ArrayList<>();
+        }
+        return participants;
     }
 
     public void setParticipants(List<MeetTalkParticipantInfo> participants) {
@@ -276,7 +313,23 @@ public class MeetTalkConferenceInfo implements Parcelable {
         dest.writeValue(this.callEndedTime);
         dest.writeValue(this.callDuration);
         dest.writeValue(this.lastUpdated);
+        dest.writeValue(this.startWithAudioMuted);
+        dest.writeValue(this.startWithVideoMuted);
         dest.writeTypedList(this.participants);
+    }
+
+    public void readFromParcel(Parcel source) {
+        this.callID = source.readString();
+        this.roomID = source.readString();
+        this.hostUserID = source.readString();
+        this.callInitiatedTime = (Long) source.readValue(Long.class.getClassLoader());
+        this.callStartedTime = (Long) source.readValue(Long.class.getClassLoader());
+        this.callEndedTime = (Long) source.readValue(Long.class.getClassLoader());
+        this.callDuration = (Long) source.readValue(Long.class.getClassLoader());
+        this.lastUpdated = (Long) source.readValue(Long.class.getClassLoader());
+        this.startWithAudioMuted = (Boolean) source.readValue(Boolean.class.getClassLoader());
+        this.startWithVideoMuted = (Boolean) source.readValue(Boolean.class.getClassLoader());
+        this.participants = source.createTypedArrayList(MeetTalkParticipantInfo.CREATOR);
     }
 
     protected MeetTalkConferenceInfo(Parcel in) {
@@ -288,6 +341,8 @@ public class MeetTalkConferenceInfo implements Parcelable {
         this.callEndedTime = (Long) in.readValue(Long.class.getClassLoader());
         this.callDuration = (Long) in.readValue(Long.class.getClassLoader());
         this.lastUpdated = (Long) in.readValue(Long.class.getClassLoader());
+        this.startWithAudioMuted = (Boolean) in.readValue(Boolean.class.getClassLoader());
+        this.startWithVideoMuted = (Boolean) in.readValue(Boolean.class.getClassLoader());
         this.participants = in.createTypedArrayList(MeetTalkParticipantInfo.CREATOR);
     }
 

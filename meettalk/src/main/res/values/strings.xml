@@ -12,8 +12,8 @@
     <string name="meettalk_answer">Answer</string>
     <string name="meettalk_reject">Reject</string>
     <string name="meettalk_incoming_call_ellipsis">Incoming Call…</string>
-    <string name="meettalk_incoming_voice_call_ellipsis">Incoming Voice Call…</string>
-    <string name="meettalk_incoming_video_call_ellipsis">Incoming Video Call…</string>
+    <string name="meettalk_incoming_voice_call">Incoming Voice Call</string>
+    <string name="meettalk_incoming_video_call">Incoming Video Call</string>
 
     <string name="meettalk_enable_voice_call">Enable Voice Call</string>
     <string name="meettalk_format_enable_phone_account_message">To receive voice calls from other users, please enable \"%s\" Phone Account in the Settings.</string>

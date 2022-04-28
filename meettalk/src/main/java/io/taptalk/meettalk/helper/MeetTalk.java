@@ -369,7 +369,13 @@ public class MeetTalk {
             String instanceKey,
             TAPRoomModel room
     ) {
-        MeetTalkCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, room);
+        MeetTalkCallManager.Companion.initiateNewConferenceCall(
+                activity,
+                instanceKey,
+                room,
+                MeetTalkCallManager.Companion.getDefaultAudioMuted(),
+                MeetTalkCallManager.Companion.getDefaultVideoMuted()
+        );
     }
 
     public static void initiateNewConferenceCall(
@@ -378,11 +384,53 @@ public class MeetTalk {
             TAPRoomModel room,
             String recipientDisplayName
     ) {
-        MeetTalkCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, room, recipientDisplayName);
+        MeetTalkCallManager.Companion.initiateNewConferenceCall(
+                activity,
+                instanceKey,
+                room,
+                MeetTalkCallManager.Companion.getDefaultAudioMuted(),
+                MeetTalkCallManager.Companion.getDefaultVideoMuted(),
+                recipientDisplayName
+        );
+    }
+
+    public static void initiateNewConferenceCall(
+            Activity activity,
+
+            TAPRoomModel room,
+            boolean startWithAudioMuted,
+            boolean startWithVideoMuted
+    ) {
+        initiateNewConferenceCall(activity, "", room, startWithAudioMuted, startWithVideoMuted);
+    }
+
+    public static void initiateNewConferenceCall(
+            Activity activity,
+            String instanceKey,
+            TAPRoomModel room,
+            boolean startWithAudioMuted,
+            boolean startWithVideoMuted
+    ) {
+        MeetTalkCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, room, startWithAudioMuted, startWithVideoMuted);
+    }
+
+    public static void initiateNewConferenceCall(
+            Activity activity,
+            String instanceKey,
+            TAPRoomModel room,
+            boolean startWithAudioMuted,
+            boolean startWithVideoMuted,
+            String recipientDisplayName
+    ) {
+        MeetTalkCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, room, startWithAudioMuted, startWithVideoMuted, recipientDisplayName);
     }
 
     public static boolean joinPendingIncomingConferenceCall() {
         return MeetTalkCallManager.Companion.joinPendingIncomingConferenceCall();
+    }
+
+    public static void rejectPendingIncomingConferenceCall() {
+        MeetTalkCallManager.Companion.rejectPendingIncomingConferenceCall();
     }
 
     public static boolean launchMeetTalkCallActivity(

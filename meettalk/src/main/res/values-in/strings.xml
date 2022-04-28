@@ -12,8 +12,8 @@
     <string name="meettalk_answer">Jawab</string>
     <string name="meettalk_reject">Tolak</string>
     <string name="meettalk_incoming_call_ellipsis">Panggilan Masuk…</string>
-    <string name="meettalk_incoming_voice_call_ellipsis">Panggilan Suara Masuk…</string>
-    <string name="meettalk_incoming_video_call_ellipsis">Panggilan Video Masuk…</string>
+    <string name="meettalk_incoming_voice_call">Panggilan Suara Masuk</string>
+    <string name="meettalk_incoming_video_call">Panggilan Video Masuk</string>
 
     <string name="meettalk_enable_voice_call">Izinkan Voice Call</string>
     <string name="meettalk_format_enable_phone_account_message">Untuk menerima panggilan dari user lain, harap nyalakan izin untuk Phone Account \"%s\" di halaman pengaturan.</string>

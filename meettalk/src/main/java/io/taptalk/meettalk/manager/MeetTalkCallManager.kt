@@ -109,7 +109,7 @@ class MeetTalkCallManager {
         }
 
         val defaultAudioMuted = BuildConfig.DEBUG
-        const val defaultVideoMuted = true
+        val defaultVideoMuted = true
 
         var callState = CallState.IDLE
         var activeCallMessage: TAPMessageModel? = null
@@ -332,6 +332,21 @@ class MeetTalkCallManager {
                 phoneNumber = displayPhoneNumber
             }
 
+            val conferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
+            val incomingCallString: String = if (conferenceInfo != null && conferenceInfo.startWithVideoMuted == false) {
+                MeetTalk.appContext.getString(R.string.meettalk_incoming_video_call)
+            }
+            else {
+                MeetTalk.appContext.getString(R.string.meettalk_incoming_voice_call)
+            }
+
+            val contentText: String = if (phoneNumber.isNotEmpty()) {
+                String.format("%s - %s", incomingCallString, phoneNumber)
+            }
+            else {
+                incomingCallString
+            }
+
             // Show incoming call
             callState = CallState.RINGING
 
@@ -346,7 +361,7 @@ class MeetTalkCallManager {
             }
 
             startMissedCallTimer()
-            showIncomingCallNotification(activeCallInstanceKey!!, MeetTalk.appContext, name, phoneNumber)
+            showIncomingCallNotification(activeCallInstanceKey!!, MeetTalk.appContext, name, contentText)
         }
 
         fun showNativeIncomingCallScreen(message: TAPMessageModel?, displayName: String?, displayPhoneNumber: String?) {
@@ -625,18 +640,31 @@ class MeetTalkCallManager {
             MeetTalkCallConnection.getInstance().onDisconnect()
         }
 
-        fun initiateNewConferenceCall(activity: Activity, instanceKey: String, room: TAPRoomModel) {
+        fun initiateNewConferenceCall(
+            activity: Activity,
+            instanceKey: String,
+            room: TAPRoomModel,
+            startWithAudioMuted: Boolean,
+            startWithVideoMuted: Boolean
+        ) {
             if (room.type != TYPE_PERSONAL) {
                 // TODO: Temporarily disabled for non-personal rooms
                 return
             }
-            sendCallInitiatedNotification(instanceKey, room)
+            sendCallInitiatedNotification(instanceKey, room, startWithAudioMuted, startWithVideoMuted)
             launchMeetTalkCallActivity(instanceKey, activity)
         }
 
-        fun initiateNewConferenceCall(activity: Activity, instanceKey: String, room: TAPRoomModel, recipientDisplayName: String) {
+        fun initiateNewConferenceCall(
+            activity: Activity,
+            instanceKey: String,
+            room: TAPRoomModel,
+            startWithAudioMuted: Boolean,
+            startWithVideoMuted: Boolean,
+            recipientDisplayName: String
+        ) {
             getRoomAliasMap(instanceKey)[room.roomID] = recipientDisplayName
-            initiateNewConferenceCall(activity, instanceKey, room)
+            initiateNewConferenceCall(activity, instanceKey, room, startWithAudioMuted, startWithVideoMuted)
         }
 
         fun launchMeetTalkCallActivity(instanceKey: String, context: Context) : Boolean {
@@ -691,8 +719,8 @@ class MeetTalkCallManager {
             val options: JitsiMeetConferenceOptions = JitsiMeetConferenceOptions.Builder()
                 .setRoom(conferenceRoomID)
                 //.setWelcomePageEnabled(false)
-                .setAudioMuted(defaultAudioMuted)
-                .setVideoMuted(defaultVideoMuted)
+                .setAudioMuted(activeConferenceInfo!!.startWithAudioMuted ?: defaultAudioMuted)
+                .setVideoMuted(activeConferenceInfo!!.startWithVideoMuted ?: defaultVideoMuted)
                 .setUserInfo(userInfo)
                 .build()
             if (BuildConfig.DEBUG) {
@@ -971,7 +999,12 @@ class MeetTalkCallManager {
             return notificationMessage
         }
 
-        fun generateParticipantInfo(instanceKey: String, role: String) : MeetTalkParticipantInfo {
+        fun generateParticipantInfo(
+            instanceKey: String,
+            role: String,
+            startWithAudioMuted: Boolean?,
+            startWithVideoMuted: Boolean?
+        ) : MeetTalkParticipantInfo {
             val activeUser = TapTalk.getTapTalkActiveUser(instanceKey)
             return MeetTalkParticipantInfo(
                 activeUser.userID,
@@ -981,8 +1014,8 @@ class MeetTalkCallManager {
                 role,
                 0L,
                 System.currentTimeMillis(),
-                defaultAudioMuted,
-                defaultVideoMuted
+                startWithAudioMuted ?: defaultAudioMuted,
+                startWithVideoMuted ?: defaultVideoMuted
             )
         }
 
@@ -1000,10 +1033,15 @@ class MeetTalkCallManager {
             return message
         }
 
-        fun sendCallInitiatedNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
+        fun sendCallInitiatedNotification(
+            instanceKey: String,
+            room: TAPRoomModel,
+            startWithAudioMuted: Boolean,
+            startWithVideoMuted: Boolean
+        ) : TAPMessageModel {
             val message = generateCallNotificationMessage(instanceKey, room, "{{sender}} started call.", CALL_INITIATED)
             val participants: ArrayList<MeetTalkParticipantInfo> = ArrayList()
-            val host = generateParticipantInfo(instanceKey, HOST)
+            val host = generateParticipantInfo(instanceKey, HOST, startWithAudioMuted, startWithVideoMuted)
             participants.add(host)
             val newConferenceInfo = MeetTalkConferenceInfo(
                 message.localID,
@@ -1014,6 +1052,8 @@ class MeetTalkCallManager {
                 0L,
                 0L,
                 message.created,
+                startWithAudioMuted,
+                startWithVideoMuted,
                 participants
             )
             newConferenceInfo.attachToMessage(message)
@@ -1059,7 +1099,12 @@ class MeetTalkCallManager {
 
         fun sendJoinedCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
             val message = generateCallNotificationMessage(instanceKey, room, "{{sender}} joined call.", PARTICIPANT_JOINED_CONFERENCE)
-            val participant = generateParticipantInfo(instanceKey, PARTICIPANT)
+            val participant = generateParticipantInfo(
+                instanceKey,
+                PARTICIPANT,
+                activeConferenceInfo?.startWithAudioMuted ?: defaultAudioMuted,
+                activeConferenceInfo?.startWithVideoMuted ?: defaultVideoMuted
+            )
             activeConferenceInfo?.updateParticipant(participant)
             activeConferenceInfo?.lastUpdated = message.created
             activeConferenceInfo?.attachToMessage(message)

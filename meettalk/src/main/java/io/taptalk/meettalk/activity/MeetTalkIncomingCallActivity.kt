@@ -115,6 +115,10 @@ class MeetTalkIncomingCallActivity : AppCompatActivity() {
         }
 
         tv_incoming_call_title.text = title
+
+        if (content.contains(" - ", true)) {
+            content.replace(" - ", "\n")
+        }
         tv_incoming_call_content.text = content
 
         iv_button_answer_call.setOnClickListener { answerCall() }
