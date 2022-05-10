@@ -396,7 +396,6 @@ public class MeetTalk {
 
     public static void initiateNewConferenceCall(
             Activity activity,
-
             TAPRoomModel room,
             boolean startWithAudioMuted,
             boolean startWithVideoMuted
