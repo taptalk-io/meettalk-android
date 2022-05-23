@@ -235,8 +235,15 @@ public class MeetTalk {
                 @Override
                 public String setRoomListContentText(TAPRoomListModel roomList, int position, Context context) {
                     if (roomList.getLastMessage().getType() == CALL_MESSAGE_TYPE) {
+                        TAPMessageModel message = roomList.getLastMessage();
                         String body = roomList.getLastMessage().getBody();
-                        return body.replace("{{sender}}", roomList.getLastMessage().getUser().getFullname());
+                        body = body.replace("{{sender}}", message.getUser().getFullname());
+                        if (message.getTarget() != null) {
+                            body = body.replace("{{target}}", message.getTarget().getTargetID() != null ?
+                                    message.getTarget().getTargetID().equals(TapTalk.getTapTalkActiveUser().getUserID()) ?
+                                            "You" : message.getTarget().getTargetName() == null ? "" : message.getTarget().getTargetName() : "");
+                        }
+                        return body;
                     }
                     return super.setRoomListContentText(roomList, position, context);
                 }

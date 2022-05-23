@@ -13,11 +13,8 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import io.taptalk.meettalkandroidsample.activity.TAPRegisterActivity
-import io.taptalk.meettalkandroidsample.activity.TapDevLandingActivity
 import io.taptalk.TapTalk.API.Api.TAPApiManager
 import io.taptalk.TapTalk.API.View.TAPDefaultDataView
-import io.taptalk.TapTalk.BuildConfig
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
 import io.taptalk.TapTalk.Helper.TapTalkDialog
@@ -34,11 +31,12 @@ import io.taptalk.TapTalk.View.Activity.TAPBaseActivity
 import io.taptalk.TapTalk.View.Activity.TapUIRoomListActivity
 import io.taptalk.meettalkandroidsample.R
 import io.taptalk.meettalkandroidsample.activity.TAPLoginActivity
+import io.taptalk.meettalkandroidsample.activity.TAPRegisterActivity
 import kotlinx.android.synthetic.main.tap_fragment_login_verification.*
 
 class TAPLoginVerificationFragment : androidx.fragment.app.Fragment() {
     val generalErrorMessage = context?.resources?.getString(R.string.tap_error_message_general)
-            ?: ""
+        ?: ""
     var otpTimer: CountDownTimer? = null
 
     var waitTime = 30L * 1000
@@ -157,7 +155,7 @@ class TAPLoginVerificationFragment : androidx.fragment.app.Fragment() {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            ll_btn_send_via_sms.background = ContextCompat.getDrawable(requireContext(), R.drawable.tap_bg_button_border_ripple)
+            ll_btn_send_via_sms.background = ContextCompat.getDrawable(context!!, R.drawable.tap_bg_button_border_ripple)
         }
 
         ll_btn_send_via_sms.setOnClickListener {
@@ -243,7 +241,7 @@ class TAPLoginVerificationFragment : androidx.fragment.app.Fragment() {
             showRequestAgain()
             if (TAPNetworkStateManager.getInstance("").hasNetworkConnection(context)) {
                 showDialog(getString(R.string.tap_error), errorMessage
-                        ?: getString(R.string.tap_error_we_are_experiencing_some_issues))
+                    ?: getString(R.string.tap_error_we_are_experiencing_some_issues))
             }else {
                 TAPUtils.showNoInternetErrorDialog(context)
             }
@@ -377,11 +375,7 @@ class TAPLoginVerificationFragment : androidx.fragment.app.Fragment() {
             activity?.runOnUiThread {
                 TAPDataManager.getInstance((activity as TAPBaseActivity).instanceKey).saveMyCountryCode(countryCallingCode)
                 TAPDataManager.getInstance((activity as TAPBaseActivity).instanceKey).saveMyCountryFlagUrl(countryFlagUrl)
-                if (BuildConfig.DEBUG) {
-                    TapDevLandingActivity.start(context, (activity as TAPBaseActivity).instanceKey)
-                } else {
-                    TapUIRoomListActivity.start(context, (activity as TAPBaseActivity).instanceKey)
-                }
+                TapUIRoomListActivity.start(context, (activity as TAPBaseActivity).instanceKey)
                 activity?.finish()
             }
         }
@@ -389,12 +383,12 @@ class TAPLoginVerificationFragment : androidx.fragment.app.Fragment() {
         override fun verifyOTPSuccessToRegister() {
             activity?.runOnUiThread {
                 TAPRegisterActivity.start(
-                        activity!!,
-                        (activity as TAPLoginActivity).instanceKey,
-                        countryID,
-                        countryCallingCode,
-                        countryFlagUrl,
-                        phoneNumber)
+                    activity!!,
+                    (activity as TAPLoginActivity).instanceKey,
+                    countryID,
+                    countryCallingCode,
+                    countryFlagUrl,
+                    phoneNumber)
                 //set phonenumber and countryID in viewmodel to default state
                 (activity as TAPLoginActivity).vm.phoneNumber = "0"
                 (activity as TAPLoginActivity).vm.countryID = 0
@@ -562,12 +556,12 @@ class TAPLoginVerificationFragment : androidx.fragment.app.Fragment() {
 
     private fun showDialog(title: String, message: String) {
         TapTalkDialog.Builder(context)
-                .setDialogType(TapTalkDialog.DialogType.ERROR_DIALOG)
-                .setTitle(title)
-                .setMessage(message)
-                .setPrimaryButtonTitle(getString(R.string.tap_ok))
-                .setPrimaryButtonListener {}
-                .show()
+            .setDialogType(TapTalkDialog.DialogType.ERROR_DIALOG)
+            .setTitle(title)
+            .setMessage(message)
+            .setPrimaryButtonTitle(getString(R.string.tap_ok))
+            .setPrimaryButtonListener {}
+            .show()
     }
 
     private fun showRequestingOTPLoading() {
@@ -620,7 +614,7 @@ class TAPLoginVerificationFragment : androidx.fragment.app.Fragment() {
 
     private fun showTimer() {
         if (null != tv_otp_timer && null != ll_request_otp_again
-                && null != ll_loading_otp && null != ll_otp_sent && null != iv_progress_otp) {
+            && null != ll_loading_otp && null != ll_otp_sent && null != iv_progress_otp) {
             tv_otp_timer.visibility = View.VISIBLE
             ll_request_otp_again.visibility = View.GONE
             ll_loading_otp.visibility = View.GONE

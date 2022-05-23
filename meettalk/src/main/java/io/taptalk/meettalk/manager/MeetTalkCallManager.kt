@@ -32,8 +32,10 @@ import io.taptalk.TapTalk.Listener.TapCoreGetMessageListener
 import io.taptalk.TapTalk.Listener.TapCoreSendMessageListener
 import io.taptalk.TapTalk.Manager.TAPChatManager
 import io.taptalk.TapTalk.Manager.TAPConnectionManager
+import io.taptalk.TapTalk.Manager.TAPContactManager
 import io.taptalk.TapTalk.Manager.TapCoreMessageManager
 import io.taptalk.TapTalk.Model.TAPMessageModel
+import io.taptalk.TapTalk.Model.TAPMessageTargetModel
 import io.taptalk.TapTalk.Model.TAPRoomModel
 import io.taptalk.TapTalk.Model.TAPUserModel
 import io.taptalk.meettalk.BuildConfig
@@ -84,7 +86,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_AUDIO
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_CAMERA
 import io.taptalk.meettalk.constant.MeetTalkConstant.Url.MEET_ROOM_ID_PREFIX
-import io.taptalk.meettalk.constant.MeetTalkConstant.Value.INCOMING_CALL_TIMEOUT_DURATION
+import io.taptalk.meettalk.constant.MeetTalkConstant.Value.DEFAULT_CALL_TIMEOUT_DURATION
 import io.taptalk.meettalk.helper.*
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 import io.taptalk.meettalk.model.MeetTalkParticipantInfo
@@ -126,6 +128,7 @@ class MeetTalkCallManager {
         private var pendingIncomingCallPhoneNumber: String? = null
         private var handledCallNotificationMessageLocalIDs: ArrayList<String> = ArrayList()
         private var roomAliasMap: HashMap<String, HashMap<String, String>> = HashMap()
+        private var answeredCallID: String? = null // Used to check missed call
         private var socketListener: TAPSocketListener? = null
         private var savedSocketConnectionMode: TapTalk.TapTalkSocketConnectionMode = ALWAYS_ON
 
@@ -629,14 +632,10 @@ class MeetTalkCallManager {
         }
 
         private fun closeIncomingCall() {
-            if (activeMeetTalkIncomingCallActivity == null) {
-                closeIncomingCallNotification(MeetTalk.appContext)
-                clearPendingIncomingCall()
-            }
-            else {
-                activeMeetTalkIncomingCallActivity!!.closeIncomingCall()
-            }
+            closeIncomingCallNotification(MeetTalk.appContext)
+            activeMeetTalkIncomingCallActivity?.closeIncomingCall()
             MeetTalkCallConnection.getInstance().onDisconnect()
+            clearPendingIncomingCall()
         }
 
         fun initiateNewConferenceCall(
@@ -652,6 +651,7 @@ class MeetTalkCallManager {
             }
             sendCallInitiatedNotification(instanceKey, room, startWithAudioMuted, startWithVideoMuted)
             launchMeetTalkCallActivity(instanceKey, activity)
+            startMissedCallTimer()
         }
 
         fun initiateNewConferenceCall(
@@ -766,7 +766,7 @@ class MeetTalkCallManager {
 
             if (message.action == CALL_INITIATED &&
                 message.user.userID != activeUser.userID &&
-                System.currentTimeMillis() - message.created < INCOMING_CALL_TIMEOUT_DURATION
+                System.currentTimeMillis() - message.created < DEFAULT_CALL_TIMEOUT_DURATION
             ) {
                 if (callState == CallState.IDLE) {
                     if (message.data == null) {
@@ -831,7 +831,6 @@ class MeetTalkCallManager {
                     if (BuildConfig.DEBUG) {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
                     }
-                    closeIncomingCallNotification(MeetTalk.appContext)
                     activeMeetTalkCallActivity?.finish()
                     closeIncomingCall()
                     setActiveCallAsEnded()
@@ -869,6 +868,10 @@ class MeetTalkCallManager {
                         // Recipient answered call elsewhere, dismiss incoming call
                         closeIncomingCall()
                         callState = CallState.IDLE
+                    }
+                    val conferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
+                    if (conferenceInfo != null) {
+                        answeredCallID = conferenceInfo.callID
                     }
 
                     // Trigger listener callback
@@ -918,6 +921,7 @@ class MeetTalkCallManager {
                     if (BuildConfig.DEBUG) {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
                     }
+                    closeIncomingCall()
                     activeMeetTalkCallActivity?.finish()
                     setActiveCallAsEnded()
 
@@ -993,6 +997,15 @@ class MeetTalkCallManager {
                 },
                 null
             )
+            val target = TAPMessageTargetModel()
+            val otherUserID = TAPChatManager.getInstance(instanceKey).getOtherUserIdFromRoom(room.roomID)
+            val otherUser = TAPContactManager.getInstance(instanceKey).getUserData(otherUserID)
+            if (otherUser != null) {
+                target.targetID = otherUser.userID
+                target.targetXCID = otherUser.xcUserID
+                target.targetName = otherUser.fullname
+            }
+            notificationMessage.target = target
             notificationMessage.action = action
 
             return notificationMessage
@@ -1127,7 +1140,7 @@ class MeetTalkCallManager {
         }
 
         fun sendBusyNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} is busy.", RECIPIENT_BUSY)
+            var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} was in another call.", RECIPIENT_BUSY)
             message = setMessageConferenceInfoAsEnded(message)
 
             setActiveCallAsEnded()
@@ -1149,7 +1162,7 @@ class MeetTalkCallManager {
         }
 
         fun sendMissedCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
-            var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} missed the call.", RECIPIENT_MISSED_CALL)
+            var message = generateCallNotificationMessage(instanceKey, room, "{{target}} missed the call.", RECIPIENT_MISSED_CALL)
             message = setMessageConferenceInfoAsEnded(message)
 
             setActiveCallAsEnded()
@@ -1309,7 +1322,7 @@ class MeetTalkCallManager {
             }
 
             missedCallTimer = Timer()
-            val missedCallInterval = INCOMING_CALL_TIMEOUT_DURATION + activeCallMessage!!.created - System.currentTimeMillis()
+            val missedCallInterval = DEFAULT_CALL_TIMEOUT_DURATION + activeCallMessage!!.created - System.currentTimeMillis()
             if (BuildConfig.DEBUG) {
                 Log.e(">>>>>", "startMissedCallTimer: missedCallInterval $missedCallInterval")
             }
@@ -1317,24 +1330,35 @@ class MeetTalkCallManager {
             val timerTask: TimerTask
             timerTask = object : TimerTask() {
                 override fun run() {
-                    if (callState == CallState.RINGING) {
-//                        if (System.currentTimeMillis() - activeCallMessage!!.created > INCOMING_CALL_TIMEOUT_DURATION) {
-                            // Send missed call notification
-                            sendMissedCallNotification(
-                                activeCallInstanceKey ?: return,
-                                activeCallMessage!!.room
-                            )
-                            closeIncomingCall()
-                            callState = CallState.IDLE
-//                        }
-                        if (BuildConfig.DEBUG) {
-                            Log.e(">>>>>", "MissedCallTimerFired: Send missed call notification")
-                        }
-                    }
-                    else {
+                    if (activeMeetTalkCallActivity?.isCallStarted == true ||
+                        answeredCallID == activeConferenceInfo?.callID ||
+                        callState == CallState.IDLE
+                    ) {
+                        // Cancel timer
                         missedCallTimer.cancel()
                         if (BuildConfig.DEBUG) {
                             Log.e(">>>>>", "MissedCallTimerFired: cancel timer")
+                        }
+                    }
+                    else if (callState == CallState.RINGING && !pendingIncomingCallRoomID.isNullOrEmpty()) {
+                        // Close incoming call
+                        closeIncomingCall()
+                        if (BuildConfig.DEBUG) {
+                            Log.e(">>>>>", "MissedCallTimerFired: close incoming call")
+                        }
+                    }
+                    else {
+                        // Send missed call notification
+                        sendMissedCallNotification(
+                            activeCallInstanceKey ?: return,
+                            activeCallMessage!!.room
+                        )
+                        closeIncomingCall()
+                        activeMeetTalkCallActivity?.finish()
+                        setActiveCallAsEnded()
+                        callState = CallState.IDLE
+                        if (BuildConfig.DEBUG) {
+                            Log.e(">>>>>", "MissedCallTimerFired: Send missed call notification")
                         }
                     }
                 }

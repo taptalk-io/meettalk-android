@@ -69,7 +69,7 @@ class MeetTalkConstant {
     }
 
     object Value {
-        const val INCOMING_CALL_TIMEOUT_DURATION = 120000L
+        const val DEFAULT_CALL_TIMEOUT_DURATION = 120000L
     }
 
     object JitsiMeetBroadcastEventType {

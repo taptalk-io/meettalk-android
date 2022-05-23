@@ -1,5 +1,8 @@
 package io.taptalk.meettalkandroidsample.activity;
 
+import static io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.INSTANCE_KEY;
+import static io.taptalk.TapTalk.Const.TAPDefaultConstant.RequestCode.REGISTER;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -8,18 +11,21 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.ViewModelProvider;
 
-import io.taptalk.TapTalk.BuildConfig;
-import io.taptalk.meettalk.helper.MeetTalk;
-import io.taptalk.meettalkandroidsample.R;
-import io.taptalk.meettalkandroidsample.fragment.TAPLoginVerificationFragment;
-import io.taptalk.meettalkandroidsample.fragment.TAPPhoneLoginFragment;
 import io.taptalk.TapTalk.API.Api.TAPApiManager;
+import io.taptalk.TapTalk.API.View.TAPDefaultDataView;
+import io.taptalk.TapTalk.BuildConfig;
+import io.taptalk.TapTalk.Helper.TapTalk;
+import io.taptalk.TapTalk.Helper.TapTalkDialog;
+import io.taptalk.TapTalk.Listener.TapCommonListener;
+import io.taptalk.TapTalk.Manager.TAPDataManager;
+import io.taptalk.TapTalk.Model.ResponseModel.TAPLoginOTPVerifyResponse;
+import io.taptalk.TapTalk.Model.TAPErrorModel;
 import io.taptalk.TapTalk.View.Activity.TAPBaseActivity;
 import io.taptalk.TapTalk.View.Activity.TapUIRoomListActivity;
 import io.taptalk.TapTalk.ViewModel.TAPLoginViewModel;
-
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.Extras.INSTANCE_KEY;
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.RequestCode.REGISTER;
+import io.taptalk.meettalkandroidsample.R;
+import io.taptalk.meettalkandroidsample.fragment.TAPLoginVerificationFragment;
+import io.taptalk.meettalkandroidsample.fragment.TAPPhoneLoginFragment;
 
 public class TAPLoginActivity extends TAPBaseActivity {
 
@@ -52,13 +58,6 @@ public class TAPLoginActivity extends TAPBaseActivity {
         initViewModel();
         initView();
         initFirstPage();
-
-//        if (BuildConfig.DEBUG && !MeetTalk.isPhoneAccountEnabled()) {
-//            MeetTalk.requestEnablePhoneAccountSettings(INSTANCE_KEY, this);
-//        }
-//        else {
-//            MeetTalk.checkAndRequestEnablePhoneAccountSettings(INSTANCE_KEY, this);
-//        }
     }
 
     @Override
@@ -103,11 +102,65 @@ public class TAPLoginActivity extends TAPBaseActivity {
     }
 
     public void showOTPVerification(Long otpID, String otpKey, String phoneNumber, String phoneNumberWithCode, int countryID, String countryCallingID, String countryFlagUrl, String channel, int nextRequestSeconds) {
-        getSupportFragmentManager().beginTransaction()
-                .setCustomAnimations(R.animator.tap_slide_left_fragment, R.animator.tap_fade_out_fragment, R.animator.tap_fade_in_fragment, R.animator.tap_slide_right_fragment)
-                .replace(R.id.fl_container, TAPLoginVerificationFragment.Companion.getInstance(otpID, otpKey, phoneNumber, phoneNumberWithCode, countryID, countryCallingID, countryFlagUrl, channel, nextRequestSeconds))
-                .addToBackStack(null)
-                .commit();
+        if (BuildConfig.DEBUG) {
+            String otpCode = phoneNumber.substring(phoneNumber.length() - 6);
+            TAPDataManager.getInstance(instanceKey).verifyOTPLogin(otpID, otpKey, otpCode, new TAPDefaultDataView<TAPLoginOTPVerifyResponse>() {
+                @Override
+                public void onSuccess(TAPLoginOTPVerifyResponse response) {
+                    if (response.isRegistered()) {
+                        TapTalk.authenticateWithAuthTicket(instanceKey, response.getTicket(), true, new TapCommonListener() {
+                            @Override
+                            public void onSuccess(String successMessage) {
+                                TapDevLandingActivity.Companion.start(TAPLoginActivity.this, instanceKey);
+                            }
+
+                            @Override
+                            public void onError(String errorCode, String errorMessage) {
+                                new TapTalkDialog.Builder(TAPLoginActivity.this)
+                                        .setTitle("Error Verifying OTP")
+                                        .setMessage(errorMessage)
+                                        .setPrimaryButtonTitle("OK")
+                                        .show();
+                            }
+                        });
+                    }
+                    else {
+                        TAPRegisterActivity.Companion.start(
+                                TAPLoginActivity.this,
+                                instanceKey,
+                                countryID,
+                                countryCallingID,
+                                countryFlagUrl,
+                                phoneNumber
+                        );
+                        vm.setPhoneNumber("0");
+                        vm.setCountryID(0);
+                        onBackPressed();
+                    }
+                }
+
+                @Override
+                public void onError(TAPErrorModel error) {
+                    onError(error.getMessage());
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    new TapTalkDialog.Builder(TAPLoginActivity.this)
+                            .setTitle("Error Verifying OTP")
+                            .setMessage(errorMessage)
+                            .setPrimaryButtonTitle("OK")
+                            .show();
+                }
+            });
+        }
+        else {
+            getSupportFragmentManager().beginTransaction()
+                    .setCustomAnimations(R.animator.tap_slide_left_fragment, R.animator.tap_fade_out_fragment, R.animator.tap_fade_in_fragment, R.animator.tap_slide_right_fragment)
+                    .replace(R.id.fl_container, TAPLoginVerificationFragment.Companion.getInstance(otpID, otpKey, phoneNumber, phoneNumberWithCode, countryID, countryCallingID, countryFlagUrl, channel, nextRequestSeconds))
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 
     public void setLastLoginData(Long otpID, String otpKey, String phoneNumber, String phoneNumberWithCode, int countryID, String countryCallingID, String channel) {
