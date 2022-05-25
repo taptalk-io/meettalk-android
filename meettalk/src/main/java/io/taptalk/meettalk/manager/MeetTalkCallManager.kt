@@ -9,10 +9,14 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.media.AudioAttributes
+import android.media.AudioManager
 import android.media.RingtoneManager
+import android.media.ToneGenerator
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.telecom.PhoneAccount
 import android.telecom.PhoneAccountHandle
@@ -129,6 +133,7 @@ class MeetTalkCallManager {
         private var handledCallNotificationMessageLocalIDs: ArrayList<String> = ArrayList()
         private var roomAliasMap: HashMap<String, HashMap<String, String>> = HashMap()
         private var answeredCallID: String? = null // Used to check missed call
+        private var toneGenerator: ToneGenerator? = null
         private var socketListener: TAPSocketListener? = null
         private var savedSocketConnectionMode: TapTalk.TapTalkSocketConnectionMode = ALWAYS_ON
 
@@ -652,6 +657,10 @@ class MeetTalkCallManager {
             sendCallInitiatedNotification(instanceKey, room, startWithAudioMuted, startWithVideoMuted)
             launchMeetTalkCallActivity(instanceKey, activity)
             startMissedCallTimer()
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                playRingTone(ToneGenerator.TONE_SUP_RINGTONE)
+            }, 2000L)
         }
 
         fun initiateNewConferenceCall(
@@ -873,6 +882,7 @@ class MeetTalkCallManager {
                     if (conferenceInfo != null) {
                         answeredCallID = conferenceInfo.callID
                     }
+                    stopRingTone()
 
                     // Trigger listener callback
                     for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
@@ -1314,6 +1324,7 @@ class MeetTalkCallManager {
             activeConferenceInfo = null
             activeCallInstanceKey = null
             callState = CallState.IDLE
+            stopRingTone()
         }
 
         private fun startMissedCallTimer() {
@@ -1371,6 +1382,33 @@ class MeetTalkCallManager {
                 roomAliasMap[instanceKey] = HashMap()
             }
             return roomAliasMap[instanceKey]!!
+        }
+
+        fun playRingTone(toneType: Int) {
+            stopRingTone()
+            try {
+                Thread {
+                    toneGenerator = ToneGenerator(AudioManager.STREAM_VOICE_CALL, ToneGenerator.MAX_VOLUME)
+                    toneGenerator?.startTone(toneType)
+                }.start()
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "playRingTone: $toneType")
+                }
+            }
+            catch (e: Exception) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "Exception while playing sound: ${e.message}")
+                }
+            }
+        }
+
+        fun stopRingTone() {
+            toneGenerator?.stopTone()
+            toneGenerator?.release()
+            toneGenerator = null
+            if (BuildConfig.DEBUG) {
+                Log.e(">>>>", "stopRingTone: ")
+            }
         }
     }
 }

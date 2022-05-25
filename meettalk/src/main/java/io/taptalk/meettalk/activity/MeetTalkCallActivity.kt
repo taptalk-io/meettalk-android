@@ -836,6 +836,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         ) {
             // Recipient has joined, mark the call as started
             isCallStarted = true
+            MeetTalkCallManager.stopRingTone()
             if (MeetTalkCallManager.activeConferenceInfo!!.callStartedTime == 0L) {
                 MeetTalkCallManager.activeConferenceInfo!!.callStartedTime = System.currentTimeMillis()
             }
