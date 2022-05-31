@@ -26,6 +26,9 @@
     <string name="meettalk_missed_call">Panggilan Tidak Terjawab</string>
     <string name="meettalk_cancelled_call">Panggilan Dibatalkan</string>
 
+    <!--Ongoing Call-->
+    <string name="meettalk_ongoing_call_notification_description">Ada panggilan sedang berlangsung, klik di sini untuk kembali.</string>
+
     <!--General-->
     <string name="meettalk_dismiss">Tutup</string>
 

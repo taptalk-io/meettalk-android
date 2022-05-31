@@ -25,7 +25,7 @@
         </service>
 
         <service
-            android:name=".helper.MeetTalkTaskRemovedService"
+            android:name=".helper.MeetTalkOngoingCallService"
             android:exported="true"
             android:stopWithTask="false">
         </service>

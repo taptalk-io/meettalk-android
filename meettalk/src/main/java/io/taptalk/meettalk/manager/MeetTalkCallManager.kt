@@ -13,10 +13,7 @@ import android.media.AudioManager
 import android.media.RingtoneManager
 import android.media.ToneGenerator
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.provider.Settings
 import android.telecom.PhoneAccount
 import android.telecom.PhoneAccountHandle
@@ -134,6 +131,7 @@ class MeetTalkCallManager {
         private var roomAliasMap: HashMap<String, HashMap<String, String>> = HashMap()
         private var answeredCallID: String? = null // Used to check missed call
         private var toneGenerator: ToneGenerator? = null
+        private var ongoingCallServiceIntent: Intent? = null
         private var socketListener: TAPSocketListener? = null
         private var savedSocketConnectionMode: TapTalk.TapTalkSocketConnectionMode = ALWAYS_ON
 
@@ -726,7 +724,6 @@ class MeetTalkCallManager {
             }
             val options: JitsiMeetConferenceOptions = JitsiMeetConferenceOptions.Builder()
                 .setRoom(conferenceRoomID)
-                //.setWelcomePageEnabled(false)
                 .setAudioMuted(activeConferenceInfo!!.startWithAudioMuted ?: defaultAudioMuted)
                 .setVideoMuted(activeConferenceInfo!!.startWithVideoMuted ?: defaultVideoMuted)
                 .setUserInfo(userInfo)
@@ -734,9 +731,6 @@ class MeetTalkCallManager {
             if (BuildConfig.DEBUG) {
                 Log.e(">>>>", "launchMeetTalkCallActivity: ${options.room} - ${userInfo.displayName} - ${userInfo.avatar}")
             }
-//            JitsiMeetActivity.launch(
-//                context, options
-//            )
             MeetTalkCallActivity.launch(
                 instanceKey,
                 context,
@@ -744,7 +738,34 @@ class MeetTalkCallManager {
                 activeCallMessage!!,
                 activeConferenceInfo!!
             )
+
+            startOngoingCallService()
+
             return true
+        }
+
+        private fun startOngoingCallService() {
+            if (activeCallMessage == null) {
+                return
+            }
+            // Start service to handle sending notification when app is killed
+            stopOngoingCallService()
+            ongoingCallServiceIntent = Intent(MeetTalk.appContext, MeetTalkOngoingCallService::class.java)
+            if (BuildConfig.DEBUG) {
+                Log.e(">>>>>", "startOngoingCallService: ")
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                MeetTalk.appContext.startForegroundService(ongoingCallServiceIntent);
+            }
+            else {
+                MeetTalk.appContext.startService(ongoingCallServiceIntent)
+            }
+        }
+
+        private fun stopOngoingCallService() {
+            ongoingCallServiceIntent?.let {
+                MeetTalk.appContext.stopService(ongoingCallServiceIntent)
+            }
         }
 
         fun checkAndHandleCallNotificationFromMessage(message: TAPMessageModel, instanceKey: String, activeUser: TAPUserModel) {
@@ -1311,7 +1332,7 @@ class MeetTalkCallManager {
             if (TapTalk.getTapTalkInstance(instanceKey) != null) {
                 TapTalk.setTapTalkSocketConnectionMode(instanceKey, ALWAYS_ON)
             }
-            MeetTalkTaskRemovedService.instanceKey = instanceKey
+            MeetTalkOngoingCallService.instanceKey = instanceKey
         }
 
         fun setActiveCallAsEnded() {
@@ -1325,6 +1346,7 @@ class MeetTalkCallManager {
             activeCallInstanceKey = null
             callState = CallState.IDLE
             stopRingTone()
+            stopOngoingCallService()
         }
 
         private fun startMissedCallTimer() {

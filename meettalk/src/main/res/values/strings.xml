@@ -26,6 +26,9 @@
     <string name="meettalk_missed_call">Missed Call</string>
     <string name="meettalk_cancelled_call">Cancelled Call</string>
 
+    <!--Ongoing Call-->
+    <string name="meettalk_ongoing_call_notification_description">You have an ongoing call, tap here to return.</string>
+
     <!--General-->
     <string name="meettalk_dismiss">Dismiss</string>
 
