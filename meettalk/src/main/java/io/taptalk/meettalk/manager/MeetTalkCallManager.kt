@@ -1132,7 +1132,15 @@ class MeetTalkCallManager {
 
         fun sendAnsweredCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
             val message = generateCallNotificationMessage(instanceKey, room, "{{sender}} answered call.", RECIPIENT_ANSWERED_CALL)
-            activeConferenceInfo?.attachToMessage(message)
+
+            if (activeConferenceInfo != null) {
+                activeConferenceInfo?.attachToMessage(message)
+                message.filterID = activeConferenceInfo?.callID
+            }
+            else {
+                message.filterID = ""
+            }
+
             //message.hidden = true
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1148,9 +1156,17 @@ class MeetTalkCallManager {
                 activeConferenceInfo?.startWithAudioMuted ?: defaultAudioMuted,
                 activeConferenceInfo?.startWithVideoMuted ?: defaultVideoMuted
             )
-            activeConferenceInfo?.updateParticipant(participant)
-            activeConferenceInfo?.lastUpdated = message.created
-            activeConferenceInfo?.attachToMessage(message)
+
+            if (activeConferenceInfo != null) {
+                activeConferenceInfo?.updateParticipant(participant)
+                activeConferenceInfo?.lastUpdated = message.created
+                activeConferenceInfo?.attachToMessage(message)
+                message.filterID = activeConferenceInfo?.callID
+            }
+            else {
+                message.filterID = ""
+            }
+
             message.hidden = true
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1161,8 +1177,15 @@ class MeetTalkCallManager {
         fun sendLeftCallNotification(instanceKey: String, room: TAPRoomModel) : TAPMessageModel {
             val message = generateCallNotificationMessage(instanceKey, room, "{{sender}} left call.", PARTICIPANT_LEFT_CONFERENCE)
 
-            activeConferenceInfo?.lastUpdated = message.created
-            activeConferenceInfo?.attachToMessage(message)
+            if (activeConferenceInfo != null) {
+                activeConferenceInfo?.lastUpdated = message.created
+                activeConferenceInfo?.attachToMessage(message)
+                message.filterID = activeConferenceInfo?.callID
+            }
+            else {
+                message.filterID = ""
+            }
+
             message.hidden = true
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1205,6 +1228,15 @@ class MeetTalkCallManager {
 
         fun sendUnableToReceiveCallNotification(instanceKey: String, room: TAPRoomModel, body: String) : TAPMessageModel {
             val message = generateCallNotificationMessage(instanceKey, room, body, RECIPIENT_UNABLE_TO_RECEIVE_CALL)
+
+            if (activeConferenceInfo != null) {
+                activeConferenceInfo?.attachToMessage(message)
+                message.filterID = activeConferenceInfo?.callID
+            }
+            else {
+                message.filterID = ""
+            }
+
             message.hidden = true
 
             setActiveCallAsEnded()
