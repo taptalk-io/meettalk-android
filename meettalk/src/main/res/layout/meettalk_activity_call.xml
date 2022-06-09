@@ -85,6 +85,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="-56dp"
         android:translationY="-56dp"
+        android:animateLayoutChanges="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -102,7 +103,7 @@
         <!--        android:background="@drawable/meettalk_bg_call_screen_button_container"-->
 
         <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/iv_button_flip_camera"
+            android:id="@+id/iv_button_toggle_loudspeaker"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_marginTop="24dp"
@@ -110,9 +111,8 @@
             android:background="@drawable/tap_bg_circle_9b9b9b"
             android:backgroundTint="@color/meetTalkCallScreenActiveButtonBackgroundColor"
             android:padding="16dp"
-            android:src="@drawable/meettalk_ic_flip_camera_white"
+            android:src="@drawable/meettalk_ic_sound_off_white"
             android:tint="@color/tapWhite"
-            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/iv_button_toggle_video_mute"
             app:layout_constraintStart_toStartOf="parent"
@@ -132,7 +132,7 @@
             android:tint="@color/tapWhite"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/iv_button_toggle_audio_mute"
-            app:layout_constraintStart_toEndOf="@id/iv_button_flip_camera"
+            app:layout_constraintStart_toEndOf="@id/iv_button_toggle_loudspeaker"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="UseAppTint" />
 

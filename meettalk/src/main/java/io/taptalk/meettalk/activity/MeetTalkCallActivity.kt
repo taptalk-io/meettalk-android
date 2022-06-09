@@ -68,6 +68,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     private var isAudioMuted = false
     private var isVideoMuted = false
+    private var isLoudspeakerActive = false
     private var callStartTimestamp = 0L
 
     var isCallStarted = false
@@ -399,6 +400,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         options = intent.getParcelableExtra("JitsiMeetConferenceOptions") ?: JitsiMeet.getDefaultConferenceOptions()
         isAudioMuted = MeetTalkCallManager.activeConferenceInfo?.startWithAudioMuted ?: MeetTalkCallManager.defaultAudioMuted
         isVideoMuted = MeetTalkCallManager.activeConferenceInfo?.startWithVideoMuted ?: MeetTalkCallManager.defaultVideoMuted
+        isLoudspeakerActive = !isVideoMuted
     }
 
     private fun initView() {
@@ -420,8 +422,10 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
             iv_button_toggle_audio_mute.alpha = 0.5f
             iv_button_toggle_video_mute.alpha = 0.5f
+            iv_button_toggle_loudspeaker.alpha = 0.5f
             showAudioButtonMuted(isAudioMuted)
             showVideoButtonMuted(isVideoMuted)
+            showLoudspeakerButtonActive(isLoudspeakerActive)
 
             iv_button_cancel_call.setOnClickListener { onBackPressed() }
         }
@@ -460,6 +464,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         runOnUiThread {
             iv_button_toggle_audio_mute.setOnClickListener { toggleAudioMute() }
             iv_button_toggle_video_mute.setOnClickListener { toggleVideoMute() }
+            iv_button_toggle_loudspeaker.setOnClickListener { toggleLoudspeaker() }
 //            iv_button_flip_camera.setOnClickListener { flipCamera() }
             iv_button_toggle_audio_mute.animate()
                 .alpha(1.0f)
@@ -467,6 +472,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 .setInterpolator(AccelerateDecelerateInterpolator())
                 .start()
             iv_button_toggle_video_mute.animate()
+                .alpha(1.0f)
+                .setDuration(200L)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
+            iv_button_toggle_loudspeaker.animate()
                 .alpha(1.0f)
                 .setDuration(200L)
                 .setInterpolator(AccelerateDecelerateInterpolator())
@@ -553,6 +563,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         for (participant in MeetTalkCallManager.activeConferenceInfo!!.participants) {
             if (participant?.videoMuted != null && !participant.videoMuted!!) {
                 showVideoCallLayout(animated)
+                if (!isLoudspeakerActive) {
+                    toggleLoudspeaker()
+                }
                 return
             }
         }
@@ -598,6 +611,14 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 .setDuration(duration)
                 .setInterpolator(interpolator)
                 .start()
+            iv_button_toggle_loudspeaker.visibility = View.VISIBLE
+            iv_button_toggle_loudspeaker.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(duration)
+                .setInterpolator(interpolator)
+                .start()
         }
     }
 
@@ -640,6 +661,16 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 .alpha(0f)
                 .setDuration(duration)
                 .setInterpolator(interpolator)
+                .start()
+            iv_button_toggle_loudspeaker.animate()
+                .alpha(0f)
+                .scaleX(0f)
+                .scaleY(0f)
+                .setDuration(duration)
+                .setInterpolator(interpolator)
+                .withEndAction {
+                    iv_button_toggle_loudspeaker.visibility = View.GONE
+                }
                 .start()
         }
     }
@@ -714,6 +745,28 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             else {
                 iv_button_toggle_video_mute.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_video_camera_white))
                 iv_button_toggle_video_mute.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenActiveButtonBackgroundColor))
+            }
+        }
+    }
+
+    private fun toggleLoudspeaker() {
+        isLoudspeakerActive = !isLoudspeakerActive
+        showLoudspeakerButtonActive(isLoudspeakerActive)
+//        val muteBroadcastIntent = BroadcastIntentHelper.buildSetAudioMutedIntent(isLoudspeakerActive)
+//        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(muteBroadcastIntent)
+        // TODO: TOGGLE AUDIO DEVICE
+
+    }
+
+    private fun showLoudspeakerButtonActive(isActive: Boolean) {
+        runOnUiThread {
+            if (isActive) {
+                iv_button_toggle_loudspeaker.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_sound_on_white))
+                iv_button_toggle_loudspeaker.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenActiveButtonBackgroundColor))
+            }
+            else {
+                iv_button_toggle_loudspeaker.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.meettalk_ic_sound_off_white))
+                iv_button_toggle_loudspeaker.backgroundTintList = ColorStateList.valueOf(getColor(R.color.meetTalkCallScreenInactiveButtonBackgroundColor))
             }
         }
     }
