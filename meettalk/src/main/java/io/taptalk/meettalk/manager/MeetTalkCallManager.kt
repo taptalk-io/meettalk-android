@@ -656,9 +656,9 @@ class MeetTalkCallManager {
             launchMeetTalkCallActivity(instanceKey, activity)
             startMissedCallTimer()
 
-            Handler(Looper.getMainLooper()).postDelayed({
-                playRingTone(ToneGenerator.TONE_SUP_RINGTONE)
-            }, 2000L)
+//            Handler(Looper.getMainLooper()).postDelayed({
+//                playRingTone(ToneGenerator.TONE_SUP_RINGTONE)
+//            }, 2000L)
         }
 
         fun initiateNewConferenceCall(
@@ -1446,9 +1446,6 @@ class MeetTalkCallManager {
                     toneGenerator = ToneGenerator(AudioManager.STREAM_VOICE_CALL, ToneGenerator.MAX_VOLUME)
                     toneGenerator?.startTone(toneType)
                 }.start()
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "playRingTone: $toneType")
-                }
             }
             catch (e: Exception) {
                 if (BuildConfig.DEBUG) {
@@ -1461,9 +1458,6 @@ class MeetTalkCallManager {
             toneGenerator?.stopTone()
             toneGenerator?.release()
             toneGenerator = null
-            if (BuildConfig.DEBUG) {
-                Log.e(">>>>", "stopRingTone: ")
-            }
         }
     }
 }

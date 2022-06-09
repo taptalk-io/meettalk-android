@@ -2,6 +2,9 @@ package io.taptalk.meettalk.activity
 
 import android.app.Activity
 import android.app.KeyguardManager
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothHeadset.HEADSET
+import android.bluetooth.BluetoothHeadset.STATE_CONNECTED
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -10,8 +13,14 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
+import android.media.AudioManager
+import android.media.AudioManager.MODE_IN_COMMUNICATION
+import android.media.AudioManager.MODE_NORMAL
+import android.media.ToneGenerator
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -39,6 +48,7 @@ import io.taptalk.TapTalk.R.anim.*
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CONFERENCE_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetBroadcastEventType.RETRIEVE_PARTICIPANTS_INFO
+import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.HOST
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_AUDIO
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_CAMERA
@@ -229,6 +239,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         MeetTalkCallManager.callState = IDLE
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
         TAPConnectionManager.getInstance(instanceKey).removeSocketListener(socketListener)
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager.mode = MODE_NORMAL
 
         if (isTaskRoot) {
             // Trigger listener callback if no other activity is open
@@ -323,6 +335,17 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
             meetTalkListener.onConferenceJoined(MeetTalkCallManager.activeConferenceInfo)
         }
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            // Force loudspeaker to initial state
+            forceLoudspeakerState()
+            if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
+                activeParticipantInfo.role == HOST
+            ) {
+                // Play outgoing ring tone
+                MeetTalkCallManager.playRingTone(ToneGenerator.TONE_SUP_RINGTONE)
+            }
+        }, 100L)
     }
 
     override fun onConferenceTerminated(extraData: HashMap<String, Any>?) {
@@ -400,7 +423,12 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         options = intent.getParcelableExtra("JitsiMeetConferenceOptions") ?: JitsiMeet.getDefaultConferenceOptions()
         isAudioMuted = MeetTalkCallManager.activeConferenceInfo?.startWithAudioMuted ?: MeetTalkCallManager.defaultAudioMuted
         isVideoMuted = MeetTalkCallManager.activeConferenceInfo?.startWithVideoMuted ?: MeetTalkCallManager.defaultVideoMuted
-        isLoudspeakerActive = !isVideoMuted
+        if (!isVideoMuted && !isHeadsetConnected()) {
+            // Turn loudspeaker on when starting video call with no headset connected
+            isLoudspeakerActive = true
+        }
+        // Force loudspeaker state at start
+        forceLoudspeakerState()
     }
 
     private fun initView() {
@@ -563,9 +591,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         for (participant in MeetTalkCallManager.activeConferenceInfo!!.participants) {
             if (participant?.videoMuted != null && !participant.videoMuted!!) {
                 showVideoCallLayout(animated)
-                if (!isLoudspeakerActive) {
-                    toggleLoudspeaker()
-                }
                 return
             }
         }
@@ -611,14 +636,14 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 .setDuration(duration)
                 .setInterpolator(interpolator)
                 .start()
-            iv_button_toggle_loudspeaker.visibility = View.VISIBLE
-            iv_button_toggle_loudspeaker.animate()
-                .alpha(1f)
-                .scaleX(1f)
-                .scaleY(1f)
-                .setDuration(duration)
-                .setInterpolator(interpolator)
-                .start()
+//            iv_button_toggle_loudspeaker.visibility = View.VISIBLE
+//            iv_button_toggle_loudspeaker.animate()
+//                .alpha(1f)
+//                .scaleX(1f)
+//                .scaleY(1f)
+//                .setDuration(duration)
+//                .setInterpolator(interpolator)
+//                .start()
         }
     }
 
@@ -662,16 +687,16 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 .setDuration(duration)
                 .setInterpolator(interpolator)
                 .start()
-            iv_button_toggle_loudspeaker.animate()
-                .alpha(0f)
-                .scaleX(0f)
-                .scaleY(0f)
-                .setDuration(duration)
-                .setInterpolator(interpolator)
-                .withEndAction {
-                    iv_button_toggle_loudspeaker.visibility = View.GONE
-                }
-                .start()
+//            iv_button_toggle_loudspeaker.animate()
+//                .alpha(0f)
+//                .scaleX(0f)
+//                .scaleY(0f)
+//                .setDuration(duration)
+//                .setInterpolator(interpolator)
+//                .withEndAction {
+//                    iv_button_toggle_loudspeaker.visibility = View.GONE
+//                }
+//                .start()
         }
     }
 
@@ -734,6 +759,10 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         if (isCallStarted) {
             MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
         }
+//        if (!isVideoMuted && !isLoudspeakerActive && !isHeadsetConnected()) {
+//            // Turn loudspeaker on when switching video on without headset
+//            toggleLoudspeaker()
+//        }
     }
 
     private fun showVideoButtonMuted(isMuted: Boolean) {
@@ -752,10 +781,13 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     private fun toggleLoudspeaker() {
         isLoudspeakerActive = !isLoudspeakerActive
         showLoudspeakerButtonActive(isLoudspeakerActive)
-//        val muteBroadcastIntent = BroadcastIntentHelper.buildSetAudioMutedIntent(isLoudspeakerActive)
-//        LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(muteBroadcastIntent)
-        // TODO: TOGGLE AUDIO DEVICE
+        forceLoudspeakerState()
+    }
 
+    private fun forceLoudspeakerState() {
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        audioManager.mode = MODE_IN_COMMUNICATION
+        audioManager.isSpeakerphoneOn = isLoudspeakerActive
     }
 
     private fun showLoudspeakerButtonActive(isActive: Boolean) {
@@ -861,6 +893,30 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         ) {
             finish()
             return true
+        }
+        return false
+    }
+
+    private fun isHeadsetConnected(): Boolean {
+        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        if (bluetoothAdapter != null &&
+            bluetoothAdapter.isEnabled &&
+            bluetoothAdapter.getProfileConnectionState(HEADSET) == STATE_CONNECTED
+        ) {
+            if (BuildConfig.DEBUG) {
+                Log.e(">>>> $TAG", "isHeadsetConnected: bluetooth headset detected")
+            }
+            return true
+        }
+        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        if (audioManager.isWiredHeadsetOn) {
+            if (BuildConfig.DEBUG) {
+                Log.e(">>>> $TAG", "isHeadsetConnected: wired headset detected")
+            }
+            return true
+        }
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>> $TAG", "isHeadsetConnected: no headset detected")
         }
         return false
     }
