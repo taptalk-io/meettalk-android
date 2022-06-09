@@ -1253,6 +1253,7 @@ class MeetTalkCallManager {
             val message = generateCallNotificationMessage(instanceKey, room, "Call info updated.", CONFERENCE_INFO)
             activeConferenceInfo?.lastUpdated = message.created
             activeConferenceInfo?.attachToMessage(message)
+            message.filterID = activeConferenceInfo?.callID
             message.hidden = true
 
             sendCallNotificationMessage(instanceKey, message)
