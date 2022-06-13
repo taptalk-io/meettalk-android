@@ -383,6 +383,14 @@ public class MeetTalk {
 
     public static void initiateNewConferenceCall(
             Activity activity,
+            TAPRoomModel room,
+            String recipientDisplayName
+    ) {
+        initiateNewConferenceCall(activity, "", room, recipientDisplayName);
+    }
+
+    public static void initiateNewConferenceCall(
+            Activity activity,
             String instanceKey,
             TAPRoomModel room,
             String recipientDisplayName
@@ -414,6 +422,16 @@ public class MeetTalk {
             boolean startWithVideoMuted
     ) {
         MeetTalkCallManager.Companion.initiateNewConferenceCall(activity, instanceKey, room, startWithAudioMuted, startWithVideoMuted);
+    }
+
+    public static void initiateNewConferenceCall(
+            Activity activity,
+            TAPRoomModel room,
+            boolean startWithAudioMuted,
+            boolean startWithVideoMuted,
+            String recipientDisplayName
+    ) {
+        initiateNewConferenceCall(activity, "", room, startWithAudioMuted, startWithVideoMuted, recipientDisplayName);
     }
 
     public static void initiateNewConferenceCall(
