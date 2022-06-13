@@ -1409,6 +1409,8 @@ class MeetTalkCallManager {
                     else if (callState == CallState.RINGING && !pendingIncomingCallRoomID.isNullOrEmpty()) {
                         // Close incoming call
                         closeIncomingCall()
+                        setActiveCallAsEnded()
+                        callState = CallState.IDLE
                         if (BuildConfig.DEBUG) {
                             Log.e(">>>>>", "MissedCallTimerFired: close incoming call")
                         }
