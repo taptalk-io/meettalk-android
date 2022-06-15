@@ -421,9 +421,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
 
         options = intent.getParcelableExtra("JitsiMeetConferenceOptions") ?: JitsiMeet.getDefaultConferenceOptions()
-        // Initialize view and join conference
-        jitsiView.join(options)
-        
         isAudioMuted = MeetTalkCallManager.activeConferenceInfo?.startWithAudioMuted ?: MeetTalkCallManager.defaultAudioMuted
         isVideoMuted = MeetTalkCallManager.activeConferenceInfo?.startWithVideoMuted ?: MeetTalkCallManager.defaultVideoMuted
         if (!isVideoMuted && !isHeadsetConnected()) {
