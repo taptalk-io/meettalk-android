@@ -627,6 +627,7 @@ class MeetTalkCallManager {
             if (pendingIncomingCallRoomID == null) {
                 return false
             }
+            cancelMissedCallTimer()
             sendAnsweredCallNotification(activeCallInstanceKey ?: return false, activeCallMessage?.room ?: return false)
             launchMeetTalkCallActivity(activeCallInstanceKey ?: return false, TapTalk.appContext)
             pendingIncomingCallRoomID = null
@@ -894,12 +895,15 @@ class MeetTalkCallManager {
                     if (BuildConfig.DEBUG) {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: RECIPIENT_ANSWERED_CALL is self: ${message.user.userID == activeUser.userID}")
                     }
+                    val conferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
                     if (message.user.userID == activeUser.userID) {
                         // Recipient answered call elsewhere, dismiss incoming call
                         closeIncomingCall()
                         callState = CallState.IDLE
                     }
-                    val conferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
+                    else if (activeConferenceInfo?.callID == conferenceInfo.callID) {
+                        cancelMissedCallTimer()
+                    }
                     if (conferenceInfo != null) {
                         answeredCallID = conferenceInfo.callID
                     }
@@ -1380,6 +1384,7 @@ class MeetTalkCallManager {
             callState = CallState.IDLE
             stopRingTone()
             stopOngoingCallService()
+            cancelMissedCallTimer()
         }
 
         private fun startMissedCallTimer() {
@@ -1432,6 +1437,15 @@ class MeetTalkCallManager {
                 }
             }
             missedCallTimer.schedule(timerTask, missedCallInterval, missedCallInterval)
+        }
+
+        private fun cancelMissedCallTimer() {
+            if (this::missedCallTimer.isInitialized) {
+                missedCallTimer.cancel()
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "cancelMissedCallTimer")
+                }
+            }
         }
 
         fun getRoomAliasMap(instanceKey: String) : HashMap<String, String> {
