@@ -115,6 +115,7 @@ class MeetTalkCallManager {
         var activeMeetTalkCallActivity: MeetTalkCallActivity? = null
         var activeMeetTalkIncomingCallActivity: MeetTalkIncomingCallActivity? = null
         var activeConferenceInfo: MeetTalkConferenceInfo? = null
+        var answeredCallID: String? = null // Used to check missed call & outgoing ring tone
         var pendingNotificationMessageInstanceKey: String? = null
         var pendingCallNotificationMessages: ArrayList<TAPMessageModel> = ArrayList()
 
@@ -125,7 +126,6 @@ class MeetTalkCallManager {
         private var pendingIncomingCallPhoneNumber: String? = null
         private var handledCallNotificationMessageLocalIDs: ArrayList<String> = ArrayList()
         private var roomAliasMap: HashMap<String, HashMap<String, String>> = HashMap()
-        private var answeredCallID: String? = null // Used to check missed call
         private var toneGenerator: ToneGenerator? = null
         private var ongoingCallServiceIntent: Intent? = null
         private var socketListener: TAPSocketListener? = null

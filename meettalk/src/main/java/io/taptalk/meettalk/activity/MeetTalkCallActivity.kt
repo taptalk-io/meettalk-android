@@ -340,7 +340,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             // Force loudspeaker to initial state
             forceLoudspeakerState()
             if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
-                activeParticipantInfo.role == HOST
+                activeParticipantInfo.role == HOST &&
+                MeetTalkCallManager.answeredCallID != MeetTalkCallManager.activeConferenceInfo?.callID &&
+                !isCallStarted
             ) {
                 // Play outgoing ring tone
                 MeetTalkCallManager.playRingTone(ToneGenerator.TONE_SUP_RINGTONE)
