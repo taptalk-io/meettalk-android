@@ -239,8 +239,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         MeetTalkCallManager.callState = IDLE
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
         TAPConnectionManager.getInstance(instanceKey).removeSocketListener(socketListener)
-        val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        audioManager.mode = MODE_NORMAL
 
         if (isTaskRoot) {
             // Trigger listener callback if no other activity is open

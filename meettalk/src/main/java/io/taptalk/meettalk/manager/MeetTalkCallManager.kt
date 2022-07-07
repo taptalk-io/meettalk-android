@@ -83,6 +83,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_AUDIO
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_CAMERA
 import io.taptalk.meettalk.constant.MeetTalkConstant.Url.MEET_ROOM_ID_PREFIX
+import io.taptalk.meettalk.constant.MeetTalkConstant.Url.MEET_URL
 import io.taptalk.meettalk.constant.MeetTalkConstant.Value.DEFAULT_CALL_TIMEOUT_DURATION
 import io.taptalk.meettalk.helper.*
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo
@@ -136,8 +137,8 @@ class MeetTalkCallManager {
         init {
             // Initialize Jitsi Meet
             val serverURL: URL = try {
-//                URL(MEET_URL)
-                URL("https://meet.jit.si") // FIXME: TEMPORARILY DIRECT CALL TO DEFAULT SERVER
+                URL(MEET_URL)
+//                URL("https://meet.jit.si") // FIXME: TEMPORARILY DIRECT CALL TO DEFAULT SERVER
             } catch (e: MalformedURLException) {
                 e.printStackTrace()
                 throw RuntimeException("Invalid server URL!")
@@ -1414,6 +1415,8 @@ class MeetTalkCallManager {
             stopRingTone()
             stopOngoingCallService()
             cancelMissedCallTimer()
+            val audioManager = MeetTalk.appContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            audioManager.mode = AudioManager.MODE_NORMAL
         }
 
         private fun startMissedCallTimer() {
