@@ -22,6 +22,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import io.taptalk.TapTalk.API.View.TAPDefaultDataView
 import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
 import io.taptalk.TapTalk.Helper.TAPUtils
 import io.taptalk.TapTalk.Helper.TapTalk
@@ -31,14 +32,9 @@ import io.taptalk.TapTalk.Listener.TAPSocketListener
 import io.taptalk.TapTalk.Listener.TapCommonListener
 import io.taptalk.TapTalk.Listener.TapCoreGetMessageListener
 import io.taptalk.TapTalk.Listener.TapCoreSendMessageListener
-import io.taptalk.TapTalk.Manager.TAPChatManager
-import io.taptalk.TapTalk.Manager.TAPConnectionManager
-import io.taptalk.TapTalk.Manager.TAPContactManager
-import io.taptalk.TapTalk.Manager.TapCoreMessageManager
-import io.taptalk.TapTalk.Model.TAPMessageModel
-import io.taptalk.TapTalk.Model.TAPMessageTargetModel
-import io.taptalk.TapTalk.Model.TAPRoomModel
-import io.taptalk.TapTalk.Model.TAPUserModel
+import io.taptalk.TapTalk.Manager.*
+import io.taptalk.TapTalk.Model.*
+import io.taptalk.TapTalk.Model.ResponseModel.TAPCommonResponse
 import io.taptalk.meettalk.BuildConfig
 import io.taptalk.meettalk.R
 import io.taptalk.meettalk.activity.MeetTalkCallActivity
@@ -1289,29 +1285,62 @@ class MeetTalkCallManager {
                     Log.e(">>>>", "sendCallNotificationMessage: ${message.action}")
                 }
                 TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, object : TapCoreSendMessageListener() {
-                    override fun onStart(message: TAPMessageModel?) {
+                    override fun onStart(obtainedMessage: TAPMessageModel?) {
 
                     }
 
-                    override fun onSuccess(message: TAPMessageModel?) {
+                    override fun onSuccess(obtainedMessage: TAPMessageModel?) {
 
                     }
 
-                    override fun onError(message: TAPMessageModel?, errorCode: String?, errorMessage: String?) {
-
+                    override fun onError(obtainedMessage: TAPMessageModel?, errorCode: String?, errorMessage: String?) {
+                        sendCallNotificationMessageWithAPI(instanceKey, message)
                     }
                 })
             }
             else {
                 if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "sendCallNotificationMessage add to pending array: ${message.action}")
+                    Log.e(">>>>", "sendCallNotificationMessage socket not connected, send through API: ${message.action}")
                 }
-                pendingCallNotificationMessages.add(message)
-                if (activeCallInstanceKey == null) {
-                    // Save instance key in case call is already ended
-                    pendingNotificationMessageInstanceKey = instanceKey
-                }
+                sendCallNotificationMessageWithAPI(instanceKey, message)
             }
+        }
+
+        private fun sendCallNotificationMessageWithAPI(instanceKey: String, message: TAPMessageModel) {
+            if (activeCallInstanceKey == null) {
+                return
+            }
+            TAPDataManager.getInstance(activeCallInstanceKey).sendCustomMessage(
+                message.room.roomID,
+                message.localID,
+                message.type,
+                message.body,
+                message.data,
+                message.filterID,
+                message.isHidden,
+                object : TAPDefaultDataView<TAPCommonResponse>() {
+                    override fun onSuccess(response: TAPCommonResponse?) {
+                        if (BuildConfig.DEBUG) {
+                            Log.e(">>>>>", "sendCallNotificationMessageWithAPI onSuccess: ${response?.message ?: ""}")
+                        }
+                    }
+
+                    override fun onError(error: TAPErrorModel?) {
+                        onError(error?.message ?: "")
+                    }
+
+                    override fun onError(errorMessage: String?) {
+                        if (BuildConfig.DEBUG) {
+                            Log.e(">>>>>", "sendCallNotificationMessageWithAPI onError: $errorMessage - add to pending array: ${message.action}")
+                        }
+                        pendingCallNotificationMessages.add(message)
+                        if (activeCallInstanceKey == null) {
+                            // Save instance key in case call is already ended
+                            pendingNotificationMessageInstanceKey = instanceKey
+                        }
+                    }
+                }
+            )
         }
 
         fun handleSendNotificationOnLeavingConference() {
