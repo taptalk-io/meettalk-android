@@ -234,6 +234,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         JitsiMeetActivityDelegate.onHostDestroy(this)
 
         MeetTalkCallManager.handleSendNotificationOnLeavingConference()
+        Log.e(")))))", "CallActivity onDestroy: setActiveCallAsEnded")
         MeetTalkCallManager.setActiveCallAsEnded()
         MeetTalkCallManager.activeMeetTalkCallActivity = null
         MeetTalkCallManager.callState = IDLE
