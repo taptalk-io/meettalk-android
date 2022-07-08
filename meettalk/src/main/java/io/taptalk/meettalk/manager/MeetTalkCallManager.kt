@@ -961,8 +961,26 @@ class MeetTalkCallManager {
                 }
                 else if (
                     message.user.userID != activeUser.userID &&
-                    (message.action == RECIPIENT_BUSY ||
-                    message.action == RECIPIENT_REJECTED_CALL ||
+                    message.action == RECIPIENT_BUSY
+                ) {
+                    // Recipient is busy, update call status and play tone
+                    activeMeetTalkCallActivity?.setRecipientBusy()
+                    playRingTone(ToneGenerator.TONE_SUP_BUSY)
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        // Automatically leave call room after delay
+                        closeIncomingCall()
+                        activeMeetTalkCallActivity?.finish()
+                        setActiveCallAsEnded()
+                    }, 15000L)
+
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onReceiveRecipientBusyNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
+                    }
+                }
+                else if (
+                    message.user.userID != activeUser.userID &&
+                    (message.action == RECIPIENT_REJECTED_CALL ||
                     message.action == RECIPIENT_MISSED_CALL)
                 ) {
                     // Recipient did not join call, leave call room
@@ -975,12 +993,7 @@ class MeetTalkCallManager {
                     Log.e(")))))", "checkAndHandleCallNotificationFromMessage: Recipient did not join call, leave call room")
 
                     // Trigger listener callback
-                    if (message.action == RECIPIENT_BUSY) {
-                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                            meetTalkListener.onReceiveRecipientBusyNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
-                        }
-                    }
-                    else if (message.action == RECIPIENT_REJECTED_CALL) {
+                    if (message.action == RECIPIENT_REJECTED_CALL) {
                         for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
                             meetTalkListener.onReceiveRecipientRejectedCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
                         }

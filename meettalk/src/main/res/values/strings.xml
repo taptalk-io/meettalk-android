@@ -28,6 +28,7 @@
 
     <!--Ongoing Call-->
     <string name="meettalk_ongoing_call_notification_description">You have an ongoing call, tap here to return.</string>
+    <string name="meettalk_format_recipient_is_busy">%s is in another call</string>
 
     <!--General-->
     <string name="meettalk_dismiss">Dismiss</string>

@@ -15,7 +15,6 @@ import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import android.media.AudioManager.MODE_IN_COMMUNICATION
-import android.media.AudioManager.MODE_NORMAL
 import android.media.ToneGenerator
 import android.os.Build
 import android.os.Bundle
@@ -79,6 +78,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     private var isAudioMuted = false
     private var isVideoMuted = false
     private var isLoudspeakerActive = false
+    private var isRecipientBusy = false
     private var callStartTimestamp = 0L
 
     var isCallStarted = false
@@ -322,7 +322,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             )
 
             // Set status text to Waiting for User
-            if (!isCallStarted) {
+            if (!isCallStarted && !isRecipientBusy) {
                 tv_call_duration_status.text = String.format(
                     getString(R.string.meettalk_format_waiting_for_user_ellipsis),
                     TAPUtils.getFirstWordOfString(roomDisplayName)
@@ -341,7 +341,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
                 activeParticipantInfo.role == HOST &&
                 MeetTalkCallManager.answeredCallID != MeetTalkCallManager.activeConferenceInfo?.callID &&
-                !isCallStarted
+                !isCallStarted &&
+                !isRecipientBusy
             ) {
                 // Play outgoing ring tone
                 MeetTalkCallManager.playRingTone(ToneGenerator.TONE_SUP_RINGTONE)
@@ -970,5 +971,13 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         val retrieveParticipantIntent = Intent(RETRIEVE_PARTICIPANTS_INFO)
         retrieveParticipantIntent.putExtra("requestId ", System.currentTimeMillis().toString())
         LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(retrieveParticipantIntent)
+    }
+
+    fun setRecipientBusy() {
+        isRecipientBusy = true
+        tv_call_duration_status.text = String.format(
+            getString(R.string.meettalk_format_recipient_is_busy),
+            TAPUtils.getFirstWordOfString(roomDisplayName)
+        )
     }
 }
