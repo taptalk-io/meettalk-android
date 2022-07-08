@@ -350,7 +350,6 @@ class MeetTalkCallManager {
             }
 
             // Show incoming call
-            Log.e("====>", "showIncomingCall: RINGING")
             callState = CallState.RINGING
 
             if (message != null) {
@@ -406,7 +405,6 @@ class MeetTalkCallManager {
             extras.putString(CALLER_NUMBER, phoneNumber)
             try {
                 // Show incoming call
-                Log.e("====>", "showNativeIncomingCallScreen: RINGING")
                 callState = CallState.RINGING
                 telecomManager.addNewIncomingCall(phoneAccountHandle, extras)
 
@@ -425,7 +423,6 @@ class MeetTalkCallManager {
             catch (e: SecurityException) {
                 e.printStackTrace()
                 // This PhoneAccountHandle is not enabled for this user
-                Log.e("====>", "showNativeIncomingCallScreen: IDLE")
                 callState = CallState.IDLE
 
                 val errorMessage =
@@ -457,7 +454,6 @@ class MeetTalkCallManager {
             catch (e: Exception) {
                 e.printStackTrace()
                 // Other exceptions
-                Log.e("====>", "showNativeIncomingCallScreen: IDLE")
                 callState = CallState.IDLE
 
                 if (message != null) {
@@ -614,8 +610,6 @@ class MeetTalkCallManager {
         }
 
         fun clearPendingIncomingCall() {
-//            Log.e("====>", "clearPendingIncomingCall: IDLE")
-//            callState = CallState.IDLE
             pendingIncomingCallRoomID = null
             pendingIncomingCallPhoneNumber = null
         }
@@ -642,7 +636,6 @@ class MeetTalkCallManager {
             activeMeetTalkIncomingCallActivity?.closeIncomingCall()
             MeetTalkCallConnection.getInstance().onDisconnect()
             clearPendingIncomingCall()
-//            setActiveCallAsEnded()
         }
 
         fun initiateNewConferenceCall(
@@ -707,7 +700,6 @@ class MeetTalkCallManager {
             ) {
                 return false
             }
-            Log.e("====>", "launchMeetTalkCallActivity: IN_CALL")
             callState = CallState.IN_CALL
             val conferenceRoomID = String.format(
                 "%s%s%s",
@@ -871,7 +863,6 @@ class MeetTalkCallManager {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
                     }
                     activeMeetTalkCallActivity?.finish()
-                    Log.e(")))))", "checkAndHandleCallNotificationFromMessage: Caller cancelled call or recipient rejected call elsewhere: closeIncomingCall")
                     closeIncomingCall()
                     setActiveCallAsEnded()
 
@@ -893,7 +884,6 @@ class MeetTalkCallManager {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_ENDED $activeMeetTalkCallActivity")
                     }
                     activeMeetTalkCallActivity?.finish()
-                    Log.e(")))))", "checkAndHandleCallNotificationFromMessage: CALL_ENDED : setActiveCallAsEnded")
                     setActiveCallAsEnded()
 
                     // Trigger listener callback
@@ -906,12 +896,9 @@ class MeetTalkCallManager {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: RECIPIENT_ANSWERED_CALL is self: ${message.user.userID == activeUser.userID}")
                     }
                     val conferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
-//                    if (message.user.userID == activeUser.userID) {
                     if (message.user.userID == activeUser.userID && !pendingIncomingCallRoomID.isNullOrEmpty()) {
                         // Recipient answered call elsewhere, dismiss incoming call
-                        Log.e(")))))", "checkAndHandleCallNotificationFromMessage: Recipient answered call elsewhere, dismiss incoming call")
                         closeIncomingCall()
-                        Log.e("====>", "checkAndHandleCallNotificationFromMessage: Recipient answered call elsewhere: IDLE")
                         callState = CallState.IDLE
                     }
                     else if (activeConferenceInfo?.callID == conferenceInfo.callID) {
@@ -966,12 +953,12 @@ class MeetTalkCallManager {
                     // Recipient is busy, update call status and play tone
                     activeMeetTalkCallActivity?.setRecipientBusy()
                     playRingTone(ToneGenerator.TONE_SUP_BUSY)
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        // Automatically leave call room after delay
-                        closeIncomingCall()
-                        activeMeetTalkCallActivity?.finish()
-                        setActiveCallAsEnded()
-                    }, 15000L)
+//                    Handler(Looper.getMainLooper()).postDelayed({
+//                        // Automatically leave call room after delay
+//                        closeIncomingCall()
+//                        activeMeetTalkCallActivity?.finish()
+//                        setActiveCallAsEnded()
+//                    }, 15000L)
 
                     // Trigger listener callback
                     for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
@@ -990,7 +977,6 @@ class MeetTalkCallManager {
                     closeIncomingCall()
                     activeMeetTalkCallActivity?.finish()
                     setActiveCallAsEnded()
-                    Log.e(")))))", "checkAndHandleCallNotificationFromMessage: Recipient did not join call, leave call room")
 
                     // Trigger listener callback
                     if (message.action == RECIPIENT_REJECTED_CALL) {
@@ -1147,7 +1133,6 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} cancelled call.", CALL_CANCELLED)
             message = setMessageConferenceInfoAsEnded(message)
 
-            Log.e(")))))", "sendCallCancelledNotification: setActiveCallAsEnded")
             setActiveCallAsEnded()
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1159,7 +1144,6 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} ended call.", CALL_ENDED)
             message = setMessageConferenceInfoAsEnded(message)
 
-            Log.e(")))))", "sendCallEndedNotification: setActiveCallAsEnded")
             setActiveCallAsEnded()
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1243,7 +1227,6 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} rejected call.", RECIPIENT_REJECTED_CALL)
             message = setMessageConferenceInfoAsEnded(message)
 
-            Log.e(")))))", "sendRejectedCallNotification: setActiveCallAsEnded")
             setActiveCallAsEnded()
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1255,7 +1238,6 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{target}} missed the call.", RECIPIENT_MISSED_CALL)
             message = setMessageConferenceInfoAsEnded(message)
 
-            Log.e(")))))", "sendMissedCallNotification: setActiveCallAsEnded")
             setActiveCallAsEnded()
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1276,7 +1258,6 @@ class MeetTalkCallManager {
 
             message.hidden = true
 
-            Log.e(")))))", "sendUnableToReceiveCallNotification: setActiveCallAsEnded")
             setActiveCallAsEnded()
 
             sendCallNotificationMessage(instanceKey, message)
@@ -1448,7 +1429,6 @@ class MeetTalkCallManager {
             activeCallMessage = null
             activeConferenceInfo = null
             activeCallInstanceKey = null
-            Log.e("====>", "setActiveCallAsEnded: IDLE")
             callState = CallState.IDLE
             stopRingTone()
             stopOngoingCallService()
@@ -1483,10 +1463,8 @@ class MeetTalkCallManager {
                     }
                     else if (callState == CallState.RINGING && !pendingIncomingCallRoomID.isNullOrEmpty()) {
                         // Close incoming call
-                        Log.e(")))))", "MissedCallTimerFired: close incoming call")
                         closeIncomingCall()
                         setActiveCallAsEnded()
-                        Log.e("====>", "MissedCallTimerFired: close incoming call: IDLE")
                         callState = CallState.IDLE
                         if (BuildConfig.DEBUG) {
                             Log.e(">>>>>", "MissedCallTimerFired: close incoming call")
@@ -1502,8 +1480,6 @@ class MeetTalkCallManager {
                         activeMeetTalkCallActivity?.finish()
                         setActiveCallAsEnded()
                         callState = CallState.IDLE
-                        Log.e("====>", "MissedCallTimerFired: close incoming call: IDLE")
-                        Log.e(")))))", "MissedCallTimerFired: close incoming call")
                         if (BuildConfig.DEBUG) {
                             Log.e(">>>>>", "MissedCallTimerFired: Send missed call notification")
                         }

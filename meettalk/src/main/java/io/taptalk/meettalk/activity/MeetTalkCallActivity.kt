@@ -234,7 +234,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         JitsiMeetActivityDelegate.onHostDestroy(this)
 
         MeetTalkCallManager.handleSendNotificationOnLeavingConference()
-        Log.e(")))))", "CallActivity onDestroy: setActiveCallAsEnded")
         MeetTalkCallManager.setActiveCallAsEnded()
         MeetTalkCallManager.activeMeetTalkCallActivity = null
         MeetTalkCallManager.callState = IDLE
@@ -975,9 +974,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     fun setRecipientBusy() {
         isRecipientBusy = true
-        tv_call_duration_status.text = String.format(
-            getString(R.string.meettalk_format_recipient_is_busy),
-            TAPUtils.getFirstWordOfString(roomDisplayName)
-        )
+        runOnUiThread {
+            tv_call_duration_status.text = String.format(
+                getString(R.string.meettalk_format_recipient_is_busy),
+                TAPUtils.getFirstWordOfString(roomDisplayName)
+            )
+        }
     }
 }
