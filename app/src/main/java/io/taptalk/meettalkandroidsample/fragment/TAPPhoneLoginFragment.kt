@@ -24,7 +24,7 @@ import io.taptalk.TapTalk.Manager.AnalyticsManager
 import io.taptalk.TapTalk.Manager.TAPDataManager
 import io.taptalk.TapTalk.Manager.TAPNetworkStateManager
 import io.taptalk.TapTalk.Model.ResponseModel.TAPCountryListResponse
-import io.taptalk.TapTalk.Model.ResponseModel.TAPLoginOTPResponse
+import io.taptalk.TapTalk.Model.ResponseModel.TAPOTPResponse
 import io.taptalk.TapTalk.Model.TAPCountryListItem
 import io.taptalk.TapTalk.Model.TAPErrorModel
 import io.taptalk.TapTalk.View.Activity.TAPBaseActivity
@@ -169,8 +169,8 @@ class TAPPhoneLoginFragment : androidx.fragment.app.Fragment() {
                 && currentOTPTimestampLength <= maxTime) {
             requestOTPInterface.onRequestSuccess(loginViewModel.otpID, loginViewModel.otpKey, loginViewModel.phoneNumberWithCode.replaceFirst("+", ""), true, loginViewModel.channel, "", loginViewModel.waitTimeRequestOtp, "")
         } else {
-            TAPDataManager.getInstance((activity as TAPBaseActivity).instanceKey).requestOTPLogin(defaultCountryID, checkAndEditPhoneNumber(), "", object : TAPDefaultDataView<TAPLoginOTPResponse>() {
-                override fun onSuccess(response: TAPLoginOTPResponse) {
+            TAPDataManager.getInstance((activity as TAPBaseActivity).instanceKey).requestOTPLogin(defaultCountryID, checkAndEditPhoneNumber(), "", object : TAPDefaultDataView<TAPOTPResponse>() {
+                override fun onSuccess(response: TAPOTPResponse) {
                     val additional = HashMap<String, String>()
                     additional.put("phoneNumber", defaultCallingCode + checkAndEditPhoneNumber())
                     additional.put("countryCode", defaultCountryID.toString())

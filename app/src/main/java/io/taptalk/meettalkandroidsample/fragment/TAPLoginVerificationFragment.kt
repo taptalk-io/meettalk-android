@@ -24,7 +24,7 @@ import io.taptalk.TapTalk.Listener.TapCommonListener
 import io.taptalk.TapTalk.Manager.AnalyticsManager
 import io.taptalk.TapTalk.Manager.TAPDataManager
 import io.taptalk.TapTalk.Manager.TAPNetworkStateManager
-import io.taptalk.TapTalk.Model.ResponseModel.TAPLoginOTPResponse
+import io.taptalk.TapTalk.Model.ResponseModel.TAPOTPResponse
 import io.taptalk.TapTalk.Model.ResponseModel.TAPLoginOTPVerifyResponse
 import io.taptalk.TapTalk.Model.TAPErrorModel
 import io.taptalk.TapTalk.View.Activity.TAPBaseActivity
@@ -126,8 +126,8 @@ class TAPLoginVerificationFragment : androidx.fragment.app.Fragment() {
         ll_request_otp_again.setOnClickListener {
             showRequestingOTPLoading()
             hideBtnSendViaSMS()
-            TAPDataManager.getInstance((activity as TAPBaseActivity).instanceKey).requestOTPLogin(countryID, phoneNumber, channel, object : TAPDefaultDataView<TAPLoginOTPResponse>() {
-                override fun onSuccess(response: TAPLoginOTPResponse) {
+            TAPDataManager.getInstance((activity as TAPBaseActivity).instanceKey).requestOTPLogin(countryID, phoneNumber, channel, object : TAPDefaultDataView<TAPOTPResponse>() {
+                override fun onSuccess(response: TAPOTPResponse) {
                     super.onSuccess(response)
                     et_otp_code.isEnabled = true
                     val additional = HashMap<String, String>()
@@ -162,8 +162,8 @@ class TAPLoginVerificationFragment : androidx.fragment.app.Fragment() {
             isFromBtnSendViaSMS = true
             showPopupLoading(getString(R.string.tap_loading))
             showRequestingOTPLoading()
-            TAPDataManager.getInstance((activity as TAPBaseActivity).instanceKey).requestOTPLogin(countryID, phoneNumber, "sms", object : TAPDefaultDataView<TAPLoginOTPResponse>() {
-                override fun onSuccess(response: TAPLoginOTPResponse) {
+            TAPDataManager.getInstance((activity as TAPBaseActivity).instanceKey).requestOTPLogin(countryID, phoneNumber, "sms", object : TAPDefaultDataView<TAPOTPResponse>() {
+                override fun onSuccess(response: TAPOTPResponse) {
                     et_otp_code.isEnabled = true
                     val additional = HashMap<String, String>()
                     additional.put("phoneNumber", phoneNumberWithCode)
