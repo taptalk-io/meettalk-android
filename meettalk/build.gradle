@@ -71,7 +71,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     // TapTalk
-    api 'com.github.taptalk-io:taptalk.io-android:2.7.0'
+    api 'com.github.taptalk-io:taptalk.io-android:2.7.1'
 
     // Jitsi Meet
     implementation ('org.jitsi.react:jitsi-meet-sdk:5.0.2') { transitive = true }
