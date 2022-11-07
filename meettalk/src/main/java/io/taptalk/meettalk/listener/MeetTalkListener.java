@@ -8,6 +8,7 @@ import androidx.annotation.Keep;
 
 import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
+import io.taptalk.TapTalk.Model.TAPRoomModel;
 import io.taptalk.meettalk.helper.MeetTalk;
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo;
 
@@ -195,5 +196,15 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
     @Override
     public void onChatBubbleCallButtonTapped(String instanceKey, Activity activity, TAPMessageModel message) {
         MeetTalk.initiateNewConferenceCall(activity, instanceKey, message.getRoom());
+    }
+
+    @Override
+    public void onChatRoomVoiceCallButtonTapped(String instanceKey, Activity activity, TAPRoomModel room) {
+        MeetTalk.initiateNewConferenceCall(activity, instanceKey, room);
+    }
+
+    @Override
+    public void onChatRoomVideoCallButtonTapped(String instanceKey, Activity activity, TAPRoomModel room) {
+        MeetTalk.initiateNewConferenceCall(activity, instanceKey, room, false, false);
     }
 }

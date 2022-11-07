@@ -95,4 +95,8 @@ public interface MeetTalkInterface {
     void onTaskRootCallActivityClosed(Activity activity);
 
     void onChatBubbleCallButtonTapped(String instanceKey, Activity activity, TAPMessageModel message);
+
+    void onChatRoomVoiceCallButtonTapped(String instanceKey, Activity activity, TAPRoomModel room);
+
+    void onChatRoomVideoCallButtonTapped(String instanceKey, Activity activity, TAPRoomModel room);
 }

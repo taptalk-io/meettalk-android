@@ -7,22 +7,28 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Listener.TapCoreMessageListener;
 import io.taptalk.TapTalk.Listener.TapListener;
+import io.taptalk.TapTalk.Listener.TapUIChatRoomCustomNavigationBarListener;
 import io.taptalk.TapTalk.Listener.TapUIRoomListListener;
 import io.taptalk.TapTalk.Manager.TapCoreMessageManager;
 import io.taptalk.TapTalk.Manager.TapUI;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
 import io.taptalk.TapTalk.Model.TAPRoomListModel;
 import io.taptalk.TapTalk.Model.TAPRoomModel;
+import io.taptalk.TapTalk.Model.TAPUserModel;
+import io.taptalk.TapTalk.View.Fragment.TapBaseChatRoomCustomNavigationBarFragment;
 import io.taptalk.meettalk.BuildConfig;
 import io.taptalk.meettalk.R;
 import io.taptalk.meettalk.custombubble.MeetTalkCallChatBubbleClass;
 import io.taptalk.meettalk.custombubble.MeetTalkCallChatBubbleListener;
+import io.taptalk.meettalk.fragment.MeetTalkChatRoomNavigationBarFragment;
 import io.taptalk.meettalk.listener.MeetTalkListener;
 import io.taptalk.meettalk.manager.MeetTalkCallManager;
 
@@ -228,6 +234,14 @@ public class MeetTalk {
                     callChatBubbleListener
             );
             TapUI.getInstance(instanceKey).addCustomBubble(callChatBubbleClass);
+
+            // Initialize custom chat room navigation bar
+            TapUI.getInstance(instanceKey).addChatRoomCustomNavigationBarListener(new TapUIChatRoomCustomNavigationBarListener() {
+                @Override
+                public TapBaseChatRoomCustomNavigationBarFragment setCustomChatRoomNavigationBar(Activity activity, TAPRoomModel room, TAPUserModel activeUser, @Nullable TAPUserModel recipientUser) {
+                    return new MeetTalkChatRoomNavigationBarFragment();
+                }
+            });
 
             // Add room list listener to replace room list message body
             TapUI.getInstance(instanceKey).addRoomListListener(new TapUIRoomListListener() {
