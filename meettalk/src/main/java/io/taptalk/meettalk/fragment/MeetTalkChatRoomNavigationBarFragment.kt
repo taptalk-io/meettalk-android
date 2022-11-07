@@ -142,22 +142,29 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
     }
 
     private fun setRoomName() {
+        if (room == null) {
+            return
+        }
         if (TAPUtils.isSavedMessagesRoom(room?.roomID, instanceKey)) {
             tvRoomName?.setText(R.string.tap_saved_messages)
         }
         else if (
             room?.type == TYPE_PERSONAL &&
+            null != recipientUser &&
             (null == recipientUser?.deleted || recipientUser?.deleted!! <= 0L) &&
             !recipientUser.fullname.isNullOrEmpty()
         ) {
-            tvRoomName?.text = recipientUser.fullname
+            tvRoomName?.text = recipientUser?.fullname ?: return
         }
         else {
-            tvRoomName?.text = room.name
+            tvRoomName?.text = room?.name ?: return
         }
     }
 
     private fun setRoomStatus() {
+        if (room == null) {
+            return
+        }
         if (room.type == TYPE_GROUP && !room.participants.isNullOrEmpty()) {
             // Show number of participants for group room
             tvRoomStatus?.text = String.format(getString(R.string.tap_format_d_group_member_count), room.participants?.size)
@@ -165,6 +172,9 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
     }
 
     private fun setRoomProfilePicture() {
+        if (room == null) {
+            return
+        }
         civRoomImage?.post {
             if (!TapUI.getInstance(instanceKey).isProfileButtonVisible) {
                 civRoomImage?.visibility = View.GONE
@@ -173,6 +183,7 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
             }
             else if (
                 room?.type == TYPE_PERSONAL &&
+                null != recipientUser &&
                 null != recipientUser?.deleted &&
                 recipientUser?.deleted!! > 0L
             ) {
@@ -192,6 +203,7 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
             }
             else if (
                 room?.type == TYPE_PERSONAL &&
+                null != recipientUser &&
                 !recipientUser?.imageURL?.thumbnail.isNullOrEmpty()
             ) {
                 // Load user avatar URL
@@ -199,7 +211,6 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
                 room.imageURL = recipientUser.imageURL
             }
             else if (
-                null != room &&
                 !room.isDeleted &&
                 !room.imageURL?.thumbnail.isNullOrEmpty()
             ) {
@@ -211,7 +222,10 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
             }
 
             if (null != ivRoomIcon) {
-                if (room?.type == TYPE_PERSONAL && !recipientUser?.userRole?.iconURL.isNullOrEmpty()) {
+                if (room?.type == TYPE_PERSONAL &&
+                    null != recipientUser &&
+                    !recipientUser?.userRole?.iconURL.isNullOrEmpty()
+                ) {
                     glide?.load(recipientUser.userRole?.iconURL)?.into(ivRoomIcon!!)
                     ivRoomIcon?.visibility = View.VISIBLE
                 }
@@ -223,7 +237,7 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
     }
 
     private fun loadProfilePicture(image: String, imageView: ImageView, tvAvatarLabel: TextView) {
-        if (imageView.visibility == View.GONE) {
+        if (null == room || imageView.visibility == View.GONE) {
             return
         }
         glide?.load(image)?.listener(object : RequestListener<Drawable?> {
@@ -243,7 +257,7 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
     }
 
     private fun loadInitialsToProfilePicture(imageView: ImageView, tvAvatarLabel: TextView) {
-        if (imageView.visibility == View.GONE || null == context) {
+        if (null == room || imageView.visibility == View.GONE || null == context) {
             return
         }
         ImageViewCompat.setImageTintList(imageView, ColorStateList.valueOf(TAPUtils.getRandomColor(context, room.name)))
@@ -254,6 +268,9 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
 
     private fun setChatRoomStatus(onlineStatus: TAPOnlineStatusModel) {
         setOnlineStatus(onlineStatus)
+        if (null == recipientUser) {
+            return
+        }
         if (onlineStatus.user.userID == recipientUser.userID && onlineStatus.online) {
             // User is online
             showUserOnline()
@@ -313,6 +330,9 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
     }
 
     private fun setTypingIndicator() {
+        if (null == typingUsers) {
+            return
+        }
         if (typingUsers.size > 0) {
             showTypingIndicator()
         }
@@ -322,7 +342,7 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
     }
 
     private fun showTypingIndicator() {
-        if (null == activity) {
+        if (null == activity || null == typingUsers) {
             return
         }
         typingIndicatorTimeoutTimer.cancel()
@@ -357,7 +377,7 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
         }
         typingIndicatorTimeoutTimer.cancel()
         activity?.runOnUiThread {
-            typingUsers.clear()
+            typingUsers?.clear()
             clRoomStatus?.visibility = View.VISIBLE
             clRoomTypingStatus?.visibility = View.GONE
             clRoomOnlineStatus?.visibility = View.VISIBLE
@@ -391,7 +411,7 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
     }
 
     private fun openRoomProfile() {
-        if (null == activity) {
+        if (null == room || null == activity) {
             return
         }
         TAPChatManager.getInstance(instanceKey).triggerChatRoomProfileButtonTapped(activity, room, recipientUser)
