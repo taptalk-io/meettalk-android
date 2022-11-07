@@ -72,12 +72,15 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
         lastActivityHandler?.removeCallbacks(lastActivityRunnable) // Stop offline timer
     }
 
-    override fun onReceiveUpdatedChatRoomData(room: TAPRoomModel, recipientUser: TAPUserModel?) {
+    override fun onReceiveUpdatedChatRoomData(
+        room: TAPRoomModel?,
+        recipientUser: TAPUserModel?,
+        onlineStatus: TAPOnlineStatusModel?
+    ) {
         setRoomName()
         setRoomStatus()
         setRoomProfilePicture()
-        if (null != recipientUser) {
-            onlineStatus = TAPOnlineStatusModel.Builder(recipientUser)
+        if (null != onlineStatus) {
             setChatRoomStatus(onlineStatus)
         }
     }
@@ -245,7 +248,7 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
         }
         ImageViewCompat.setImageTintList(imageView, ColorStateList.valueOf(TAPUtils.getRandomColor(context, room.name)))
         tvAvatarLabel.text = TAPUtils.getInitials(room.name, if (room.type == TYPE_PERSONAL) 2 else 1)
-        imageView.setImageDrawable(ContextCompat.getDrawable(context!!, R.drawable.tap_bg_circle_9b9b9b))
+        imageView.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.tap_bg_circle_9b9b9b))
         tvAvatarLabel.visibility = View.VISIBLE
     }
 
@@ -269,7 +272,7 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
                 clRoomOnlineStatus?.visibility = View.VISIBLE
             }
             vStatusBadge?.visibility = View.VISIBLE
-            vStatusBadge?.background = ContextCompat.getDrawable(activity!!, R.drawable.tap_bg_circle_active)
+            vStatusBadge?.background = ContextCompat.getDrawable(requireActivity(), R.drawable.tap_bg_circle_active)
             tvRoomStatus?.text = getString(io.taptalk.TapTalk.R.string.tap_active_now)
             lastActivityHandler?.removeCallbacks(lastActivityRunnable)
         }
@@ -376,14 +379,14 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
     private fun showSelectState() {
         vRoomImage?.isEnabled = false
         if (null != context) {
-            ivButtonBack?.setImageDrawable(ContextCompat.getDrawable(context!!, R.drawable.tap_ic_close_grey))
+            ivButtonBack?.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.tap_ic_close_grey))
         }
     }
 
     private fun hideSelectState() {
         vRoomImage?.isEnabled = true
         if (null != context) {
-            ivButtonBack?.setImageDrawable(ContextCompat.getDrawable(context!!, R.drawable.tap_ic_chevron_left_white))
+            ivButtonBack?.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.tap_ic_chevron_left_white))
         }
     }
 
