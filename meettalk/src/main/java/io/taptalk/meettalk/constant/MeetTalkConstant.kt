@@ -325,6 +325,8 @@ class MeetTalkConstant {
          * Default: disabled (false).
          */
         const val WELCOME_PAGE_ENABLED = "welcomepage.enabled"
+
+        const val PREJOIN_PAGE_ENABLED = "prejoinpage.enabled"
     }
 
 }

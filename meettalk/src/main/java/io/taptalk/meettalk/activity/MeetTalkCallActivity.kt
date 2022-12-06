@@ -196,6 +196,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         initView()
         registerForBroadcastMessages()
         TAPConnectionManager.getInstance(instanceKey).addSocketListener(socketListener)
+        jitsiView.join(options)
     }
 
     override fun onResume() {
@@ -248,6 +249,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finish()
+    }
+
     override fun finish() {
         if (isFinishing) {
             return
@@ -296,89 +302,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         super.onNewIntent(intent)
         if (BuildConfig.DEBUG) {
             Log.e(">>>>", "MeetTalkCallActivity onNewIntent: ${TAPUtils.toJsonString(intent?.data)}")
-        }
-    }
-
-    override fun onConferenceWillJoin(extraData: HashMap<String, Any>?) {
-        super.onConferenceWillJoin(extraData)
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>>", "MeetTalkCallActivity onConferenceWillJoin: ${TAPUtils.toJsonString(extraData)}")
-        }
-    }
-
-    override fun onConferenceJoined(extraData: HashMap<String, Any>?) {
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>>", "MeetTalkCallActivity onConferenceJoined: ${TAPUtils.toJsonString(extraData)}")
-        }
-        enableButtons()
-        updateLayout(true)
-//        retrieveParticipantsInfo()
-        if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
-            // Joined an existing call, send participant joined notification
-            MeetTalkCallManager.sendJoinedCallNotification(
-                instanceKey,
-                callInitiatedMessage.room
-            )
-
-            // Set status text to Waiting for User
-            if (!isCallStarted && !isRecipientBusy) {
-                tv_call_duration_status.text = String.format(
-                    getString(R.string.meettalk_format_waiting_for_user_ellipsis),
-                    TAPUtils.getFirstWordOfString(roomDisplayName)
-                )
-            }
-        }
-
-        // Trigger listener callback
-        for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
-            meetTalkListener.onConferenceJoined(MeetTalkCallManager.activeConferenceInfo)
-        }
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            // Force loudspeaker to initial state
-            forceLoudspeakerState()
-            if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
-                activeParticipantInfo.role == HOST &&
-                MeetTalkCallManager.answeredCallID != MeetTalkCallManager.activeConferenceInfo?.callID &&
-                !isCallStarted &&
-                !isRecipientBusy
-            ) {
-                // Play outgoing ring tone
-                MeetTalkCallManager.playRingTone(ToneGenerator.TONE_SUP_RINGTONE)
-            }
-        }, 100L)
-    }
-
-    override fun onConferenceTerminated(extraData: HashMap<String, Any>?) {
-        super.onConferenceTerminated(extraData)
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>>", "MeetTalkCallActivity onConferenceTerminated: ${TAPUtils.toJsonString(extraData)}")
-        }
-
-        // Trigger listener callback
-        for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
-            meetTalkListener.onConferenceTerminated(MeetTalkCallManager.activeConferenceInfo)
-        }
-    }
-
-    override fun onParticipantJoined(extraData: HashMap<String, Any>?) {
-        super.onParticipantJoined(extraData)
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>>", "MeetTalkCallActivity onParticipantJoined: ${TAPUtils.toJsonString(extraData)}")
-        }
-//        if (extraData != null && extraData["isLocal"] == false) {
-//
-//        }
-    }
-
-    override fun onParticipantLeft(extraData: HashMap<String, Any>?) {
-        super.onParticipantLeft(extraData)
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>>", "MeetTalkCallActivity onParticipantLeft: ${TAPUtils.toJsonString(extraData)}")
-        }
-        if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
-            // The other user left, terminate the call
-            finish()
         }
     }
 
@@ -434,11 +357,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     private fun initView() {
         runOnUiThread {
-            meetTalkCallView.layoutParams = FrameLayout.LayoutParams(
+            jitsiView.layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
             )
-            fl_meettalk_call_view_container.addView(meetTalkCallView)
+            fl_meettalk_call_view_container.addView(jitsiView)
 
             tv_room_display_name.text = roomDisplayName
 
@@ -526,15 +449,49 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             return
         }
         val event = BroadcastEvent(intent)
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>>", "onBroadcastReceived: ${event.type}")
+        }
         when (event.type) {
-            BroadcastEvent.Type.ENDPOINT_TEXT_MESSAGE_RECEIVED -> {
+            BroadcastEvent.Type.CONFERENCE_JOINED -> {
                 if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "onBroadcastReceived: ENDPOINT_TEXT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
+                    Log.e(">>>>", "onBroadcastReceived: CONFERENCE_JOINED ${TAPUtils.toJsonString(event.data)}")
+                }
+                onConferenceJoined()
+            }
+            BroadcastEvent.Type.CONFERENCE_TERMINATED -> {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "onBroadcastReceived: CONFERENCE_TERMINATED ${TAPUtils.toJsonString(event.data)}")
+                }
+                onConferenceTerminated()
+            }
+            BroadcastEvent.Type.CONFERENCE_WILL_JOIN -> {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "onBroadcastReceived: CONFERENCE_WILL_JOIN ${TAPUtils.toJsonString(event.data)}")
                 }
             }
-            BroadcastEvent.Type.SCREEN_SHARE_TOGGLED -> {
+            BroadcastEvent.Type.PARTICIPANT_JOINED -> {
                 if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "onBroadcastReceived: SCREEN_SHARE_TOGGLED ${TAPUtils.toJsonString(event.data)}")
+                    Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_JOINED ${TAPUtils.toJsonString(event.data)}")
+                }
+            }
+            BroadcastEvent.Type.PARTICIPANT_LEFT -> {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "onBroadcastReceived: PARTICIPANT_LEFT ${TAPUtils.toJsonString(event.data)}")
+                }
+                onParticipantLeft()
+            }
+            BroadcastEvent.Type.AUDIO_MUTED_CHANGED -> {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "onBroadcastReceived: AUDIO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
+                }
+            }
+            BroadcastEvent.Type.VIDEO_MUTED_CHANGED -> {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "onBroadcastReceived: VIDEO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
+                }
+                if (!isVideoMuted && isCallStarted) {
+                    MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
                 }
             }
             BroadcastEvent.Type.PARTICIPANTS_INFO_RETRIEVED -> {
@@ -559,22 +516,19 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                     Log.e(">>>>", "onBroadcastReceived: CHAT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
                 }
             }
+            BroadcastEvent.Type.ENDPOINT_TEXT_MESSAGE_RECEIVED -> {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "onBroadcastReceived: ENDPOINT_TEXT_MESSAGE_RECEIVED ${TAPUtils.toJsonString(event.data)}")
+                }
+            }
+            BroadcastEvent.Type.SCREEN_SHARE_TOGGLED -> {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "onBroadcastReceived: SCREEN_SHARE_TOGGLED ${TAPUtils.toJsonString(event.data)}")
+                }
+            }
             BroadcastEvent.Type.CHAT_TOGGLED -> {
                 if (BuildConfig.DEBUG) {
                     Log.e(">>>>", "onBroadcastReceived: CHAT_TOGGLED ${TAPUtils.toJsonString(event.data)}")
-                }
-            }
-            BroadcastEvent.Type.AUDIO_MUTED_CHANGED -> {
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "onBroadcastReceived: AUDIO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
-                }
-            }
-            BroadcastEvent.Type.VIDEO_MUTED_CHANGED -> {
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "onBroadcastReceived: VIDEO_MUTED_CHANGED ${TAPUtils.toJsonString(event.data)}")
-                }
-                if (!isVideoMuted && isCallStarted) {
-                    MeetTalkCallManager.sendConferenceInfoNotification(instanceKey, callInitiatedMessage.room)
                 }
             }
             else -> {
@@ -582,6 +536,70 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                     Log.e(">>>>", "onBroadcastReceived OTHERS: ${intent.action} ${TAPUtils.toJsonString(intent.data)}")
                 }
             }
+        }
+    }
+
+    private fun onConferenceJoined() {
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>>", "MeetTalkCallActivity onConferenceJoined:")
+        }
+        enableButtons()
+        updateLayout(true)
+//        retrieveParticipantsInfo()
+        if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
+            // Joined an existing call, send participant joined notification
+            MeetTalkCallManager.sendJoinedCallNotification(
+                instanceKey,
+                callInitiatedMessage.room
+            )
+
+            // Set status text to Waiting for User
+            if (!isCallStarted && !isRecipientBusy) {
+                tv_call_duration_status.text = String.format(
+                    getString(R.string.meettalk_format_waiting_for_user_ellipsis),
+                    TAPUtils.getFirstWordOfString(roomDisplayName)
+                )
+            }
+        }
+
+        // Trigger listener callback
+        for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
+            meetTalkListener.onConferenceJoined(MeetTalkCallManager.activeConferenceInfo)
+        }
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            // Force loudspeaker to initial state
+            forceLoudspeakerState()
+            if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
+                activeParticipantInfo.role == HOST &&
+                MeetTalkCallManager.answeredCallID != MeetTalkCallManager.activeConferenceInfo?.callID &&
+                !isCallStarted &&
+                !isRecipientBusy
+            ) {
+                // Play outgoing ring tone
+                MeetTalkCallManager.playRingTone(ToneGenerator.TONE_SUP_RINGTONE)
+            }
+        }, 100L)
+    }
+
+    private fun onConferenceTerminated() {
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>>", "MeetTalkCallActivity onConferenceTerminated:")
+        }
+
+        // Trigger listener callback
+        for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
+            meetTalkListener.onConferenceTerminated(MeetTalkCallManager.activeConferenceInfo)
+        }
+    }
+
+    private fun onParticipantLeft() {
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>>", "MeetTalkCallActivity onParticipantLeft:")
+        }
+        if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
+            // The other user left, terminate the call
+            finish()
         }
     }
 
@@ -899,22 +917,27 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     }
 
     private fun isHeadsetConnected(): Boolean {
-        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        if (bluetoothAdapter != null &&
-            bluetoothAdapter.isEnabled &&
-            bluetoothAdapter.getProfileConnectionState(HEADSET) == STATE_CONNECTED
-        ) {
-            if (BuildConfig.DEBUG) {
-                Log.e(">>>> $TAG", "isHeadsetConnected: bluetooth headset detected")
-            }
-            return true
-        }
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (audioManager.isWiredHeadsetOn) {
             if (BuildConfig.DEBUG) {
                 Log.e(">>>> $TAG", "isHeadsetConnected: wired headset detected")
             }
             return true
+        }
+        try {
+            val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+            if (bluetoothAdapter != null &&
+                bluetoothAdapter.isEnabled &&
+                bluetoothAdapter.getProfileConnectionState(HEADSET) == STATE_CONNECTED
+            ) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>> $TAG", "isHeadsetConnected: bluetooth headset detected")
+                }
+                return true
+            }
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+            return false
         }
         if (BuildConfig.DEBUG) {
             Log.e(">>>> $TAG", "isHeadsetConnected: no headset detected")
