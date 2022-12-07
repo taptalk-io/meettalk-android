@@ -70,6 +70,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.MEETING_NAME_
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.MEETING_PASSWORD_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.NOTIFICATIONS_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.OVERFLOW_MENU_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.PREJOIN_PAGE_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.RAISE_HAND_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.REACTIONS_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.RECORDING_ENABLED
@@ -78,6 +79,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.TILE_VIEW_ENA
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.TOOLBOX_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_MUTE_BUTTON_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.VIDEO_SHARE_BUTTON_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.WELCOME_PAGE_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.HOST
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.PARTICIPANT
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_AUDIO
@@ -138,7 +140,7 @@ class MeetTalkCallManager {
             // Initialize Jitsi Meet
             val serverURL: URL = try {
                 URL(MEET_URL)
-//                URL("https://meet.jit.si") // FIXME: TEMPORARILY DIRECT CALL TO DEFAULT SERVER
+//                URL("https://meet.jit.si")
             } catch (e: MalformedURLException) {
                 e.printStackTrace()
                 throw RuntimeException("Invalid server URL!")
@@ -168,6 +170,8 @@ class MeetTalkCallManager {
                 .setFeatureFlag(TOOLBOX_ENABLED, false)
                 .setFeatureFlag(VIDEO_MUTE_BUTTON_ENABLED, false)
                 .setFeatureFlag(VIDEO_SHARE_BUTTON_ENABLED, false)
+                .setFeatureFlag(WELCOME_PAGE_ENABLED, false)
+                .setFeatureFlag(PREJOIN_PAGE_ENABLED, false)
                 .build()
             JitsiMeet.setDefaultConferenceOptions(defaultOptions)
 
@@ -602,6 +606,21 @@ class MeetTalkCallManager {
                 ActivityCompat.requestPermissions(
                     activity,
                     arrayOf(Manifest.permission.CAMERA),
+                    REQUEST_PERMISSION_CAMERA
+                )
+                return false
+            }
+            return true
+        }
+
+        fun checkAndRequestAudioAndCameraPermission(activity: Activity) : Boolean {
+            if (!TAPUtils.hasPermissions(activity, Manifest.permission.RECORD_AUDIO) ||
+                !TAPUtils.hasPermissions(activity, Manifest.permission.CAMERA)
+            ) {
+                // Check audio and camera permission
+                ActivityCompat.requestPermissions(
+                    activity,
+                    arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA),
                     REQUEST_PERMISSION_CAMERA
                 )
                 return false

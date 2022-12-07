@@ -506,4 +506,8 @@ public class MeetTalk {
     public static boolean checkAndRequestCameraPermission(Activity activity) {
         return MeetTalkCallManager.Companion.checkAndRequestCameraPermission(activity);
     }
+
+    public static boolean checkAndRequestAudioAndCameraPermission(Activity activity) {
+        return MeetTalkCallManager.Companion.checkAndRequestAudioAndCameraPermission(activity);
+    }
 }

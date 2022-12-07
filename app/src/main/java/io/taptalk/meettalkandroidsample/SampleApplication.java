@@ -49,7 +49,7 @@ public class SampleApplication extends MultiDexApplication {
 
         TapUI.getInstance(INSTANCE_KEY).setLogoutButtonVisible(true);
         TapUI.getInstance(INSTANCE_KEY).setConnectionStatusIndicatorVisible(false);
-        TapUI.getInstance(INSTANCE_KEY).addCustomKeyboardListener(customKeyboardListener);
+//        TapUI.getInstance(INSTANCE_KEY).addCustomKeyboardListener(customKeyboardListener);
     }
 
     MeetTalkListener meetTalkListener = new MeetTalkListener(INSTANCE_KEY) {
@@ -80,29 +80,29 @@ public class SampleApplication extends MultiDexApplication {
     };
 
     // TODO: TEST CUSTOM KEYBOARD FOR CONFERENCE CALL
-    TapUICustomKeyboardListener customKeyboardListener = new TapUICustomKeyboardListener() {
-        @Override
-        public List<TAPCustomKeyboardItemModel> setCustomKeyboardItems(TAPRoomModel room, TAPUserModel activeUser, @Nullable TAPUserModel recipientUser) {
-            if (room.getType() == TYPE_PERSONAL) {
-                ArrayList<TAPCustomKeyboardItemModel> customKeyboardItems = new ArrayList<>();
-                TAPCustomKeyboardItemModel voiceCallItem = new TAPCustomKeyboardItemModel("voiceCall", ContextCompat.getDrawable(SampleApplication.this, R.drawable.tap_ic_call_orange), "Voice Call");
-                customKeyboardItems.add(voiceCallItem);
-                TAPCustomKeyboardItemModel videoCallItem = new TAPCustomKeyboardItemModel("videoCall", ContextCompat.getDrawable(SampleApplication.this, R.drawable.meettalk_ic_video_camera_orange), "Video Call");
-                customKeyboardItems.add(videoCallItem);
-                return customKeyboardItems;
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public void onCustomKeyboardItemTapped(Activity activity, TAPCustomKeyboardItemModel customKeyboardItem, TAPRoomModel room, TAPUserModel activeUser, @Nullable TAPUserModel recipientUser) {
-            if (customKeyboardItem.getItemID().equals("voiceCall")) {
-                MeetTalk.initiateNewConferenceCall(activity, INSTANCE_KEY, room);
-            }
-            else if (customKeyboardItem.getItemID().equals("videoCall")) {
-                MeetTalk.initiateNewConferenceCall(activity, INSTANCE_KEY, room, false, false);
-            }
-        }
-    };
+//    TapUICustomKeyboardListener customKeyboardListener = new TapUICustomKeyboardListener() {
+//        @Override
+//        public List<TAPCustomKeyboardItemModel> setCustomKeyboardItems(TAPRoomModel room, TAPUserModel activeUser, @Nullable TAPUserModel recipientUser) {
+//            if (room.getType() == TYPE_PERSONAL) {
+//                ArrayList<TAPCustomKeyboardItemModel> customKeyboardItems = new ArrayList<>();
+//                TAPCustomKeyboardItemModel voiceCallItem = new TAPCustomKeyboardItemModel("voiceCall", ContextCompat.getDrawable(SampleApplication.this, R.drawable.tap_ic_call_orange), "Voice Call");
+//                customKeyboardItems.add(voiceCallItem);
+//                TAPCustomKeyboardItemModel videoCallItem = new TAPCustomKeyboardItemModel("videoCall", ContextCompat.getDrawable(SampleApplication.this, R.drawable.meettalk_ic_video_camera_orange), "Video Call");
+//                customKeyboardItems.add(videoCallItem);
+//                return customKeyboardItems;
+//            } else {
+//                return null;
+//            }
+//        }
+//
+//        @Override
+//        public void onCustomKeyboardItemTapped(Activity activity, TAPCustomKeyboardItemModel customKeyboardItem, TAPRoomModel room, TAPUserModel activeUser, @Nullable TAPUserModel recipientUser) {
+//            if (customKeyboardItem.getItemID().equals("voiceCall")) {
+//                MeetTalk.initiateNewConferenceCall(activity, INSTANCE_KEY, room);
+//            }
+//            else if (customKeyboardItem.getItemID().equals("videoCall")) {
+//                MeetTalk.initiateNewConferenceCall(activity, INSTANCE_KEY, room, false, false);
+//            }
+//        }
+//    };
 }

@@ -24,19 +24,19 @@ class MeetTalkCallView(context: Context) : JitsiMeetView(context) {
         super.dispose()
     }
 
-    override fun onCurrentConferenceChanged(conferenceUrl: String?) {
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>>> MeetTalkCallView", "onCurrentConferenceChanged: $conferenceUrl")
-        }
-        super.onCurrentConferenceChanged(conferenceUrl)
-        if (conferenceUrl.isNullOrEmpty() && context is Activity) {
-            // TODO: HANDLE RECONNECT
-            (context as Activity).runOnUiThread {
-                leave()
-                MeetTalkCallManager.activeMeetTalkIncomingCallActivity?.finish()
-            }
-        }
-    }
+//    override fun onCurrentConferenceChanged(conferenceUrl: String?) {
+//        if (BuildConfig.DEBUG) {
+//            Log.e(">>>>> MeetTalkCallView", "onCurrentConferenceChanged: $conferenceUrl")
+//        }
+//        super.onCurrentConferenceChanged(conferenceUrl)
+//        if (conferenceUrl.isNullOrEmpty() && context is Activity) {
+//            // TODO: HANDLE RECONNECT
+//            (context as Activity).runOnUiThread {
+//                leave()
+//                MeetTalkCallManager.activeMeetTalkIncomingCallActivity?.finish()
+//            }
+//        }
+//    }
 
     override fun enterPictureInPicture() {
         if (BuildConfig.DEBUG) {
@@ -56,10 +56,10 @@ class MeetTalkCallView(context: Context) : JitsiMeetView(context) {
         super.join(options)
     }
 
-    override fun leave() {
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>>> MeetTalkCallView", "leave: ")
-        }
-        super.leave()
-    }
+//    override fun leave() {
+//        if (BuildConfig.DEBUG) {
+//            Log.e(">>>>> MeetTalkCallView", "leave: ")
+//        }
+//        super.leave()
+//    }
 }

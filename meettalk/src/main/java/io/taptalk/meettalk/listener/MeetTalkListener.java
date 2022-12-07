@@ -1,15 +1,22 @@
 package io.taptalk.meettalk.listener;
 
+import static io.taptalk.TapTalk.Const.TAPDefaultConstant.PermissionRequest.PERMISSION_CAMERA_CAMERA;
 import static io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_MESSAGE_TYPE;
 
+import android.Manifest;
 import android.app.Activity;
 
 import androidx.annotation.Keep;
+import androidx.core.app.ActivityCompat;
 
+import io.taptalk.TapTalk.Helper.TAPUtils;
 import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
 import io.taptalk.TapTalk.Model.TAPRoomModel;
+import io.taptalk.TapTalk.View.Activity.TAPBarcodeScannerActivity;
+import io.taptalk.TapTalk.View.Activity.TAPNewChatActivity;
 import io.taptalk.meettalk.helper.MeetTalk;
+import io.taptalk.meettalk.helper.MeetTalkUtils;
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo;
 
 @Keep
