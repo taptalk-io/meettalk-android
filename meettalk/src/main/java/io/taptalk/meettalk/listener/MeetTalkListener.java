@@ -1,15 +1,22 @@
 package io.taptalk.meettalk.listener;
 
+import static io.taptalk.TapTalk.Const.TAPDefaultConstant.PermissionRequest.PERMISSION_CAMERA_CAMERA;
 import static io.taptalk.meettalk.constant.MeetTalkConstant.CallMessageType.CALL_MESSAGE_TYPE;
 
+import android.Manifest;
 import android.app.Activity;
 
 import androidx.annotation.Keep;
+import androidx.core.app.ActivityCompat;
 
+import io.taptalk.TapTalk.Helper.TAPUtils;
 import io.taptalk.TapTalk.Helper.TapTalk;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
 import io.taptalk.TapTalk.Model.TAPRoomModel;
+import io.taptalk.TapTalk.View.Activity.TAPBarcodeScannerActivity;
+import io.taptalk.TapTalk.View.Activity.TAPNewChatActivity;
 import io.taptalk.meettalk.helper.MeetTalk;
+import io.taptalk.meettalk.helper.MeetTalkUtils;
 import io.taptalk.meettalk.model.MeetTalkConferenceInfo;
 
 @Keep
@@ -195,16 +202,22 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
 
     @Override
     public void onChatBubbleCallButtonTapped(String instanceKey, Activity activity, TAPMessageModel message) {
-        MeetTalk.initiateNewConferenceCall(activity, instanceKey, message.getRoom());
+        if (MeetTalkUtils.Companion.checkAndRequestAudioPermission(activity)) {
+            MeetTalk.initiateNewConferenceCall(activity, instanceKey, message.getRoom());
+        }
     }
 
     @Override
     public void onChatRoomVoiceCallButtonTapped(String instanceKey, Activity activity, TAPRoomModel room) {
-        MeetTalk.initiateNewConferenceCall(activity, instanceKey, room);
+        if (MeetTalkUtils.Companion.checkAndRequestAudioPermission(activity)) {
+            MeetTalk.initiateNewConferenceCall(activity, instanceKey, room);
+        }
     }
 
     @Override
     public void onChatRoomVideoCallButtonTapped(String instanceKey, Activity activity, TAPRoomModel room) {
-        MeetTalk.initiateNewConferenceCall(activity, instanceKey, room, false, false);
+        if (MeetTalkUtils.Companion.checkAndRequestVideoPermission(activity)) {
+            MeetTalk.initiateNewConferenceCall(activity, instanceKey, room, false, false);
+        }
     }
 }
