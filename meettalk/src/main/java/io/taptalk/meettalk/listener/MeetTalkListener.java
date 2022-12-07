@@ -202,22 +202,16 @@ public abstract class MeetTalkListener implements MeetTalkInterface {
 
     @Override
     public void onChatBubbleCallButtonTapped(String instanceKey, Activity activity, TAPMessageModel message) {
-        if (MeetTalkUtils.Companion.checkAndRequestAudioPermission(activity)) {
-            MeetTalk.initiateNewConferenceCall(activity, instanceKey, message.getRoom());
-        }
+        MeetTalk.initiateNewConferenceCall(activity, instanceKey, message.getRoom());
     }
 
     @Override
     public void onChatRoomVoiceCallButtonTapped(String instanceKey, Activity activity, TAPRoomModel room) {
-        if (MeetTalkUtils.Companion.checkAndRequestAudioPermission(activity)) {
-            MeetTalk.initiateNewConferenceCall(activity, instanceKey, room);
-        }
+        MeetTalk.initiateNewConferenceCall(activity, instanceKey, room);
     }
 
     @Override
     public void onChatRoomVideoCallButtonTapped(String instanceKey, Activity activity, TAPRoomModel room) {
-        if (MeetTalkUtils.Companion.checkAndRequestVideoPermission(activity)) {
-            MeetTalk.initiateNewConferenceCall(activity, instanceKey, room, false, false);
-        }
+        MeetTalk.initiateNewConferenceCall(activity, instanceKey, room, false, false);
     }
 }

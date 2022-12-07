@@ -1,5 +1,7 @@
 package io.taptalk.meettalk.fragment
 
+import android.content.Intent
+import android.content.pm.PackageManager
 import io.taptalk.TapTalk.View.Fragment.TapBaseChatRoomCustomNavigationBarFragment
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.RequestManager
@@ -34,6 +36,9 @@ import io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL
 import io.taptalk.TapTalk.Helper.CircleImageView
 import io.taptalk.TapTalk.Manager.TAPChatManager
 import io.taptalk.TapTalk.View.Activity.TapUIChatActivity
+import io.taptalk.meettalk.constant.MeetTalkConstant
+import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_AUDIO
+import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.REQUEST_PERMISSION_CAMERA
 import io.taptalk.meettalk.helper.MeetTalk
 
 class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBarFragment() {
@@ -70,6 +75,24 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
     override fun onDestroyView() {
         super.onDestroyView()
         lastActivityHandler?.removeCallbacks(lastActivityRunnable) // Stop offline timer
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            when (requestCode) {
+                REQUEST_PERMISSION_AUDIO -> {
+                    triggerStartVoiceCall()
+                }
+                REQUEST_PERMISSION_CAMERA -> {
+                    triggerStartVideoCall()
+                }
+            }
+        }
     }
 
     override fun onReceiveUpdatedChatRoomData(
@@ -424,8 +447,10 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
         if (null == instanceKey || null == activity || null == room) {
             return
         }
-        for (listener in MeetTalk.getMeetTalkListeners(instanceKey)) {
-            listener.onChatRoomVoiceCallButtonTapped(instanceKey, activity, room)
+        if (MeetTalk.checkAndRequestAudioPermission(activity)) {
+            for (listener in MeetTalk.getMeetTalkListeners(instanceKey)) {
+                listener.onChatRoomVoiceCallButtonTapped(instanceKey, activity, room)
+            }
         }
     }
 
@@ -433,8 +458,10 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
         if (null == instanceKey || null == activity || null == room) {
             return
         }
-        for (listener in MeetTalk.getMeetTalkListeners(instanceKey)) {
-            listener.onChatRoomVideoCallButtonTapped(instanceKey, activity, room)
+        if (MeetTalk.checkAndRequestAudioAndCameraPermission(activity)) {
+            for (listener in MeetTalk.getMeetTalkListeners(instanceKey)) {
+                listener.onChatRoomVideoCallButtonTapped(instanceKey, activity, room)
+            }
         }
     }
 }

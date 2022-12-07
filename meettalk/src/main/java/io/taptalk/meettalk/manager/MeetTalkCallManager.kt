@@ -613,6 +613,21 @@ class MeetTalkCallManager {
             return true
         }
 
+        fun checkAndRequestAudioAndCameraPermission(activity: Activity) : Boolean {
+            if (!TAPUtils.hasPermissions(activity, Manifest.permission.RECORD_AUDIO) ||
+                !TAPUtils.hasPermissions(activity, Manifest.permission.CAMERA)
+            ) {
+                // Check audio and camera permission
+                ActivityCompat.requestPermissions(
+                    activity,
+                    arrayOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA),
+                    REQUEST_PERMISSION_CAMERA
+                )
+                return false
+            }
+            return true
+        }
+
         fun clearPendingIncomingCall() {
             pendingIncomingCallRoomID = null
             pendingIncomingCallPhoneNumber = null
