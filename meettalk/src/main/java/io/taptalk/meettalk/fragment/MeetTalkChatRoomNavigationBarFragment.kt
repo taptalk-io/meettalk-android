@@ -154,7 +154,7 @@ class MeetTalkChatRoomNavigationBarFragment : TapBaseChatRoomCustomNavigationBar
         ivButtonBack?.setOnClickListener { v: View? -> onBackPressed() }
         vRoomImage?.setOnClickListener { v: View? -> openRoomProfile() }
 
-        if (room?.type == TYPE_PERSONAL) {
+        if (room?.type == TYPE_PERSONAL && !TAPUtils.isSavedMessagesRoom(room?.roomID, instanceKey)) {
             ivButtonVoiceCall?.setOnClickListener { v: View? -> triggerStartVoiceCall() }
             ivButtonVideoCall?.setOnClickListener { v: View? -> triggerStartVideoCall() }
         }
