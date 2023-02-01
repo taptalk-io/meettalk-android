@@ -123,8 +123,8 @@ class MeetTalkCallManager {
         var pendingCallNotificationMessages: ArrayList<TAPMessageModel> = ArrayList()
 
         private val appName = TapTalk.appContext.getString(R.string.app_name)
-        private val telecomManager = TapTalk.appContext.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
-        private val phoneAccountHandle = PhoneAccountHandle(ComponentName(TapTalk.appContext, MeetTalkConnectionService::class.java), appName)
+//        private val telecomManager = TapTalk.appContext.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+//        private val phoneAccountHandle = PhoneAccountHandle(ComponentName(TapTalk.appContext, MeetTalkConnectionService::class.java), appName)
         private var pendingIncomingCallRoomID: String? = null
         private var pendingIncomingCallPhoneNumber: String? = null
         private var handledCallNotificationMessageLocalIDs: ArrayList<String> = ArrayList()
@@ -175,7 +175,7 @@ class MeetTalkCallManager {
                 .build()
             JitsiMeet.setDefaultConferenceOptions(defaultOptions)
 
-            buildAndRegisterPhoneAccount()
+//            buildAndRegisterPhoneAccount()
 
             initSocketListener()
 //            initBroadcastReceiver()
@@ -228,58 +228,58 @@ class MeetTalkCallManager {
 //            )
 //        }
 
-        fun isPhoneAccountEnabled() : Boolean {
-            return getPhoneAccount()?.isEnabled == true
-        }
+//        fun isPhoneAccountEnabled() : Boolean {
+//            return getPhoneAccount()?.isEnabled == true
+//        }
+//
+//        fun isEnablePhoneAccountSettingsRequested(instanceKey: String) : Boolean {
+//            return MeetTalkDataManager.getInstance(instanceKey).getEnablePhoneAccountSettingsRequestedAppName() == appName
+//        }
+//
+//        fun requestEnablePhoneAccountSettings(instanceKey: String, activity: Activity) {
+//            TapTalkDialog.Builder(activity)
+//                .setTitle(activity.getString(R.string.meettalk_enable_voice_call))
+//                .setMessage(String.format(activity.getString(R.string.meettalk_format_enable_phone_account_message), appName))
+//                .setCancelable(false)
+//                .setPrimaryButtonTitle(activity.getString(R.string.tap_go_to_settings))
+//                .setPrimaryButtonListener { openPhoneAccountSettings() }
+//                .setSecondaryButtonTitle(activity.getString(R.string.meettalk_dismiss))
+//                .show()
+//            MeetTalkDataManager.getInstance(instanceKey).setEnablePhoneAccountSettingsRequestedAppName(appName)
+//        }
+//
+//        fun checkAndRequestEnablePhoneAccountSettings(instanceKey: String, activity: Activity) {
+//            if (isEnablePhoneAccountSettingsRequested(instanceKey) || isPhoneAccountEnabled()) {
+//                return
+//            }
+//            requestEnablePhoneAccountSettings(instanceKey, activity)
+//        }
 
-        fun isEnablePhoneAccountSettingsRequested(instanceKey: String) : Boolean {
-            return MeetTalkDataManager.getInstance(instanceKey).getEnablePhoneAccountSettingsRequestedAppName() == appName
-        }
+//        fun openPhoneAccountSettings() {
+//            val intent = Intent()
+//            if (Build.MANUFACTURER.equals("Samsung", ignoreCase = true)) {
+//                intent.component = ComponentName(
+//                    "com.android.server.telecom",
+//                    "com.android.server.telecom.settings.EnableAccountPreferenceActivity"
+//                )
+//            } else {
+//                intent.action = TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS
+//            }
+//            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//            TapTalk.appContext.startActivity(intent)
+//        }
 
-        fun requestEnablePhoneAccountSettings(instanceKey: String, activity: Activity) {
-            TapTalkDialog.Builder(activity)
-                .setTitle(activity.getString(R.string.meettalk_enable_voice_call))
-                .setMessage(String.format(activity.getString(R.string.meettalk_format_enable_phone_account_message), appName))
-                .setCancelable(false)
-                .setPrimaryButtonTitle(activity.getString(R.string.tap_go_to_settings))
-                .setPrimaryButtonListener { openPhoneAccountSettings() }
-                .setSecondaryButtonTitle(activity.getString(R.string.meettalk_dismiss))
-                .show()
-            MeetTalkDataManager.getInstance(instanceKey).setEnablePhoneAccountSettingsRequestedAppName(appName)
-        }
-
-        fun checkAndRequestEnablePhoneAccountSettings(instanceKey: String, activity: Activity) {
-            if (isEnablePhoneAccountSettingsRequested(instanceKey) || isPhoneAccountEnabled()) {
-                return
-            }
-            requestEnablePhoneAccountSettings(instanceKey, activity)
-        }
-
-        fun openPhoneAccountSettings() {
-            val intent = Intent()
-            if (Build.MANUFACTURER.equals("Samsung", ignoreCase = true)) {
-                intent.component = ComponentName(
-                    "com.android.server.telecom",
-                    "com.android.server.telecom.settings.EnableAccountPreferenceActivity"
-                )
-            } else {
-                intent.action = TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS
-            }
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            TapTalk.appContext.startActivity(intent)
-        }
-
-        private fun buildAndRegisterPhoneAccount() {
-            if (getPhoneAccount() == null) {
-                val phoneAccount = PhoneAccount.builder(phoneAccountHandle, appName)
-                    .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER).build()
-                telecomManager.registerPhoneAccount(phoneAccount)
-            }
-        }
-
-        private fun getPhoneAccount() : PhoneAccount? {
-            return telecomManager.getPhoneAccount(phoneAccountHandle)
-        }
+//        private fun buildAndRegisterPhoneAccount() {
+//            if (getPhoneAccount() == null) {
+//                val phoneAccount = PhoneAccount.builder(phoneAccountHandle, appName)
+//                    .setCapabilities(PhoneAccount.CAPABILITY_CALL_PROVIDER).build()
+//                telecomManager.registerPhoneAccount(phoneAccount)
+//            }
+//        }
+//
+//        private fun getPhoneAccount() : PhoneAccount? {
+//            return telecomManager.getPhoneAccount(phoneAccountHandle)
+//        }
 
         fun openAppNotificationSettings(context: Context, openIncomingCallChannelSettings: Boolean) {
             val settingsIntent = Intent()
@@ -370,120 +370,120 @@ class MeetTalkCallManager {
             showIncomingCallNotification(activeCallInstanceKey!!, MeetTalk.appContext, name, contentText)
         }
 
-        fun showNativeIncomingCallScreen(message: TAPMessageModel?, displayName: String?, displayPhoneNumber: String?) {
-            if (callState != CallState.IDLE) {
-                return
-            }
-            val name: String
-            if (!displayName.isNullOrEmpty() && message != null && activeCallInstanceKey != null) {
-                getRoomAliasMap(activeCallInstanceKey!!)[message.room.roomID] = displayName!!
-                name = message.user?.fullname ?: ""
-            }
-            else {
-                name = displayName!!
-            }
-            val phoneNumber = if (displayPhoneNumber.isNullOrEmpty()) {
-                if (message?.user != null) {
-                    // TODO: HANDLE COUNTRY CODE IN NUMBER
-                    String.format("0%s", message.user.phone)
-                }
-                else {
-                    "Unknown Number"
-                }
-            }
-            else {
-                displayPhoneNumber
-            }
-
-            buildAndRegisterPhoneAccount()
-
-            if (BuildConfig.DEBUG) {
-                Log.e(">>>>", "showIncomingCall: obtainedPhoneAccount ${TAPUtils.toJsonString(getPhoneAccount())} isEnabled: ${getPhoneAccount()?.isEnabled}")
-            }
-
-            val extras = Bundle()
-            val uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, phoneNumber, null)
-            extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri)
-            extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, phoneAccountHandle)
-            extras.putString(CALLER_NAME, name)
-            extras.putString(CALLER_NUMBER, phoneNumber)
-            try {
-                // Show incoming call
-                callState = CallState.RINGING
-                telecomManager.addNewIncomingCall(phoneAccountHandle, extras)
-
-                if (message != null) {
-                    pendingIncomingCallRoomID = message.room.roomID
-                    pendingIncomingCallPhoneNumber = phoneNumber
-
-                    // Trigger listener callback
-                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                        meetTalkListener.onIncomingCallReceived(activeCallInstanceKey, message)
-                    }
-                }
-
-                startMissedCallTimer()
-            }
-            catch (e: SecurityException) {
-                e.printStackTrace()
-                // This PhoneAccountHandle is not enabled for this user
-                callState = CallState.IDLE
-
-                val errorMessage =
-                    String.format(
-                        MeetTalk.appContext.getString(R.string.meettalk_format_received_call_phone_account_not_enabled),
-                        TAPUtils.getFirstWordOfString(name),
-                        appName
-                    )
-
-                if (message != null) {
-                    // Trigger listener callback
-                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                        meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, errorMessage)
-                    }
-                }
-
-                Toast.makeText(
-                    MeetTalk.appContext,
-                    errorMessage,
-                    Toast.LENGTH_LONG
-                ).show()
-
-                sendUnableToReceiveCallNotification(
-                    activeCallInstanceKey ?: return,
-                    activeCallMessage?.room ?: return,
-                    "{{sender}} has not enabled app's phone account."
-                )
-            }
-            catch (e: Exception) {
-                e.printStackTrace()
-                // Other exceptions
-                callState = CallState.IDLE
-
-                if (message != null) {
-                    // Trigger listener callback
-                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                        meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, e.message)
-                    }
-                }
-
-                Toast.makeText(
-                    MeetTalk.appContext,
-                    String.format(
-                        MeetTalk.appContext.getString(R.string.meettalk_format_unable_to_receive_call),
-                        TAPUtils.getFirstWordOfString(name),
-                        e.localizedMessage
-                    ),
-                    Toast.LENGTH_LONG
-                ).show()
-
-                sendUnableToReceiveCallNotification(
-                    activeCallInstanceKey ?: return,
-                    activeCallMessage?.room ?: return,
-                    "{{sender}} is unable to receive call."
-                )
-            }
-        }
+//        fun showNativeIncomingCallScreen(message: TAPMessageModel?, displayName: String?, displayPhoneNumber: String?) {
+//            if (callState != CallState.IDLE) {
+//                return
+//            }
+//            val name: String
+//            if (!displayName.isNullOrEmpty() && message != null && activeCallInstanceKey != null) {
+//                getRoomAliasMap(activeCallInstanceKey!!)[message.room.roomID] = displayName!!
+//                name = message.user?.fullname ?: ""
+//            }
+//            else {
+//                name = displayName!!
+//            }
+//            val phoneNumber = if (displayPhoneNumber.isNullOrEmpty()) {
+//                if (message?.user != null) {
+//                    // TODO: HANDLE COUNTRY CODE IN NUMBER
+//                    String.format("0%s", message.user.phone)
+//                }
+//                else {
+//                    "Unknown Number"
+//                }
+//            }
+//            else {
+//                displayPhoneNumber
+//            }
+//
+////            buildAndRegisterPhoneAccount()
+//
+//            if (BuildConfig.DEBUG) {
+//                Log.e(">>>>", "showIncomingCall: obtainedPhoneAccount ${TAPUtils.toJsonString(getPhoneAccount())} isEnabled: ${getPhoneAccount()?.isEnabled}")
+//            }
+//
+//            val extras = Bundle()
+//            val uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, phoneNumber, null)
+//            extras.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri)
+//            extras.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, phoneAccountHandle)
+//            extras.putString(CALLER_NAME, name)
+//            extras.putString(CALLER_NUMBER, phoneNumber)
+//            try {
+//                // Show incoming call
+//                callState = CallState.RINGING
+//                telecomManager.addNewIncomingCall(phoneAccountHandle, extras)
+//
+//                if (message != null) {
+//                    pendingIncomingCallRoomID = message.room.roomID
+//                    pendingIncomingCallPhoneNumber = phoneNumber
+//
+//                    // Trigger listener callback
+//                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+//                        meetTalkListener.onIncomingCallReceived(activeCallInstanceKey, message)
+//                    }
+//                }
+//
+//                startMissedCallTimer()
+//            }
+//            catch (e: SecurityException) {
+//                e.printStackTrace()
+//                // This PhoneAccountHandle is not enabled for this user
+//                callState = CallState.IDLE
+//
+//                val errorMessage =
+//                    String.format(
+//                        MeetTalk.appContext.getString(R.string.meettalk_format_received_call_phone_account_not_enabled),
+//                        TAPUtils.getFirstWordOfString(name),
+//                        appName
+//                    )
+//
+//                if (message != null) {
+//                    // Trigger listener callback
+//                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+//                        meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, errorMessage)
+//                    }
+//                }
+//
+//                Toast.makeText(
+//                    MeetTalk.appContext,
+//                    errorMessage,
+//                    Toast.LENGTH_LONG
+//                ).show()
+//
+//                sendUnableToReceiveCallNotification(
+//                    activeCallInstanceKey ?: return,
+//                    activeCallMessage?.room ?: return,
+//                    "{{sender}} has not enabled app's phone account."
+//                )
+//            }
+//            catch (e: Exception) {
+//                e.printStackTrace()
+//                // Other exceptions
+//                callState = CallState.IDLE
+//
+//                if (message != null) {
+//                    // Trigger listener callback
+//                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+//                        meetTalkListener.onShowIncomingCallFailed(activeCallInstanceKey, message, e.message)
+//                    }
+//                }
+//
+//                Toast.makeText(
+//                    MeetTalk.appContext,
+//                    String.format(
+//                        MeetTalk.appContext.getString(R.string.meettalk_format_unable_to_receive_call),
+//                        TAPUtils.getFirstWordOfString(name),
+//                        e.localizedMessage
+//                    ),
+//                    Toast.LENGTH_LONG
+//                ).show()
+//
+//                sendUnableToReceiveCallNotification(
+//                    activeCallInstanceKey ?: return,
+//                    activeCallMessage?.room ?: return,
+//                    "{{sender}} is unable to receive call."
+//                )
+//            }
+//        }
 
         private fun createIncomingCallNotificationChannel() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -653,7 +653,7 @@ class MeetTalkCallManager {
         private fun closeIncomingCall() {
             closeIncomingCallNotification(MeetTalk.appContext)
             activeMeetTalkIncomingCallActivity?.closeIncomingCall()
-            MeetTalkCallConnection.getInstance().onDisconnect()
+//            MeetTalkCallConnection.getInstance().onDisconnect()
             clearPendingIncomingCall()
         }
 

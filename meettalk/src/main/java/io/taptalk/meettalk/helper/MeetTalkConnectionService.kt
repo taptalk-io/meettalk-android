@@ -14,8 +14,6 @@ import io.taptalk.meettalk.manager.MeetTalkCallManager
 @RequiresApi(Build.VERSION_CODES.M)
 class MeetTalkConnectionService : ConnectionService() {
 
-    val TAG: String = MeetTalkConnectionService::class.java.simpleName
-
 //    companion object {
         var connection: MeetTalkCallConnection? = null
 //    }
@@ -31,17 +29,11 @@ class MeetTalkConnectionService : ConnectionService() {
         connection?.setAddress(Uri.parse(callerNumber), TelecomManager.PRESENTATION_ALLOWED)
         connection?.setInitializing()
         connection?.setActive()
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>> $TAG", "onCreateIncomingConnection: callerName: $callerName, address: ${request.address}, request: ${request.toString()}")
-        }
         return connection!!
     }
 
     override fun onCreateIncomingConnectionFailed(connectionManagerPhoneAccount: PhoneAccountHandle?, request: ConnectionRequest?) {
         super.onCreateIncomingConnectionFailed(connectionManagerPhoneAccount, request)
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>> $TAG", "onCreateIncomingFailed: ${request.toString()}")
-        }
         Toast.makeText(applicationContext,"onCreateIncomingConnectionFailed",Toast.LENGTH_LONG).show()
         MeetTalkCallManager.clearPendingIncomingCall()
     }
@@ -55,17 +47,11 @@ class MeetTalkConnectionService : ConnectionService() {
         connection?.setAddress(request.address, TelecomManager.PRESENTATION_ALLOWED)
         connection?.setInitializing()
         connection?.setActive()
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>> $TAG", "onCreateOutgoingConnection: callerName: $callerName, address: ${request.address}, request: ${request.toString()}")
-        }
         return connection!!
     }
 
     override fun onCreateOutgoingConnectionFailed(connectionManagerPhoneAccount: PhoneAccountHandle?, request: ConnectionRequest?) {
         super.onCreateOutgoingConnectionFailed(connectionManagerPhoneAccount, request)
-        if (BuildConfig.DEBUG) {
-            Log.e(">>>> $TAG", "onCreateOutgoingConnectionFailed: ${request.toString()}")
-        }
         Toast.makeText(applicationContext,"onCreateOutgoingConnectionFailed",Toast.LENGTH_LONG).show();
     }
 }
