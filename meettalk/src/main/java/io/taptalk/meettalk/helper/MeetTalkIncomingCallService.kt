@@ -28,6 +28,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.PENDING_INTENT_
 import io.taptalk.meettalk.constant.MeetTalkConstant.RequestCode.PENDING_INTENT_INCOMING_CALL_REJECT
 import io.taptalk.meettalk.manager.MeetTalkCallManager
 import android.os.PowerManager
+import org.jitsi.meet.sdk.BuildConfig
 
 class MeetTalkIncomingCallService : Service() {
 
@@ -38,7 +39,9 @@ class MeetTalkIncomingCallService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.e(">>>>>>>", "onStartCommand: ")
+        if (BuildConfig.DEBUG) {
+            Log.e(">>>>>>>", "onStartCommand: ")
+        }
         val context = MeetTalk.appContext
         val instanceKey = MeetTalkCallManager.activeCallInstanceKey ?: ""
         val activeCallMessage = MeetTalkCallManager.activeCallMessage
@@ -75,19 +78,19 @@ class MeetTalkIncomingCallService : Service() {
             this,
             PENDING_INTENT_INCOMING_CALL_NOTIFICATION,
             notificationIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         val answerPendingIntent = PendingIntent.getActivity(
             this,
             PENDING_INTENT_INCOMING_CALL_ANSWER,
             answerIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         val rejectPendingIntent = PendingIntent.getActivity(
             this,
             PENDING_INTENT_INCOMING_CALL_REJECT,
             rejectIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         incomingCallNotificationView.setOnClickPendingIntent(R.id.iv_button_answer_call, answerPendingIntent)

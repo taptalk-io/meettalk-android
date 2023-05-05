@@ -58,7 +58,7 @@ class MeetTalkOngoingCallService : Service() {
             this,
             PENDING_INTENT_ONGOING_CALL_NOTIFICATION,
             notificationIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         // Build notification

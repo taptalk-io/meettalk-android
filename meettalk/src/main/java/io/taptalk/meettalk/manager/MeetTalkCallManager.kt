@@ -560,7 +560,9 @@ class MeetTalkCallManager {
             incomingCallNotificationIntent.putExtra(INCOMING_CALL_NOTIFICATION_CONTENT, notificationContent)
             context.startService(incomingCallNotificationIntent)
 
-            Log.e(">>>>>>>", "showIncomingCallNotification: ")
+            if (org.jitsi.meet.sdk.BuildConfig.DEBUG) {
+                Log.e(">>>>>>>", "showIncomingCallNotification: ")
+            }
         }
 
         fun closeIncomingCallNotification(context: Context) {
