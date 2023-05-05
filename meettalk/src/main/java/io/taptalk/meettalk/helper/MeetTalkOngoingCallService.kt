@@ -98,6 +98,7 @@ class MeetTalkOngoingCallService : Service() {
     }
 
     override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
         handleAppExiting()
     }
 
