@@ -61,6 +61,8 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
             return
         }
 
+        markMessageAsRead(item, user)
+
         if (item.action != CALL_ENDED &&
             item.action != CALL_CANCELLED &&
             item.action != RECIPIENT_BUSY &&
@@ -184,8 +186,6 @@ class MeetTalkCallChatBubbleViewHolder internal constructor(
         }
 
         ivButtonCall.setOnClickListener { onCallButtonTapped() }
-
-        markMessageAsRead(item, TapTalk.getTapTalkActiveUser(instanceKey))
 
         if (BuildConfig.DEBUG) {
             itemView.setOnLongClickListener{

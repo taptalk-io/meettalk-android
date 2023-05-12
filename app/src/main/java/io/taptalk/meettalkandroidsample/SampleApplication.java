@@ -1,6 +1,5 @@
 package io.taptalk.meettalkandroidsample;
 
-import static io.taptalk.TapTalk.Const.TAPDefaultConstant.RoomType.TYPE_PERSONAL;
 import static io.taptalk.TapTalk.Helper.TapTalk.TapTalkImplementationType.TapTalkImplementationTypeCombine;
 import static io.taptalk.meettalkandroidsample.BuildConfig.GOOGLE_MAPS_API_KEY;
 import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_APP_KEY_ID;
@@ -9,20 +8,11 @@ import static io.taptalk.meettalkandroidsample.BuildConfig.TAPTALK_SDK_BASE_URL;
 
 import android.app.Activity;
 
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.multidex.MultiDexApplication;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import io.taptalk.TapTalk.Helper.TapTalk;
-import io.taptalk.TapTalk.Listener.TapUICustomKeyboardListener;
 import io.taptalk.TapTalk.Manager.TapUI;
-import io.taptalk.TapTalk.Model.TAPCustomKeyboardItemModel;
 import io.taptalk.TapTalk.Model.TAPMessageModel;
-import io.taptalk.TapTalk.Model.TAPRoomModel;
-import io.taptalk.TapTalk.Model.TAPUserModel;
 import io.taptalk.TapTalk.View.Activity.TapUIRoomListActivity;
 import io.taptalk.meettalk.helper.MeetTalk;
 import io.taptalk.meettalk.listener.MeetTalkListener;
@@ -50,6 +40,8 @@ public class SampleApplication extends MultiDexApplication {
         TapUI.getInstance(INSTANCE_KEY).setLogoutButtonVisible(true);
         TapUI.getInstance(INSTANCE_KEY).setConnectionStatusIndicatorVisible(false);
 //        TapUI.getInstance(INSTANCE_KEY).addCustomKeyboardListener(customKeyboardListener);
+
+        TapTalk.setTapTalkSocketConnectionMode(TapTalk.TapTalkSocketConnectionMode.ALWAYS_ON);
     }
 
     MeetTalkListener meetTalkListener = new MeetTalkListener(INSTANCE_KEY) {

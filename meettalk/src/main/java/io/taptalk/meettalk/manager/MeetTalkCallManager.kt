@@ -807,7 +807,8 @@ class MeetTalkCallManager {
             }
             handledCallNotificationMessageLocalIDs.add(message.localID)
 
-            if (message.action != CALL_ENDED &&
+            if (message.action != CALL_INITIATED &&
+                message.action != CALL_ENDED &&
                 message.action != CALL_CANCELLED &&
                 message.action != RECIPIENT_BUSY &&
                 message.action != RECIPIENT_REJECTED_CALL &&
@@ -1159,9 +1160,8 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} cancelled call.", CALL_CANCELLED)
             message = setMessageConferenceInfoAsEnded(message)
 
-            setActiveCallAsEnded()
-
             sendCallNotificationMessage(instanceKey, message)
+            setActiveCallAsEnded()
 
             return message
         }
@@ -1170,9 +1170,8 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} ended call.", CALL_ENDED)
             message = setMessageConferenceInfoAsEnded(message)
 
-            setActiveCallAsEnded()
-
             sendCallNotificationMessage(instanceKey, message)
+            setActiveCallAsEnded()
 
             return message
         }
@@ -1188,7 +1187,7 @@ class MeetTalkCallManager {
                 message.filterID = ""
             }
 
-            //message.hidden = true
+            //message.isHidden = true
 
             sendCallNotificationMessage(instanceKey, message)
 
@@ -1214,7 +1213,7 @@ class MeetTalkCallManager {
                 message.filterID = ""
             }
 
-            message.hidden = true
+            message.isHidden = true
 
             sendCallNotificationMessage(instanceKey, message)
 
@@ -1233,7 +1232,7 @@ class MeetTalkCallManager {
                 message.filterID = ""
             }
 
-            message.hidden = true
+            message.isHidden = true
 
             sendCallNotificationMessage(instanceKey, message)
 
@@ -1253,9 +1252,8 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} rejected call.", RECIPIENT_REJECTED_CALL)
             message = setMessageConferenceInfoAsEnded(message)
 
-            setActiveCallAsEnded()
-
             sendCallNotificationMessage(instanceKey, message)
+            setActiveCallAsEnded()
 
             return message
         }
@@ -1264,9 +1262,8 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{target}} missed the call.", RECIPIENT_MISSED_CALL)
             message = setMessageConferenceInfoAsEnded(message)
 
-            setActiveCallAsEnded()
-
             sendCallNotificationMessage(instanceKey, message)
+            setActiveCallAsEnded()
 
             return message
         }
@@ -1282,11 +1279,10 @@ class MeetTalkCallManager {
                 message.filterID = ""
             }
 
-            message.hidden = true
-
-            setActiveCallAsEnded()
+            message.isHidden = true
 
             sendCallNotificationMessage(instanceKey, message)
+            setActiveCallAsEnded()
 
             return message
         }
@@ -1299,7 +1295,7 @@ class MeetTalkCallManager {
             activeConferenceInfo?.lastUpdated = message.created
             activeConferenceInfo?.attachToMessage(message)
             message.filterID = activeConferenceInfo?.callID
-            message.hidden = true
+            message.isHidden = true
 
             sendCallNotificationMessage(instanceKey, message)
 
@@ -1351,11 +1347,14 @@ class MeetTalkCallManager {
             }
         }
 
-        private fun sendCallNotificationMessageWithAPI(instanceKey: String, message: TAPMessageModel) {
-            if (activeCallInstanceKey == null) {
+        private fun sendCallNotificationMessageWithAPI(instanceKey: String?, message: TAPMessageModel) {
+            if (instanceKey == null) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>>", "sendCallNotificationMessageWithAPI: no instance key")
+                }
                 return
             }
-            TAPDataManager.getInstance(activeCallInstanceKey).sendCustomMessage(
+            TAPDataManager.getInstance(instanceKey).sendCustomMessage(
                 message.room.roomID,
                 message.localID,
                 message.type,
