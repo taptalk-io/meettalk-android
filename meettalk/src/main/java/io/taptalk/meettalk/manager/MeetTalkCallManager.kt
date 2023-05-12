@@ -60,6 +60,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.IncomingCallNotification.IN
 import io.taptalk.meettalk.constant.MeetTalkConstant.IncomingCallNotification.INCOMING_CALL_NOTIFICATION_CHANNEL_NAME
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.ADD_PEOPLE_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.AUDIO_MUTE_BUTTON_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.CALENDAR_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.CALL_INTEGRATION_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.CHAT_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.HELP_BUTTON_ENABLED
@@ -92,6 +93,7 @@ import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 import io.taptalk.meettalk.model.MeetTalkParticipantInfo
 import org.jitsi.meet.sdk.JitsiMeet
 import org.jitsi.meet.sdk.JitsiMeetConferenceOptions
+import org.jitsi.meet.sdk.JitsiMeetOngoingConferenceService
 import org.jitsi.meet.sdk.JitsiMeetUserInfo
 import java.net.MalformedURLException
 import java.net.URL
@@ -151,6 +153,7 @@ class MeetTalkCallManager {
                 //.setWelcomePageEnabled(false)
                 .setFeatureFlag(ADD_PEOPLE_ENABLED, false)
                 .setFeatureFlag(AUDIO_MUTE_BUTTON_ENABLED, false)
+                .setFeatureFlag(CALENDAR_ENABLED, false)
                 .setFeatureFlag(CALL_INTEGRATION_ENABLED, false)
                 .setFeatureFlag(CHAT_ENABLED, false)
                 //.setFeatureFlag(FILMSTRIP_ENABLED, false)
@@ -506,6 +509,7 @@ class MeetTalkCallManager {
                 notificationChannel.description = INCOMING_CALL_NOTIFICATION_CHANNEL_DESCRIPTION
                 notificationChannel.setShowBadge(true)
                 notificationChannel.enableLights(true)
+                notificationChannel.enableVibration(true)
                 notificationChannel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 notificationChannel.lightColor = MeetTalk.appContext.getColor(R.color.tapColorPrimary)
 
@@ -560,7 +564,7 @@ class MeetTalkCallManager {
             incomingCallNotificationIntent.putExtra(INCOMING_CALL_NOTIFICATION_CONTENT, notificationContent)
             context.startService(incomingCallNotificationIntent)
 
-            if (org.jitsi.meet.sdk.BuildConfig.DEBUG) {
+            if (BuildConfig.DEBUG) {
                 Log.e(">>>>>>>", "showIncomingCallNotification: ")
             }
         }
@@ -757,6 +761,7 @@ class MeetTalkCallManager {
                 activeConferenceInfo!!
             )
 
+            closeIncomingCall()
             startOngoingCallService()
 
             return true

@@ -240,6 +240,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         MeetTalkCallManager.callState = IDLE
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
         TAPConnectionManager.getInstance(instanceKey).removeSocketListener(socketListener)
+        JitsiMeetOngoingConferenceService.abort(MeetTalk.appContext)
 
         if (isTaskRoot) {
             // Trigger listener callback if no other activity is open
@@ -579,6 +580,8 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                 // Play outgoing ring tone
                 MeetTalkCallManager.playRingTone(ToneGenerator.TONE_SUP_RINGTONE)
             }
+
+            JitsiMeetOngoingConferenceService.abort(MeetTalk.appContext)
         }, 100L)
     }
 
