@@ -60,6 +60,7 @@ import io.taptalk.meettalk.constant.MeetTalkConstant.IncomingCallNotification.IN
 import io.taptalk.meettalk.constant.MeetTalkConstant.IncomingCallNotification.INCOMING_CALL_NOTIFICATION_CHANNEL_NAME
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.ADD_PEOPLE_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.AUDIO_MUTE_BUTTON_ENABLED
+import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.CALENDAR_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.CALL_INTEGRATION_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.CHAT_ENABLED
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetFlag.HELP_BUTTON_ENABLED
@@ -92,6 +93,7 @@ import io.taptalk.meettalk.model.MeetTalkConferenceInfo
 import io.taptalk.meettalk.model.MeetTalkParticipantInfo
 import org.jitsi.meet.sdk.JitsiMeet
 import org.jitsi.meet.sdk.JitsiMeetConferenceOptions
+import org.jitsi.meet.sdk.JitsiMeetOngoingConferenceService
 import org.jitsi.meet.sdk.JitsiMeetUserInfo
 import java.net.MalformedURLException
 import java.net.URL
@@ -151,6 +153,7 @@ class MeetTalkCallManager {
                 //.setWelcomePageEnabled(false)
                 .setFeatureFlag(ADD_PEOPLE_ENABLED, false)
                 .setFeatureFlag(AUDIO_MUTE_BUTTON_ENABLED, false)
+                .setFeatureFlag(CALENDAR_ENABLED, false)
                 .setFeatureFlag(CALL_INTEGRATION_ENABLED, false)
                 .setFeatureFlag(CHAT_ENABLED, false)
                 //.setFeatureFlag(FILMSTRIP_ENABLED, false)
@@ -506,6 +509,7 @@ class MeetTalkCallManager {
                 notificationChannel.description = INCOMING_CALL_NOTIFICATION_CHANNEL_DESCRIPTION
                 notificationChannel.setShowBadge(true)
                 notificationChannel.enableLights(true)
+                notificationChannel.enableVibration(true)
                 notificationChannel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
                 notificationChannel.lightColor = MeetTalk.appContext.getColor(R.color.tapColorPrimary)
 
@@ -560,7 +564,7 @@ class MeetTalkCallManager {
             incomingCallNotificationIntent.putExtra(INCOMING_CALL_NOTIFICATION_CONTENT, notificationContent)
             context.startService(incomingCallNotificationIntent)
 
-            if (org.jitsi.meet.sdk.BuildConfig.DEBUG) {
+            if (BuildConfig.DEBUG) {
                 Log.e(">>>>>>>", "showIncomingCallNotification: ")
             }
         }
@@ -757,6 +761,7 @@ class MeetTalkCallManager {
                 activeConferenceInfo!!
             )
 
+            closeIncomingCall()
             startOngoingCallService()
 
             return true
@@ -800,17 +805,50 @@ class MeetTalkCallManager {
             if (BuildConfig.DEBUG) {
                 Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.body} - ${TAPUtils.toJsonString(message.data)}")
             }
-            handledCallNotificationMessageLocalIDs.add(message.localID)
 
-            if (message.action != CALL_ENDED &&
+            if (message.action != CALL_INITIATED &&
+                message.action != CALL_ENDED &&
                 message.action != CALL_CANCELLED &&
                 message.action != RECIPIENT_BUSY &&
                 message.action != RECIPIENT_REJECTED_CALL &&
-                message.action != RECIPIENT_MISSED_CALL
+                message.action != RECIPIENT_MISSED_CALL &&
+                (message.isRead == null || message.isRead == false)
             ) {
                 // Mark invisible message as read
                 TapCoreMessageManager.getInstance(instanceKey).markMessageAsRead(message)
+                message.isRead = true
             }
+
+            if (message.data == null || MeetTalkConferenceInfo.fromMessageModel(message) == null) {
+                // Received call initiated notification with no conference info, fetch data from API
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: data null - Fetch from API")
+                }
+                TapCoreMessageManager.getInstance(instanceKey).getNewerMessagesAfterTimestamp(
+                    message.room.roomID,
+                    message.created,
+                    message.created,
+                    object : TapCoreGetMessageListener() {
+                        override fun onSuccess(messages: MutableList<TAPMessageModel>?) {
+                            if (!messages.isNullOrEmpty()) {
+                                for (newMessage in messages) {
+                                    if (message.localID == newMessage.localID &&
+                                        newMessage.data != null &&
+                                        MeetTalkConferenceInfo.fromMessageModel(newMessage) != null
+                                    ) {
+                                        message.data = newMessage.data
+                                        checkAndHandleCallNotificationFromMessage(message, instanceKey, activeUser)
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+                )
+                return
+            }
+
+            handledCallNotificationMessageLocalIDs.add(message.localID)
 
             if (message.action == CALL_INITIATED &&
                 message.user.userID != activeUser.userID &&
@@ -820,46 +858,14 @@ class MeetTalkCallManager {
                     Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED callState: $callState")
                 }
                 if (callState == CallState.IDLE && activeCallMessage == null) {
-                    if (message.data == null) {
-                        // Received call initiated notification with no data, fetch data from API
-                        if (BuildConfig.DEBUG) {
-                            Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Fetch data from API")
-                        }
-                        TapCoreMessageManager.getInstance(instanceKey).getNewerMessagesAfterTimestamp(
-                                message.room.roomID,
-                                message.created,
-                                message.created,
-                                object : TapCoreGetMessageListener() {
-                                    override fun onSuccess(messages: MutableList<TAPMessageModel>?) {
-                                        if (!messages.isNullOrEmpty()) {
-                                            for (newMessage in messages) {
-                                                if (message.localID == newMessage.localID &&
-                                                    newMessage.data != null
-                                                ) {
-                                                    message.data = newMessage.data
-                                                    setActiveCallData(instanceKey, message)
-                                                    // Trigger listener callback
-                                                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                                                        meetTalkListener.onReceiveCallInitiatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
-                                                    }
-                                                    break
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            )
+                    // Received call initiated notification, show incoming call
+                    if (BuildConfig.DEBUG) {
+                        Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Show incoming call")
                     }
-                    else {
-                        // Received call initiated notification, show incoming call
-                        if (BuildConfig.DEBUG) {
-                            Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_INITIATED - Show incoming call")
-                        }
-                        setActiveCallData(instanceKey, message)
-                        // Trigger listener callback
-                        for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
-                            meetTalkListener.onReceiveCallInitiatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
-                        }
+                    setActiveCallData(instanceKey, message)
+                    // Trigger listener callback
+                    for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
+                        meetTalkListener.onReceiveCallInitiatedNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
                     }
                 } else {
                     // Send busy notification when a different call is received
@@ -1154,9 +1160,8 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} cancelled call.", CALL_CANCELLED)
             message = setMessageConferenceInfoAsEnded(message)
 
-            setActiveCallAsEnded()
-
             sendCallNotificationMessage(instanceKey, message)
+            setActiveCallAsEnded()
 
             return message
         }
@@ -1165,9 +1170,8 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} ended call.", CALL_ENDED)
             message = setMessageConferenceInfoAsEnded(message)
 
-            setActiveCallAsEnded()
-
             sendCallNotificationMessage(instanceKey, message)
+            setActiveCallAsEnded()
 
             return message
         }
@@ -1183,7 +1187,7 @@ class MeetTalkCallManager {
                 message.filterID = ""
             }
 
-            //message.hidden = true
+            //message.isHidden = true
 
             sendCallNotificationMessage(instanceKey, message)
 
@@ -1209,7 +1213,7 @@ class MeetTalkCallManager {
                 message.filterID = ""
             }
 
-            message.hidden = true
+            message.isHidden = true
 
             sendCallNotificationMessage(instanceKey, message)
 
@@ -1228,7 +1232,7 @@ class MeetTalkCallManager {
                 message.filterID = ""
             }
 
-            message.hidden = true
+            message.isHidden = true
 
             sendCallNotificationMessage(instanceKey, message)
 
@@ -1248,9 +1252,8 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{sender}} rejected call.", RECIPIENT_REJECTED_CALL)
             message = setMessageConferenceInfoAsEnded(message)
 
-            setActiveCallAsEnded()
-
             sendCallNotificationMessage(instanceKey, message)
+            setActiveCallAsEnded()
 
             return message
         }
@@ -1259,9 +1262,8 @@ class MeetTalkCallManager {
             var message = generateCallNotificationMessage(instanceKey, room, "{{target}} missed the call.", RECIPIENT_MISSED_CALL)
             message = setMessageConferenceInfoAsEnded(message)
 
-            setActiveCallAsEnded()
-
             sendCallNotificationMessage(instanceKey, message)
+            setActiveCallAsEnded()
 
             return message
         }
@@ -1277,11 +1279,10 @@ class MeetTalkCallManager {
                 message.filterID = ""
             }
 
-            message.hidden = true
-
-            setActiveCallAsEnded()
+            message.isHidden = true
 
             sendCallNotificationMessage(instanceKey, message)
+            setActiveCallAsEnded()
 
             return message
         }
@@ -1294,7 +1295,7 @@ class MeetTalkCallManager {
             activeConferenceInfo?.lastUpdated = message.created
             activeConferenceInfo?.attachToMessage(message)
             message.filterID = activeConferenceInfo?.callID
-            message.hidden = true
+            message.isHidden = true
 
             sendCallNotificationMessage(instanceKey, message)
 
@@ -1346,11 +1347,14 @@ class MeetTalkCallManager {
             }
         }
 
-        private fun sendCallNotificationMessageWithAPI(instanceKey: String, message: TAPMessageModel) {
-            if (activeCallInstanceKey == null) {
+        private fun sendCallNotificationMessageWithAPI(instanceKey: String?, message: TAPMessageModel) {
+            if (instanceKey == null) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>>", "sendCallNotificationMessageWithAPI: no instance key")
+                }
                 return
             }
-            TAPDataManager.getInstance(activeCallInstanceKey).sendCustomMessage(
+            TAPDataManager.getInstance(instanceKey).sendCustomMessage(
                 message.room.roomID,
                 message.localID,
                 message.type,

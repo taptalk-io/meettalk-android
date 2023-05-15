@@ -148,6 +148,7 @@ class MeetTalkIncomingCallService : Service() {
         notificationBuilder.setCategory(NotificationCompat.CATEGORY_CALL)
         notificationBuilder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
         notificationBuilder.setOngoing(true)
+        notificationBuilder.setDeleteIntent(rejectPendingIntent)
         notificationBuilder.priority = NotificationCompat.PRIORITY_MAX
 
         val notification = notificationBuilder.build()
