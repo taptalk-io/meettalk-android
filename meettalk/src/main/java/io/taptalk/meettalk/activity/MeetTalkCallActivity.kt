@@ -315,9 +315,18 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
     private fun initData() {
         instanceKey = intent.getStringExtra(INSTANCE_KEY) ?: ""
 
-        activeUserID = TapTalk.getTapTalkActiveUser(instanceKey).userID
+        activeUserID = TapTalk.getTapTalkActiveUser(instanceKey)?.userID ?: ""
+        if (activeUserID.isEmpty()) {
+            finish()
+            return
+        }
 
-        callInitiatedMessage = intent.getParcelableExtra(MESSAGE)!!
+        val message = intent.getParcelableExtra<TAPMessageModel?>(MESSAGE)
+        if (message == null) {
+            finish()
+            return
+        }
+        callInitiatedMessage = message
 
         TapTalk.connect(instanceKey, object : TapCommonListener() {})
 
