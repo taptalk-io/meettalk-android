@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/meettalk_bg_call_screen_gradient"
+    android:fitsSystemWindows="false"
     tools:context=".activity.MeetTalkCallActivity">
 
     <androidx.appcompat.widget.AppCompatImageView
