@@ -43,7 +43,8 @@
             android:name=".activity.MeetTalkCallActivity"
             android:exported="true"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen" />
 
     </application>
 

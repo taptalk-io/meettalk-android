@@ -167,11 +167,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.meettalk_activity_call)
 
+        @Suppress("DEPRECATION")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN or WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             setShowWhenLocked(true)
             setTurnScreenOn(true)
             val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
@@ -179,10 +179,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
         else {
             window.addFlags(
+            WindowManager.LayoutParams.FLAG_FULLSCREEN or
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-                        WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
-                        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                        WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD or
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
             )
         }
 
@@ -220,9 +221,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         JitsiMeetActivityDelegate.onHostPause(this)
 
-        if (!isVideoMuted) {
-            toggleVideoMute()
-        }
+//        if (!isVideoMuted) {
+//            toggleVideoMute()
+//        }
     }
 
     override fun onDestroy() {

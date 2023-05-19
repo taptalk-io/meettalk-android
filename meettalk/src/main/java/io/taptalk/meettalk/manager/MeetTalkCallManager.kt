@@ -1321,32 +1321,67 @@ class MeetTalkCallManager {
 
         // TODO: ADD CALLBACK
         private fun sendCallNotificationMessage(instanceKey: String, message: TAPMessageModel) {
-            if (TapTalk.isConnected(instanceKey)) {
-                if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "sendCallNotificationMessage: ${message.action}")
+            val connectListener = object : TapCommonListener() {
+                var resendAttempt = 0
+
+                override fun onSuccess(successMessage: String?) {
+                    resendNotificationMessageAfterDelay()
                 }
+
+                override fun onError(errorCode: String?, errorMessage: String?) {
+                    resendNotificationMessageAfterDelay()
+                }
+
+                private fun resendNotificationMessageAfterDelay() {
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        if (TapTalk.isConnected(instanceKey)) {
+                            sendCallNotificationMessage(instanceKey, message)
+                        }
+                        else if (resendAttempt < 5) {
+                            resendAttempt++
+                            TapTalk.connect(instanceKey, this)
+                        }
+                    }, 2000L)
+                }
+            }
+
+            if (TapTalk.isConnected(instanceKey)) {
                 TapCoreMessageManager.getInstance(instanceKey).sendCustomMessage(message, object : TapCoreSendMessageListener() {
-                    override fun onStart(obtainedMessage: TAPMessageModel?) {
-
-                    }
-
                     override fun onSuccess(obtainedMessage: TAPMessageModel?) {
-
+                        if (BuildConfig.DEBUG) {
+                            Log.e(">>>>", "sendCallNotificationMessage onSuccess: ${message.action}")
+                        }
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            if (!TapTalk.isForeground) {
+                                if (BuildConfig.DEBUG) {
+                                    Log.e(">>>>", "sendCallNotificationMessage: disconnect")
+                                }
+                                TapTalk.disconnect(instanceKey)
+                            }
+                        }, 3000L)
                     }
 
                     override fun onError(obtainedMessage: TAPMessageModel?, errorCode: String?, errorMessage: String?) {
-                        sendCallNotificationMessageWithAPI(instanceKey, message)
+                        if (BuildConfig.DEBUG) {
+                            Log.e(">>>>", "sendCallNotificationMessage onError: $errorMessage")
+                        }
+                        if (!TapTalk.isConnected(instanceKey)) {
+                            TapTalk.connect(instanceKey, connectListener)
+                        }
+//                        sendCallNotificationMessageWithAPI(instanceKey, message)
                     }
                 })
             }
             else {
                 if (BuildConfig.DEBUG) {
-                    Log.e(">>>>", "sendCallNotificationMessage socket not connected, send through API: ${message.action}")
+                    Log.e(">>>>", "sendCallNotificationMessage: socket not connected, start reconnect")
                 }
-                sendCallNotificationMessageWithAPI(instanceKey, message)
+                TapTalk.connect(connectListener)
+//                sendCallNotificationMessageWithAPI(instanceKey, message)
             }
         }
 
+        // FIXME: NO MESSAGE ACTION IN PARAMETER
         private fun sendCallNotificationMessageWithAPI(instanceKey: String?, message: TAPMessageModel) {
             if (instanceKey == null) {
                 if (BuildConfig.DEBUG) {
