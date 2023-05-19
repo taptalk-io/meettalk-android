@@ -221,9 +221,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
 
         JitsiMeetActivityDelegate.onHostPause(this)
 
-        if (!isVideoMuted) {
-            toggleVideoMute()
-        }
+//        if (!isVideoMuted) {
+//            toggleVideoMute()
+//        }
     }
 
     override fun onDestroy() {
