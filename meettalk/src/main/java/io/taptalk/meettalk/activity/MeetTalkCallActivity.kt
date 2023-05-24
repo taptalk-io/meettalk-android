@@ -612,7 +612,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
         if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
             // The other user left, terminate the call
-            finish()
+            Handler(Looper.getMainLooper()).postDelayed({
+                finish()
+            }, 2000L)
         }
     }
 
