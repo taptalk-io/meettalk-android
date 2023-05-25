@@ -803,7 +803,7 @@ class MeetTalkCallManager {
                 return
             }
             if (BuildConfig.DEBUG) {
-                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.body} - ${TAPUtils.toJsonString(message.data)}")
+                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.user.fullname} - ${message.body} - ${TAPUtils.toJsonString(message.data)}")
             }
 
             if (message.action != CALL_INITIATED &&
@@ -1509,6 +1509,8 @@ class MeetTalkCallManager {
                 return
             }
 
+            val callID = activeCallMessage!!.localID
+
             missedCallTimer = Timer()
             val missedCallInterval = DEFAULT_CALL_TIMEOUT_DURATION + activeCallMessage!!.created - System.currentTimeMillis()
             if (BuildConfig.DEBUG) {
@@ -1537,7 +1539,7 @@ class MeetTalkCallManager {
                             Log.e(">>>>>", "MissedCallTimerFired: close incoming call")
                         }
                     }
-                    else {
+                    else if (callID == activeCallMessage?.localID) {
                         // Send missed call notification
                         sendMissedCallNotification(
                             activeCallInstanceKey ?: return,
