@@ -803,7 +803,7 @@ class MeetTalkCallManager {
                 return
             }
             if (BuildConfig.DEBUG) {
-                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.body} - ${TAPUtils.toJsonString(message.data)}")
+                Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.user.fullname} - ${message.body} - ${TAPUtils.toJsonString(message.data)}")
             }
 
             if (message.action != CALL_INITIATED &&
@@ -889,6 +889,7 @@ class MeetTalkCallManager {
                     if (BuildConfig.DEBUG) {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
                     }
+                    updateActiveConferenceInfo(message)
                     activeMeetTalkCallActivity?.finish()
                     closeIncomingCall()
                     setActiveCallAsEnded()
@@ -910,6 +911,7 @@ class MeetTalkCallManager {
                     if (BuildConfig.DEBUG) {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CALL_ENDED $activeMeetTalkCallActivity")
                     }
+                    updateActiveConferenceInfo(message)
                     activeMeetTalkCallActivity?.finish()
                     setActiveCallAsEnded()
 
@@ -1001,6 +1003,7 @@ class MeetTalkCallManager {
                     if (BuildConfig.DEBUG) {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: ${message.action}")
                     }
+                    updateActiveConferenceInfo(message)
                     closeIncomingCall()
                     activeMeetTalkCallActivity?.finish()
                     setActiveCallAsEnded()
@@ -1025,12 +1028,7 @@ class MeetTalkCallManager {
                         Log.e(">>>>", "checkAndHandleCallNotificationFromMessage: CONFERENCE_INFO - update activity")
                     }
                     // Received updated conference info
-                    val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
-                    if (activeConferenceInfo != null && updatedConferenceInfo != null) {
-                        activeConferenceInfo?.updateValue(updatedConferenceInfo)
-                        activeMeetTalkCallActivity?.retrieveParticipantsInfo()
-                        activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
-                    }
+                    updateActiveConferenceInfo(message)
 
                     // Trigger listener callback
                     for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
@@ -1046,6 +1044,15 @@ class MeetTalkCallManager {
                         meetTalkListener.onReceiveRecipientUnableToReceiveCallNotificationMessage(instanceKey, message, MeetTalkConferenceInfo.fromMessageModel(message))
                     }
                 }
+            }
+        }
+
+        private fun updateActiveConferenceInfo(message: TAPMessageModel) {
+            val updatedConferenceInfo = MeetTalkConferenceInfo.fromMessageModel(message)
+            if (activeConferenceInfo != null && updatedConferenceInfo != null) {
+                activeConferenceInfo?.updateValue(updatedConferenceInfo)
+                activeMeetTalkCallActivity?.retrieveParticipantsInfo()
+                activeMeetTalkCallActivity?.onConferenceInfoUpdated(activeConferenceInfo!!)
             }
         }
 
@@ -1502,6 +1509,8 @@ class MeetTalkCallManager {
                 return
             }
 
+            val callID = activeCallMessage!!.localID
+
             missedCallTimer = Timer()
             val missedCallInterval = DEFAULT_CALL_TIMEOUT_DURATION + activeCallMessage!!.created - System.currentTimeMillis()
             if (BuildConfig.DEBUG) {
@@ -1530,7 +1539,7 @@ class MeetTalkCallManager {
                             Log.e(">>>>>", "MissedCallTimerFired: close incoming call")
                         }
                     }
-                    else {
+                    else if (callID == activeCallMessage?.localID) {
                         // Send missed call notification
                         sendMissedCallNotification(
                             activeCallInstanceKey ?: return,

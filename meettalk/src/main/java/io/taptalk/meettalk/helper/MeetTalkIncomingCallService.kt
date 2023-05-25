@@ -152,7 +152,7 @@ class MeetTalkIncomingCallService : Service() {
         notificationBuilder.priority = NotificationCompat.PRIORITY_MAX
 
         val notification = notificationBuilder.build()
-        notification.flags = Notification.FLAG_INSISTENT
+        notification.flags = Notification.FLAG_INSISTENT or Notification.FLAG_ONGOING_EVENT
 
         // Show notification
         startForeground(1124, notification)

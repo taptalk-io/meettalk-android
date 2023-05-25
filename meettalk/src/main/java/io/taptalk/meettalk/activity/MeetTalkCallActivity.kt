@@ -45,6 +45,7 @@ import io.taptalk.TapTalk.Manager.TapCoreMessageManager
 import io.taptalk.TapTalk.Model.TAPMessageModel
 import io.taptalk.TapTalk.R.anim.*
 import io.taptalk.meettalk.R
+import io.taptalk.meettalk.BuildConfig
 import io.taptalk.meettalk.constant.MeetTalkConstant.Extra.CONFERENCE_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.JitsiMeetBroadcastEventType.RETRIEVE_PARTICIPANTS_INFO
 import io.taptalk.meettalk.constant.MeetTalkConstant.ParticipantRole.HOST
@@ -234,13 +235,6 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
 
         JitsiMeetActivityDelegate.onHostDestroy(this)
-
-        MeetTalkCallManager.handleSendNotificationOnLeavingConference()
-        MeetTalkCallManager.setActiveCallAsEnded()
-        MeetTalkCallManager.activeMeetTalkCallActivity = null
-        MeetTalkCallManager.callState = IDLE
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
-        TAPConnectionManager.getInstance(instanceKey).removeSocketListener(socketListener)
         JitsiMeetOngoingConferenceService.abort(MeetTalk.appContext)
 
         if (isTaskRoot) {
@@ -263,6 +257,13 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         runOnUiThread {
             super.finish()
             overridePendingTransition(tap_stay, tap_fade_out)
+
+            MeetTalkCallManager.handleSendNotificationOnLeavingConference()
+            MeetTalkCallManager.setActiveCallAsEnded()
+            MeetTalkCallManager.activeMeetTalkCallActivity = null
+            MeetTalkCallManager.callState = IDLE
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
+            TAPConnectionManager.getInstance(instanceKey).removeSocketListener(socketListener)
         }
         if (BuildConfig.DEBUG) {
             Log.e(">>>>>", "MeetTalkCallActivity finish: ")
@@ -612,7 +613,9 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
         if (callInitiatedMessage.room.type == TYPE_PERSONAL) {
             // The other user left, terminate the call
-            finish()
+            Handler(Looper.getMainLooper()).postDelayed({
+                finish()
+            }, 2000L)
         }
     }
 
