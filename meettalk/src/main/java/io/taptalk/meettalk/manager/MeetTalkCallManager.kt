@@ -666,7 +666,7 @@ class MeetTalkCallManager {
                 // TODO: Temporarily disabled for non-personal rooms
                 return
             }
-            if (callState != CallState.IDLE || System.currentTimeMillis() < (lastCallEndTime + 5000L)) {
+            if (callState != CallState.IDLE || System.currentTimeMillis() < (lastCallEndTime + 3500L)) {
                 return
             }
             sendCallInitiatedNotification(instanceKey, room, startWithAudioMuted, startWithVideoMuted)
@@ -828,12 +828,12 @@ class MeetTalkCallManager {
                     object : TapCoreGetMessageListener() {
                         override fun onSuccess(messages: MutableList<TAPMessageModel>?) {
                             if (!messages.isNullOrEmpty()) {
-                                for (newMessage in messages) {
-                                    if (message.localID == newMessage.localID &&
-                                        newMessage.data != null &&
-                                        MeetTalkConferenceInfo.fromMessageModel(newMessage) != null
+                                for (obtainedMessage in messages) {
+                                    if (message.localID == obtainedMessage.localID &&
+                                        obtainedMessage.data != null &&
+                                        MeetTalkConferenceInfo.fromMessageModel(obtainedMessage) != null
                                     ) {
-                                        message.data = newMessage.data
+                                        message.data = obtainedMessage.data
                                         checkAndHandleCallNotificationFromMessage(message, instanceKey, activeUser)
                                         break
                                     }
@@ -893,7 +893,6 @@ class MeetTalkCallManager {
                     activeMeetTalkCallActivity?.finish()
                     closeIncomingCall()
                     setActiveCallAsEnded()
-                    lastCallEndTime = 0L
 
                     // Trigger listener callback
                     if (message.action == CALL_CANCELLED) {
@@ -915,7 +914,6 @@ class MeetTalkCallManager {
                     updateActiveConferenceInfo(message)
                     activeMeetTalkCallActivity?.finish()
                     setActiveCallAsEnded()
-                    lastCallEndTime = 0L
 
                     // Trigger listener callback
                     for (meetTalkListener in MeetTalk.getMeetTalkListeners(activeCallInstanceKey)) {
@@ -1004,7 +1002,6 @@ class MeetTalkCallManager {
                     closeIncomingCall()
                     activeMeetTalkCallActivity?.finish()
                     setActiveCallAsEnded()
-                    lastCallEndTime = 0L
 
                     // Trigger listener callback
                     if (message.action == RECIPIENT_REJECTED_CALL) {

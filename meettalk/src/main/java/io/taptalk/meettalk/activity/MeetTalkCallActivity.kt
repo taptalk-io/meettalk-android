@@ -543,6 +543,11 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
                     Log.e(">>>>", "onBroadcastReceived: CHAT_TOGGLED ${TAPUtils.toJsonString(event.data)}")
                 }
             }
+            BroadcastEvent.Type.READY_TO_CLOSE -> {
+                if (BuildConfig.DEBUG) {
+                    Log.e(">>>>", "onBroadcastReceived: READY_TO_CLOSE ${TAPUtils.toJsonString(event.data)}")
+                }
+            }
             else -> {
                 if (BuildConfig.DEBUG) {
                     Log.e(">>>>", "onBroadcastReceived OTHERS: ${intent.action} ${TAPUtils.toJsonString(intent.data)}")
@@ -580,8 +585,12 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         }
 
         Handler(Looper.getMainLooper()).postDelayed({
-            // Force loudspeaker to initial state
+            // Force loudspeaker & input to initial state
             forceLoudspeakerState()
+            val muteAudioBroadcastIntent = BroadcastIntentHelper.buildSetAudioMutedIntent(isAudioMuted)
+            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(muteAudioBroadcastIntent)
+            val muteVideoBroadcastIntent = BroadcastIntentHelper.buildSetVideoMutedIntent(isVideoMuted)
+            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(muteVideoBroadcastIntent)
             if (callInitiatedMessage.room.type == TYPE_PERSONAL &&
                 activeParticipantInfo.role == HOST &&
                 MeetTalkCallManager.answeredCallID != MeetTalkCallManager.activeConferenceInfo?.callID &&
@@ -593,7 +602,7 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
             }
 
             JitsiMeetOngoingConferenceService.abort(MeetTalk.appContext)
-        }, 100L)
+        }, 500L)
     }
 
     private fun onConferenceTerminated() {
@@ -605,6 +614,17 @@ class MeetTalkCallActivity : JitsiMeetActivity() {
         for (meetTalkListener in MeetTalk.getMeetTalkListeners(instanceKey)) {
             meetTalkListener.onConferenceTerminated(MeetTalkCallManager.activeConferenceInfo)
         }
+    }
+
+    override fun onParticipantJoined(extraData: HashMap<String, Any>?) {
+        Handler(Looper.getMainLooper()).postDelayed({
+            // Force loudspeaker & input to current state
+            forceLoudspeakerState()
+            val muteAudioBroadcastIntent = BroadcastIntentHelper.buildSetAudioMutedIntent(isAudioMuted)
+            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(muteAudioBroadcastIntent)
+            val muteVideoBroadcastIntent = BroadcastIntentHelper.buildSetVideoMutedIntent(isVideoMuted)
+            LocalBroadcastManager.getInstance(applicationContext).sendBroadcast(muteVideoBroadcastIntent)
+        }, 500L)
     }
 
     private fun onParticipantLeft() {
