@@ -11,8 +11,8 @@ android {
     defaultConfig {
         minSdk 23
         targetSdk 31
-        versionCode 52
-        versionName "1.2.9"
+        versionCode 53
+        versionName "1.2.10"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -99,7 +99,7 @@ project.afterEvaluate {
                 artifact androidSourcesJar // optional sources
                 groupId = 'com.github.taptalk-io'
                 artifactId = 'meettalk-android'
-                version = "1.2.9"
+                version = "1.2.10"
 //                version = "\"${defaultConfig.versionName}\""
             }
         }
